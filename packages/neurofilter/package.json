@@ -1,33 +1,36 @@
 {
-  "name": "@debut/plugin-neurofilter",
-  "version": "1.0.0",
-  "module": "true",
-  "description": "Neuro filter plugin for debute",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build"
-  },
-  "dependencies": {
-    "brain.js": "^2.0.0-beta.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/debut/Plugins.git"
-  },
-  "keywords": [
-    "Debut",
-    "Plugin",
-    "TakeProfit",
-    "StopLoss"
-  ],
-  "author": "Dmitriy Yurov",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/debut/Plugins/issues"
-  },
-  "files": [
-    "dist"
-  ],
-  "homepage": "https://github.com/debut/Plugins#readme"
+    "name": "@debut/plugin-neurofilter",
+    "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
+    "module": "true",
+    "description": "Neuro filter plugin for debute",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "prepare": "npm run build"
+    },
+    "dependencies": {
+        "brain.js": "^2.0.0-beta.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/debut/Plugins.git"
+    },
+    "keywords": [
+        "Debut",
+        "Plugin",
+        "TakeProfit",
+        "StopLoss"
+    ],
+    "author": "Dmitriy Yurov",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/debut/Plugins/issues"
+    },
+    "files": [
+        "dist"
+    ],
+    "homepage": "https://github.com/debut/Plugins#readme"
 }

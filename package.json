@@ -31,5 +31,10 @@
     },
     "engines": {
         "npm": "^7.0.0"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "git-format-staged -f 'prettier --stdin --stdin-filepath \"{}\"' '*.ts' '*.json'"
+        }
     }
 }

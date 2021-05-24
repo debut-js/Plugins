@@ -1,0 +1,33 @@
+{
+  "name": "@debut/plugin-genetic-shutdown",
+  "version": "1.0.0",
+  "module": "true",
+  "description": "Stop genetic optimization when stats is not fine",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+      "@debut/plugin-stats": "1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/debut/Plugins.git"
+  },
+  "keywords": [
+    "Debut",
+    "Plugin",
+    "TakeProfit",
+    "StopLoss"
+  ],
+  "author": "Dmitriy Yurov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/debut/Plugins/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/debut/Plugins#readme"
+}

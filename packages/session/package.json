@@ -1,0 +1,33 @@
+{
+  "name": "@debut/plugin-session",
+  "version": "1.0.0",
+  "module": "true",
+  "description": "Trade session time, plugin debut",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+      "@debut/plugin-stats": "1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/debut/Plugins.git"
+  },
+  "keywords": [
+    "Debut",
+    "Plugin",
+    "TakeProfit",
+    "StopLoss"
+  ],
+  "author": "Dmitriy Yurov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/debut/Plugins/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "homepage": "https://github.com/debut/Plugins#readme"
+}

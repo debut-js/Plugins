@@ -25,7 +25,7 @@
         "StopLoss"
     ],
     "author": "Dmitriy Yurov",
-    "license": "ISC",
+    "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/debut/Plugins/issues"
     },

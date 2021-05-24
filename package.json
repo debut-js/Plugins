@@ -7,7 +7,7 @@
         "install": "npm i --workspaces"
     },
     "author": "Dmitry Yurov",
-    "license": "ISC",
+    "license": "Apache-2.0",
     "workspaces": [
         "./packages/*"
     ],

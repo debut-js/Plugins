@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "publishConfig": {
         "access": "public"
     },
@@ -10,6 +10,9 @@
     "scripts": {
         "build": "tsc",
         "prepare": "npm run build"
+    },
+    "dependencies": {
+        "@debut/plugin-stats": "^1.0.0"
     },
     "repository": {
         "type": "git",

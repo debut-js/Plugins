@@ -6,7 +6,7 @@ export type OrderExpireOptions = {
 
 type LimitLookup = Record<string, number>;
 
-export function orderExpire(opts: OrderExpireOptions): PluginInterface {
+export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
     const lookup: LimitLookup = {};
 
     return {

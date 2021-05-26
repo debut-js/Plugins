@@ -5,7 +5,7 @@ export interface DynamicTakesPlugin extends PluginInterface {
     api: Methods;
 }
 
-export type DynamicTakesPluginOpts = {
+export type DynamicTakesPluginOptions = {
     trailing?: boolean;
     ignoreTicks?: boolean;
     maxRetryOrders?: number;
@@ -28,7 +28,7 @@ export interface DynamicTakesPluginAPI {
 
 type TakesLookup = Record<string, OrderTakes>;
 
-export function dynamicTakesPlugin(opts: DynamicTakesPluginOpts): PluginInterface {
+export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInterface {
     const lookup: TakesLookup = {};
     let trackZeroClose = false;
 

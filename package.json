@@ -12,7 +12,7 @@
         "./packages/*"
     ],
     "peerDependencies": {
-        "@debut/community-core": "^2.2.4"
+        "@debut/community-core": "^2.2.7"
     },
     "devDependencies": {
         "@types/node": "^14.14.22",

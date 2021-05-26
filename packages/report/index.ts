@@ -14,7 +14,7 @@ export interface IndicatorsData {
 }
 
 export interface ReportPluginAPI {
-    visualize: {
+    report: {
         addIndicators(schema: IndicatorsSchema): void;
         disableProfitPlot: () => void;
         setXRange: (from: number, to: number) => void;
@@ -50,7 +50,7 @@ type Deal = {
     open?: boolean;
 };
 
-export function visualizePlugin(showMargin = true): PluginInterface {
+export function reportPlugin(showMargin = true): PluginInterface {
     let indicatorsSchema: IndicatorsSchema;
     const indicatorsData: Record<string, IndicatorsData[]> = {};
     const chartData: Array<{ time: string; open: number; high: number; low: number; close: number }> = [];
@@ -233,7 +233,7 @@ export function visualizePlugin(showMargin = true): PluginInterface {
     }
 
     return {
-        name: 'visualize',
+        name: 'report',
 
         api: {
             addIndicators(schema: IndicatorsSchema) {
@@ -451,7 +451,7 @@ export function visualizePlugin(showMargin = true): PluginInterface {
             });
 
             utils.file.saveFile('public/last-test-result.json', createVisualData());
-            console.log('Visualize data is ready...');
+            console.log('Report data is ready...');
         },
     };
 }

@@ -1,4 +1,4 @@
-import { OrderType, PluginInterface, utils } from 'debut';
+import { OrderType, PluginInterface, utils } from '@debut/community-core';
 import { NeuroHelper, TrainingData } from './neurohelper';
 
 export interface NeuroFilterPluginArgs {

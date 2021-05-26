@@ -1,4 +1,4 @@
-import { PluginInterface, TimeFrame } from 'debut';
+import { PluginInterface, TimeFrame } from '@debut/community-core';
 import { StatsInterface, StatsState } from '@debut/plugin-stats';
 
 export interface ShutdownPluginAPI {

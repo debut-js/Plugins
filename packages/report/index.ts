@@ -1,4 +1,4 @@
-import { PluginInterface, utils, Candle, OrderType } from 'debut';
+import { PluginInterface, utils, Candle, OrderType } from '@debut/community-core';
 import { StatsInterface } from '@debut/plugin-stats';
 
 export interface IndicatorsData {
@@ -114,6 +114,10 @@ export function reportPlugin(showMargin = true): PluginInterface {
         });
 
         return x;
+    }
+
+    function formatTime(stamp: number) {
+        return new Date(stamp).toISOString();
     }
 
     function createCandlesAndDealsVisData() {
@@ -365,11 +369,17 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 return;
             }
 
-            equity.push({ balance: stats.api.getState().profit + profit, time: tick.time });
+            equity.push({ balance: stats.api.getState().profit + profit, time: formatTime(tick.time) });
         },
 
         async onAfterCandle(candle) {
-            chartData.push({ time: candle.time, open: candle.o, high: candle.h, low: candle.l, close: candle.c });
+            chartData.push({
+                time: formatTime(candle.time),
+                open: candle.o,
+                high: candle.h,
+                low: candle.l,
+                close: candle.c,
+            });
 
             indicatorsSchema.forEach((schema) => {
                 const data = indicatorsData[schema.name];
@@ -378,19 +388,19 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     const lineData = data[idx];
 
                     lineData.y.push(line.getValue());
-                    lineData.x.push(candle.time);
+                    lineData.x.push(formatTime(candle.time));
                 });
             });
 
             if (!startTime) {
-                startTime = candle.time;
+                startTime = formatTime(candle.time);
             }
         },
 
         async onBeforeClose(order) {
             const usage = this.debut.orders.reduce((sum, order) => sum + order.lots * order.price, 0);
 
-            margins.push({ usage, time: order.time });
+            margins.push({ usage, time: formatTime(order.time) });
         },
 
         async onClose(order, closing) {
@@ -401,9 +411,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
             // Plotly visualization.
             const deal = {
                 type: closing.type === OrderType.BUY ? 'Long' : 'Short',
-                openTime: closing.time,
+                openTime: formatTime(closing.time),
                 openPrice: closing.price,
-                closeTime: order.time,
+                closeTime: formatTime(order.time),
                 closePrice: order.price,
                 sandbox: order.sandbox,
             };
@@ -416,14 +426,14 @@ export function reportPlugin(showMargin = true): PluginInterface {
             // }
 
             if (!this.debut.orders.length) {
-                profit.push({ profit: stats.api.getState().profit, time: order.time });
+                profit.push({ profit: stats.api.getState().profit, time: formatTime(order.time) });
             }
         },
 
         async onDispose() {
             // Последняя свечка
             chartData.push({
-                time: lastTick.time,
+                time: formatTime(lastTick.time),
                 open: lastTick.o,
                 high: lastTick.h,
                 low: lastTick.l,

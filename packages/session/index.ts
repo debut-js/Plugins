@@ -1,4 +1,4 @@
-import { PluginInterface } from 'debut';
+import { PluginInterface } from '@debut/community-core';
 
 export const enum TimeMode {
     'Summer' = 'Summer',
@@ -36,7 +36,7 @@ export function sessionPlugin(options: SessionPluginOptions, onDayEnd?: (...args
             createSessionValidator,
         },
         async onTick(tick) {
-            const stamp = Date.parse(tick.time);
+            const stamp = tick.time;
             const result = !!sessionValidator && sessionValidator(stamp);
 
             if (onDayEnd && result.dayChanged) {
@@ -71,6 +71,36 @@ export function createSessionValidator(start: string, end: string, noDST?: boole
     }
 
     return (stamp: number): SessionValidatorResult => {
+        // !NB: TODO Сделать колбеки для часовых изменений и для дневных изменений и решить проблемы с офсетом времени
+        // this.timeHandler = (startStamp: number) => {
+        //     const offsetStamp = (this.opts.brokerUTCoffset || 0) * 3_600_000;
+        //     let dayStartStamp = ~~(startStamp / 86_400_000) * 86_400_000 + offsetStamp;
+        //     let dayEndStamp = dayStartStamp + 86_400_000 - 1;
+        //     let prevStamp = 0;
+        //     let prevHour = ~~((startStamp - dayStartStamp) / 3_600_000);
+
+        //     return (stamp: number) => {
+        //         const hour = ~~((stamp - dayStartStamp) / 3_600_000);
+        //         const isHourEnd = prevHour !== hour;
+        //         const isDayEnd = prevStamp <= dayEndStamp && stamp > dayEndStamp;
+
+        //         if (isHourEnd) {
+        //             prevHour = hour;
+
+        //             // hook hour end
+        //         }
+
+        //         if (isDayEnd) {
+        //             dayStartStamp = ~~(stamp / 86_400_000) * 86_400_000 + offsetStamp;
+        //             dayEndStamp = dayStartStamp + 86_400_000 - 1;
+
+        //             // hook day end
+        //         }
+
+        //         prevStamp = stamp;
+        //     };
+        // };
+
         const dayChanged = stamp > currentDayMarker;
 
         if (dayChanged && !noDST) {

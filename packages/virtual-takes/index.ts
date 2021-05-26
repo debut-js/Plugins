@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, Debut, Candle, OrderType } from 'debut';
+import { PluginInterface, ExecutedOrder, Debut, Candle, OrderType } from '@debut/community-core';
 
 export type VirtualTakesOptions = {
     stopLoss: number; // Стоп лосс

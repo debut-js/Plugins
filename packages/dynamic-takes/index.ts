@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType, utils } from 'debut';
+import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType, utils } from '@debut/community-core';
 
 export interface DynamicTakesPlugin extends PluginInterface {
     name: 'dynamicTakes';

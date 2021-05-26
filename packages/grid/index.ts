@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, utils, OrderType } from 'debut';
+import { PluginInterface, ExecutedOrder, utils, OrderType } from '@debut/community-core';
 
 type Grid = {
     lowLevels: number[];

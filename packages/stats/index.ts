@@ -1,4 +1,4 @@
-import { PluginInterface, utils, ExecutedOrder, OrderType } from 'debut';
+import { PluginInterface, utils, ExecutedOrder, OrderType } from '@debut/community-core';
 
 export type StatsOptions = {
     amount: number;

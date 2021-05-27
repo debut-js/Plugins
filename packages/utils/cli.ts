@@ -36,7 +36,7 @@ export type BotData = {
  * Read schema file from working dir
  */
 export function getBotsSchema() {
-    return JSON.parse(readFile(`${process.cwd()}/schema.json`));
+    return JSON.parse(readFile(`${process.cwd()}/schema.json`)!);
 }
 
 /**
@@ -95,5 +95,5 @@ export function getArgs<T extends any>(): T {
 }
 
 export function getTokens(): Record<string, string> {
-    return JSON.parse(readFile(`${process.cwd()}/.tokens.json`));
+    return JSON.parse(readFile(`${process.cwd()}/.tokens.json`)!);
 }

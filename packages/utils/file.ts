@@ -38,7 +38,7 @@ export function readFile(path: string) {
     try {
         // Если файла еще нет ничего не делаем
         if (!fs.existsSync(path)) {
-            throw `File not found: ${path}`;
+            return null;
         }
 
         return fs.readFileSync(path, 'utf-8');
@@ -46,7 +46,7 @@ export function readFile(path: string) {
         logDebug('Read file error', path, e);
     }
 
-    return '';
+    return null;
 }
 
 /**

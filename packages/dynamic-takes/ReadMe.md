@@ -46,7 +46,7 @@ async onCandle({ c }) {
 # Скриншоты (плагин [Report](../report/))
 
 ### Сделка с выводом в уровень безубытка
-![Сделка с выводом в 0](img/screen1.png){ width=50% }
+<img alt="Сделка с выводом в 0" src="img/screen1.png" width="200">
 
 ### Сделка с докупкой и прибылью
-![Прибыльная делка с докупкой](img/screen2.png){ width=50% }
+<img alt="Прибыльная делка с докупкой" src="img/screen2.png" width="200">

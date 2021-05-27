@@ -9,7 +9,7 @@
     "main": "dist/index.js",
     "peerDependencies": {
         "@debut/plugin-utils": "^1.0.0",
-        "@debut/types": "^1.0.2"
+        "@debut/types": "^1.0.5"
     },
     "scripts": {
         "build": "tsc",

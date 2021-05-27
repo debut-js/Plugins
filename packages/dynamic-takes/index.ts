@@ -56,26 +56,19 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
                 trailingTakes(order, price, lookup);
             }
 
+            // const debug = new Date(tick.time).toISOString().startsWith('2021-05-21');
+
+            // if (debug) {
+            //     console.log(trackZeroClose);
+            // }
+
+
             if (!order.processing && checkClose(order, price, lookup) && !trackZeroClose) {
-                const profit = getProfit(order, price);
+                // if (debug) {
+                //     console.log(this.debut.orders.length, profit)
+                // }
 
-                if (opts.maxRetryOrders && profit < 0) {
-                    const retryOrder = await this.debut.createOrder(order.type);
-                    let { stopPrice, takePrice } = lookup[order.orderId];
-
-                    if (this.debut.orders.length === opts.maxRetryOrders) {
-                        trackZeroClose = true;
-                        return;
-                    }
-
-                    stopPrice = price + stopPrice - order.price;
-                    takePrice = takePrice;
-
-                    lookup[retryOrder.orderId] = { takePrice, stopPrice };
-                    lookup[order.orderId] = { takePrice, stopPrice };
-                } else {
-                    await this.debut.closeOrder(order);
-                }
+                await this.debut.closeOrder(order);
             }
         }
     }
@@ -90,6 +83,30 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
             getTakes(orderId: string) {
                 return lookup[orderId];
             },
+        },
+
+        async onBeforeClose(order, closing) {
+            if (opts.maxRetryOrders) {
+                // +1 Because start order should not counted
+                if (opts.maxRetryOrders + 1 < this.debut.orders.length) {
+                    await this.debut.createOrder(order.type);
+                    const price = this.debut.currentCandle.c;
+
+                    let { stopPrice, takePrice } = lookup[closing.orderId];
+
+                    stopPrice = price + stopPrice - order.price;
+                    takePrice = takePrice;
+
+                    // Update takes and stops for all
+                    for (const order of this.debut.orders) {
+                        lookup[order.orderId] = { takePrice, stopPrice };
+                    }
+
+                    return true;
+                } else {
+                    trackZeroClose = true;
+                }
+            }
         },
 
         async onClose(order) {

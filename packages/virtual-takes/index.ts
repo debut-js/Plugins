@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, Debut, Candle, OrderType } from '@debut/community-core';
+import { PluginInterface, ExecutedOrder, DebutCore, Candle, OrderType } from '@debut/types';
 
 export type VirtualTakesOptions = {
     stopLoss: number; // Стоп лосс
@@ -17,7 +17,7 @@ type TakesLookup = Record<string, OrderTakes>;
 
 export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
     const lookup: TakesLookup = {};
-    async function handleTick(debut: Debut, tick: Candle) {
+    async function handleTick(debut: DebutCore, tick: Candle) {
         const price = tick.c;
         // Нет заявки активной - нет мониторинга
         if (!debut.orders.length) {

@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-grid",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "publishConfig": {
         "access": "public"
     },
@@ -18,8 +18,7 @@
     "keywords": [
         "Debut",
         "Plugin",
-        "TakeProfit",
-        "StopLoss"
+        "Grid"
     ],
     "author": "Dmitriy Yurov",
     "license": "Apache-2.0",

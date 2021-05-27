@@ -1,4 +1,5 @@
-import { PluginInterface, utils, Candle, OrderType } from '@debut/community-core';
+import { PluginInterface, Candle, OrderType } from '@debut/types';
+import { file } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 
 export interface IndicatorsData {
@@ -460,7 +461,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 }
             });
 
-            utils.file.saveFile('public/last-test-result.json', createVisualData());
+            file.saveFile('public/last-test-result.json', createVisualData());
             console.log('Report data is ready...');
         },
     };

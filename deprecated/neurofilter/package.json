@@ -1,18 +1,18 @@
 {
-    "name": "@debut/plugin-genetic-shutdown",
-    "version": "1.0.6",
+    "name": "@debut/plugin-neurofilter",
+    "version": "1.0.5",
     "publishConfig": {
         "access": "public"
     },
     "module": "true",
-    "description": "Stop genetic optimization when stats is not fine",
+    "description": "Neuro filter plugin for debute",
     "main": "dist/index.js",
     "scripts": {
         "build": "tsc",
         "prepare": "npm run build"
     },
-    "peerDependencies": {
-        "@debut/plugin-stats": "^1.0.1"
+    "dependencies": {
+        "brain.js": "^2.0.0-beta.2"
     },
     "repository": {
         "type": "git",
@@ -21,7 +21,7 @@
     "keywords": [
         "Debut",
         "Plugin",
-        "Genetic"
+        "Neural Network"
     ],
     "author": "Dmitriy Yurov",
     "license": "Apache-2.0",

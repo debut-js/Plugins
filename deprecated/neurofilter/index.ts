@@ -1,4 +1,5 @@
-import { OrderType, PluginInterface, utils } from '@debut/community-core';
+import { OrderType, PluginInterface } from '@debut/types';
+import { cli } from '@debut/plugin-utils';
 import { NeuroHelper, TrainingData } from './neurohelper';
 
 export interface NeuroFilterPluginArgs {
@@ -20,7 +21,7 @@ export interface NeuroFilterPluginOptions {
 
 export function neuroFilterPlugin(): PluginInterface {
     let neuro: NeuroHelper;
-    const neuroTrain = 'neuroTrain' in utils.cli.getArgs<NeuroFilterPluginArgs>();
+    const neuroTrain = 'neuroTrain' in cli.getArgs<NeuroFilterPluginArgs>();
 
     return {
         name: 'neurofilter',

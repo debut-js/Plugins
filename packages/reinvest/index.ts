@@ -1,4 +1,4 @@
-import { OrderType, PluginInterface } from '@debut/community-core';
+import { OrderType, PluginInterface } from '@debut/types';
 
 export function reinvestPlugin(): PluginInterface {
     return {

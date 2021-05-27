@@ -1,4 +1,5 @@
-import { PluginInterface, ExecutedOrder, utils, OrderType } from '@debut/community-core';
+import { PluginInterface, ExecutedOrder, OrderType } from '@debut/types';
+import { math } from '@debut/plugin-utils';
 
 type Grid = {
     lowLevels: number[];
@@ -124,5 +125,5 @@ function profitMonitor(orders: ExecutedOrder[], price: number) {
 function getProfit(order: ExecutedOrder, price: number) {
     const rev = order.type === OrderType.SELL ? -1 : 1;
 
-    return (utils.math.percentChange(price, order.price) / 100) * rev * order.executedLots;
+    return (math.percentChange(price, order.price) / 100) * rev * order.executedLots;
 }

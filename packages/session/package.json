@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-session",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "publishConfig": {
         "access": "public"
     },
@@ -20,9 +20,7 @@
     },
     "keywords": [
         "Debut",
-        "Plugin",
-        "TakeProfit",
-        "StopLoss"
+        "Plugin"
     ],
     "author": "Dmitriy Yurov",
     "license": "Apache-2.0",

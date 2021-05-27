@@ -1,4 +1,4 @@
-import { PluginInterface } from '@debut/community-core';
+import { PluginInterface } from '@debut/types';
 
 export const enum TimeMode {
     'Summer' = 'Summer',

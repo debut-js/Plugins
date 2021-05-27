@@ -1,4 +1,5 @@
-import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType, utils } from '@debut/community-core';
+import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType } from '@debut/types';
+import { math } from '@debut/plugin-utils';
 
 export interface DynamicTakesPlugin extends PluginInterface {
     name: 'dynamicTakes';
@@ -163,5 +164,5 @@ function profitMonitor(orders: ExecutedOrder[], price: number) {
 function getProfit(order: ExecutedOrder, price: number) {
     const rev = order.type === OrderType.SELL ? -1 : 1;
 
-    return (utils.math.percentChange(price, order.price) / 100) * rev * order.executedLots;
+    return (math.percentChange(price, order.price) / 100) * rev * order.executedLots;
 }

@@ -1,4 +1,4 @@
-import { PluginInterface } from '@debut/community-core';
+import { PluginInterface } from '@debut/types';
 
 export type OrderExpireOptions = {
     orderCandlesLimit: number;

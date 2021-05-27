@@ -1,12 +1,15 @@
 {
     "name": "@debut/plugin-dynamic-takes",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "publishConfig": {
         "access": "public"
     },
     "module": "true",
     "description": "Dynamic takes plugin for Debut",
     "main": "dist/index.js",
+    "peerDependencies": {
+        "@debut/plugin-utils": "^1.0.0"
+    },
     "scripts": {
         "build": "tsc",
         "prepare": "npm run build"

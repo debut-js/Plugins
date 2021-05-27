@@ -1,5 +1,5 @@
 import { NeuralNetwork } from 'brain.js';
-import { utils } from '@debut/community-core';
+import { utils } from '@debut/plugin-utils';
 
 export type TrainingData<T> = { input: T[]; output: [number] | null; id: string };
 

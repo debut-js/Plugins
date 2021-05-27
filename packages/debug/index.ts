@@ -1,4 +1,4 @@
-import { PluginInterface, Candle } from '@debut/community-core';
+import { PluginInterface, Candle } from '@debut/types';
 import { StatsInterface } from '@debut/plugin-stats';
 
 export function debugPlugin(): PluginInterface {

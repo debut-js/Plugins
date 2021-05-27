@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-debug",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "publishConfig": {
         "access": "public"
     },
@@ -21,8 +21,7 @@
     "keywords": [
         "Debut",
         "Plugin",
-        "TakeProfit",
-        "StopLoss"
+        "Debug"
     ],
     "author": "Dmitriy Yurov",
     "license": "Apache-2.0",

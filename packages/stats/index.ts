@@ -1,4 +1,5 @@
-import { PluginInterface, utils, ExecutedOrder, OrderType } from '@debut/community-core';
+import { PluginInterface, ExecutedOrder, OrderType } from '@debut/types';
+import { math } from '@debut/plugin-utils';
 
 export type StatsOptions = {
     amount: number;
@@ -168,7 +169,7 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
             if (isLastOrder && state.profit < 0) {
                 // Инверсия для того чтобы убрать знак минус
                 const currentEquity = this.debut.opts.amount - state.profit;
-                const dd = utils.math.percentChange(currentEquity, this.debut.opts.amount);
+                const dd = math.percentChange(currentEquity, this.debut.opts.amount);
 
                 if (state.absoluteDD < dd) {
                     state.absoluteDD = dd;

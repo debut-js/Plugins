@@ -12,7 +12,8 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/plugin-stats": "^1.0.1"
+        "@debut/plugin-stats": "^1.0.1",
+        "@debut/types": "^1.0.2"
     },
     "repository": {
         "type": "git",

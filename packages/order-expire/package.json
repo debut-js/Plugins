@@ -11,6 +11,9 @@
         "build": "tsc",
         "prepare": "npm run build"
     },
+    "peerDependencies": {
+        "@debut/types": "^1.0.2"
+    },
     "repository": {
         "type": "git",
         "url": "git+ssh://git@github.com/debut/Plugins.git"

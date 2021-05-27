@@ -7,6 +7,9 @@
     "module": "true",
     "description": "Debut stretegies stats",
     "main": "dist/index.js",
+    "peerDependencies": {
+        "@debut/types": "^1.0.2"
+    },
     "scripts": {
         "build": "tsc",
         "prepare": "npm run build"

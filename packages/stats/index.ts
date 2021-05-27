@@ -108,9 +108,9 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
                 // FIXME: Types should be right
                 Object.keys(res).forEach((key) => {
                     // @ts-ignore
-                    if (typeof res[key] === 'number') {
+                    if (key in res && typeof res[key] === 'number') {
                         // @ts-ignore
-                        res[key] = utils.math.toFixed(res[key]);
+                        res[key] = math.toFixed(res[key]);
                     }
                 });
 

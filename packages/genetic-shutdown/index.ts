@@ -84,6 +84,7 @@ export function geneticShutdownPlugin(
                 shutdowned = shutdownFn(report, state);
                 state.candlesCount = 0;
                 state.prevProfit = ((report.profit - state.prevProfit) / state.prevProfit) * 100;
+                state.prevOrders = report.long + report.short;
 
                 if (shutdowned) {
                     this.debut.dispose();
@@ -103,8 +104,6 @@ const defaultShutdownFn = (stats: StatsState, state: ShutdownState) => {
     if (state.prevOrders && totalOrders - state.prevOrders < minOrdersInPeriod) {
         return true;
     }
-
-    state.prevOrders = totalOrders;
 
     return (
         stats.relativeDD > 35 ||

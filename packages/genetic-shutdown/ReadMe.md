@@ -20,11 +20,15 @@ npm install @debut/plugin-genetic-shutdown --save
 
 ## Настройка
 Инициализацию плагина рекомендуется выпонять в Meta файле стратегии, только для окружения `WorkingEnv.genetic`
+Пример реализации в файле `meta.ts`
+
 ```javascript
+// Кастомный метод выключения
+const shutdown = (stats: StatsState, state: ShutdownState) => ...
+
 const meta: DebutMeta = {
     // ...
-
-    async create(transport: BaseTransport, cfg: SpikesGOptions, env: WorkingEnv) {
+    async create(transport: BaseTransport, cfg: MyStrategyOptions, env: WorkingEnv) {
         const bot = new SpikesG(transport, cfg);
 
         // Специфичные плагины окружения
@@ -38,6 +42,7 @@ const meta: DebutMeta = {
 
 
 ## Кастомизация условий отключения
+`ShutdownState` - позволяет получить количество сделок или прибыли на начало периода (или конец предыдущего). А также количество свеч на данный момент в текущем периоде.
 
 ```javascript
 const shutdown = (stats: StatsState, state: ShutdownState) => {
@@ -52,8 +57,6 @@ const shutdown = (stats: StatsState, state: ShutdownState) => {
     if (stats.maxMarginUsage > 10000) {
         return true;
     }
-
-    state.prevOrders = totalOrders;
 
     return stats.relativeDD > 80 || stats.absoluteDD > 30;
 };

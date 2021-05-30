@@ -449,7 +449,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                             yref: `y${schemaIdx + 3}`,
                             x0: startTime,
                             y0: level,
-                            x1: lastTick.time,
+                            x1: formatTime(lastTick.time),
                             y1: level,
                             line: {
                                 color: '#909090',

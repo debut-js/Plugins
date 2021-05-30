@@ -1,5 +1,5 @@
 import { PluginInterface, ExecutedOrder, OrderType } from '@debut/types';
-import { math } from '@debut/plugin-utils';
+import { orders } from '@debut/plugin-utils';
 
 type Grid = {
     lowLevels: number[];
@@ -7,7 +7,7 @@ type Grid = {
 };
 
 export type GridPluginOptions = {
-    distance: number; // дистанция первого уровня или всех, если не включен фибо
+    step: number; // дистанция первого уровня или всех, если не включен фибо
     fibo?: boolean; // фибоначи уровни
     martingale: number; // коэффициент мартингейла от 1-2
     levelsCount: number; // кол-во уровней грида
@@ -35,17 +35,20 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
         async onOpen(order) {
             if (!grid) {
                 grid = createGrid(order, opts);
+                console.log(grid);
             }
         },
 
         async onTick(tick) {
             if (this.debut.orders.length) {
-                const profit = profitMonitor(this.debut.orders, tick.c);
+                const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
                 const percentProfit = (profit / this.debut.opts.amount) * 100;
 
                 if (percentProfit >= opts.takeProfit || percentProfit <= -opts.stopLoss) {
                     grid = null;
+                    console.log(this.debut.currentCandle.time);
                     await this.debut.closeAll();
+                    console.log('takes!!', profit, this.debut.opts.amount, percentProfit);
                     // Вернем лотность наместо
                     this.debut.opts.lotsMultiplier = startMultiplier;
 
@@ -92,7 +95,7 @@ function createGrid(order: ExecutedOrder, options: GridPluginOptions): Grid {
     const lowLevels = [];
     const upLevels = [];
 
-    const step = order.price * (options.distance / 100);
+    const step = order.price * (options.step / 100);
     const fiboSteps: number[] = [step];
 
     for (let i = 1; i <= options.levelsCount; i++) {
@@ -110,20 +113,4 @@ function createGrid(order: ExecutedOrder, options: GridPluginOptions): Grid {
     }
 
     return { lowLevels, upLevels };
-}
-
-function profitMonitor(orders: ExecutedOrder[], price: number) {
-    let totalProfit = 0;
-
-    for (const order of orders) {
-        totalProfit += getProfit(order, price);
-    }
-
-    return totalProfit;
-}
-
-function getProfit(order: ExecutedOrder, price: number) {
-    const rev = order.type === OrderType.SELL ? -1 : 1;
-
-    return (math.percentChange(price, order.price) / 100) * rev * order.executedLots;
 }

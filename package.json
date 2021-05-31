@@ -11,7 +11,7 @@
         "./packages/*"
     ],
     "devDependencies": {
-        "@debut/types": "^1.0.5",
+        "@debut/types": "^1.0.6",
         "@types/node": "^15.6.1",
         "@types/node-telegram-bot-api": "^0.51.1",
         "@types/ws": "^7.4.4",

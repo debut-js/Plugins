@@ -1,5 +1,5 @@
 import { PluginInterface, ExecutedOrder, OrderType } from '@debut/types';
-import { math } from '@debut/plugin-utils';
+import { math, orders } from '@debut/plugin-utils';
 
 export type StatsOptions = {
     amount: number;
@@ -142,12 +142,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
                 this.debut.orders.reduce((sum, order) => sum + order.lots * order.price, 0),
             );
 
-            // Если buy, значит оригинальный ордер был Sell, инвертируем профит
-            const rev = order.type === OrderType.BUY ? -1 : 1;
-            const lots = order.executedLots * order.lotSize;
             // Прибыль минус налог на закрытии
-            const profit =
-                (order.price - order.openPrice!) * lots * rev - order.commission.value - closing.commission.value;
+            const profit = orders.getCurrencyProfit(closing, order.price) - order.commission.value;
             const percentProfit = (profit / this.debut.opts.amount) * 100;
             const isLastOrder = !this.debut.orders.length;
 

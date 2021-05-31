@@ -26,18 +26,18 @@ export function getMinIncrementValue(price: number | string) {
 /**
  * Calculate order profit
  */
-export function getProfit(order: ExecutedOrder, price: number) {
+export function getCurrencyProfit(order: ExecutedOrder, price: number) {
     const rev = order.type === OrderType.SELL ? -1 : 1;
 
-    return (percentChange(price, order.price) / 100) * rev * order.executedLots;
+    return (price - order.price) * order.executedLots * rev - order.commission.value;
 }
 
 /** Calculate batch orders profit */
-export function getBatchProfit(orders: ExecutedOrder[], price: number) {
+export function getCurrencyBatchProfit(orders: ExecutedOrder[], price: number) {
     let totalProfit = 0;
 
     for (const order of orders) {
-        totalProfit += getProfit(order, price);
+        totalProfit += getCurrencyProfit(order, price);
     }
 
     return totalProfit;

@@ -46,9 +46,7 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
 
                 if (percentProfit >= opts.takeProfit || percentProfit <= -opts.stopLoss) {
                     grid = null;
-                    console.log(this.debut.currentCandle.time);
                     await this.debut.closeAll();
-                    console.log('takes!!', profit, this.debut.opts.amount, percentProfit);
                     // Вернем лотность наместо
                     this.debut.opts.lotsMultiplier = startMultiplier;
 

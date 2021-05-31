@@ -1,5 +1,5 @@
 import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType } from '@debut/types';
-import { math } from '@debut/plugin-utils';
+import { orders } from '@debut/plugin-utils';
 
 export interface DynamicTakesPlugin extends PluginInterface {
     name: 'dynamicTakes';
@@ -41,7 +41,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         }
 
         if (trackZeroClose) {
-            const profit = profitMonitor(this.debut.orders, tick.c);
+            const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
 
             if (profit >= 0) {
                 await this.debut.closeAll();
@@ -166,20 +166,4 @@ function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup)
         takes.stopPrice += delta;
         takes.price = price;
     }
-}
-
-function profitMonitor(orders: ExecutedOrder[], price: number) {
-    let totalProfit = 0;
-
-    for (const order of orders) {
-        totalProfit += getProfit(order, price);
-    }
-
-    return totalProfit;
-}
-
-function getProfit(order: ExecutedOrder, price: number) {
-    const rev = order.type === OrderType.SELL ? -1 : 1;
-
-    return (math.percentChange(price, order.price) / 100) * rev * order.executedLots;
 }

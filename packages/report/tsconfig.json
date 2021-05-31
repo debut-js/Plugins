@@ -3,7 +3,7 @@
     "compilerOptions": {
         "outDir": "dist"
     },
-    "include": ["./index.ts"],
+    "include": ["./*.ts"],
     "exclude": ["./dist", "./node_modules"],
     "paths": {
         "debut/*": ["../../node_modules/debut/"]

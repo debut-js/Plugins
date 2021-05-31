@@ -1,6 +1,7 @@
 import { PluginInterface, Candle, OrderType } from '@debut/types';
 import { file } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
+import path from 'path';
 
 export interface IndicatorsData {
     line: {
@@ -461,7 +462,10 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 }
             });
 
-            file.saveFile('public/last-test-result.json', createVisualData());
+            const savePath = path.join(__dirname + '/../static/data.json');
+
+            file.ensureFile(savePath);
+            file.saveFile(savePath, createVisualData());
             console.log('Report data is ready...');
         },
     };

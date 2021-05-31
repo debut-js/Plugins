@@ -1,12 +1,15 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "publishConfig": {
         "access": "public"
     },
     "module": "true",
     "description": "Report generation for strategy backtesting in debut",
     "main": "dist/index.js",
+    "bin": {
+        "report-serve": "dist/serve.js"
+    },
     "scripts": {
         "build": "tsc",
         "prepare": "npm run build"
@@ -15,7 +18,12 @@
         "@debut/plugin-stats": "^1.0.0"
     },
     "peerDependencies": {
+        "@debut/plugin-utils": "^1.0.5",
         "@debut/types": "^1.0.5"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.12",
+        "express": "^4.17.1"
     },
     "repository": {
         "type": "git",

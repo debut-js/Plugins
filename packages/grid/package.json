@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-grid",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "publishConfig": {
         "access": "public"
     },
@@ -12,7 +12,8 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^1.0.5"
+        "@debut/types": "^1.0.5",
+        "@debut/plugin-utils": "^1.0.5"
     },
     "repository": {
         "type": "git",

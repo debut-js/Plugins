@@ -3,8 +3,7 @@
     "private": true,
     "description": "Official Debut plugins store",
     "scripts": {
-        "build": "npm run build --workspaces",
-        "install": "npm i --workspaces"
+        "build": "npm run build --workspaces"
     },
     "author": "Dmitry Yurov",
     "license": "Apache-2.0",

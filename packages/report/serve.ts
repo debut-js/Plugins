@@ -20,6 +20,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname + '/../static/index.html'));
-});
+const staticPath = path.resolve(path.join(__dirname + '/../static/'));
+
+app.use('/', express.static(staticPath));
+app.listen(5000, () => console.log('Report is here http://localhost:5000'));

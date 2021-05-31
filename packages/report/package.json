@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.0.10",
+    "version": "1.0.15",
     "publishConfig": {
         "access": "public"
     },
@@ -39,7 +39,9 @@
         "url": "https://github.com/debut/Plugins/issues"
     },
     "files": [
-        "dist"
+        "dist",
+        "static/index.html",
+        "static/plotly.js"
     ],
     "homepage": "https://github.com/debut/Plugins#readme"
 }

@@ -33,43 +33,33 @@ type TakesLookup = Record<string, OrderTakes>;
 export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInterface {
     const lookup: TakesLookup = {};
     let trackZeroClose = false;
+    let ctx: PluginCtx;
 
-    async function handleTick(this: PluginCtx, tick: Candle) {
+    async function handleTick(tick: Candle) {
         const price = tick.c;
         // No orders => no tracking
-        if (!this.debut.orders.length) {
+        if (!ctx.debut.orders.length) {
             return;
         }
 
         if (trackZeroClose) {
-            const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
+            const profit = orders.getCurrencyBatchProfit(ctx.debut.orders, tick.c);
 
             if (profit >= 0) {
-                await this.debut.closeAll();
+                await ctx.debut.closeAll(true);
                 trackZeroClose = false;
             }
 
             return;
         }
 
-        for (const order of this.debut.orders) {
+        for (const order of ctx.debut.orders) {
             if (opts.trailing) {
                 trailingTakes(order, price, lookup);
             }
 
-            // const debug = new Date(tick.time).toISOString().startsWith('2021-05-21');
-
-            // if (debug) {
-            //     console.log(trackZeroClose);
-            // }
-
-
-            if (!order.processing && checkClose.call(this, order, price, lookup) && !trackZeroClose) {
-                // if (debug) {
-                //     console.log(this.debut.orders.length, profit)
-                // }
-
-                await this.debut.closeOrder(order);
+            if (!order.processing && checkClose(order, price, lookup) && !trackZeroClose) {
+                await ctx.debut.closeOrder(order);
             }
         }
     }
@@ -87,36 +77,45 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
             },
         },
 
+        onInit() {
+            ctx = this;
+        },
+
         async onBeforeClose(order, closing) {
             if (opts.maxRetryOrders && !order.force) {
-                let { stopPrice, takePrice, tryLeft } = lookup[closing.orderId] || {};
+                const closingTakes = lookup[closing.orderId];
 
                 // Skip orders closed above stop price, its take
-                if (order.price >= stopPrice) {
+                if (order.price >= closingTakes.stopPrice) {
                     return;
                 }
 
-                if (tryLeft) {
-                    tryLeft--;
+                if (closingTakes.tryLeft) {
+                    closingTakes.tryLeft--;
                     // Create same type as origin order
-                    await this.debut.createOrder(closing.type);
-                    const price = this.debut.currentCandle.c;
+                    await ctx.debut.createOrder(closing.type);
+                    const price = ctx.debut.currentCandle.c;
 
-
-                    takePrice = takePrice;
-                    stopPrice = price + stopPrice - order.price;
+                    closingTakes.stopPrice = price + closingTakes.stopPrice - order.price;
 
                     // Update takes and stops for all
-                    for (const activeOrder of this.debut.orders) {
+                    for (const activeOrder of ctx.debut.orders) {
                         if (activeOrder.type === closing.type) {
-                            lookup[activeOrder.orderId] = { takePrice, stopPrice };
+                            const takes = lookup[activeOrder.orderId];
+
+                            if (takes) {
+                                takes.takePrice = closingTakes.takePrice;
+                                takes.stopPrice = closingTakes.stopPrice;
+                            } else {
+                                lookup[activeOrder.orderId] = {
+                                    takePrice: closingTakes.takePrice,
+                                    stopPrice: closingTakes.stopPrice
+                                };
+                            }
                         }
                     }
 
-                    // Rewrite tries left to closing order
-                    lookup[closing.orderId].tryLeft = tryLeft;
-
-                    trackZeroClose = tryLeft === 0;
+                    trackZeroClose = closingTakes.tryLeft === 0;
 
                     return true;
                 }
@@ -131,13 +130,13 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
         async onCandle(candle) {
             if (opts.ignoreTicks) {
-                await handleTick.call(this, candle);
+                await handleTick(candle);
             }
         },
 
         async onTick(tick) {
             if (!opts.ignoreTicks) {
-                await handleTick.call(this, tick);
+                await handleTick(tick);
             }
         },
     };
@@ -146,7 +145,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 /**
  * Проверяем достижение тейка на оснвании текущей цены
  */
-function checkClose(this: PluginCtx, order: ExecutedOrder, price: number, lookup: TakesLookup) {
+function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     const { type, orderId } = order;
     const { takePrice, stopPrice } = lookup[orderId] || {};
 

@@ -21,6 +21,7 @@ type OrderTakes = {
     takePrice: number;
     stopPrice: number;
     price?: number;
+    tryLeft?: number;
 };
 
 export interface DynamicTakesPluginAPI {
@@ -35,7 +36,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
     async function handleTick(this: PluginCtx, tick: Candle) {
         const price = tick.c;
-        // Нет заявки активной - нет мониторинга
+        // No orders => no tracking
         if (!this.debut.orders.length) {
             return;
         }
@@ -63,7 +64,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
             // }
 
 
-            if (!order.processing && checkClose(order, price, lookup) && !trackZeroClose) {
+            if (!order.processing && checkClose.call(this, order, price, lookup) && !trackZeroClose) {
                 // if (debug) {
                 //     console.log(this.debut.orders.length, profit)
                 // }
@@ -78,7 +79,8 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
         api: {
             setForOrder(orderId: string, takePrice: number, stopPrice: number) {
-                lookup[orderId] = { takePrice, stopPrice };
+                // Only for orders seted up using API
+                lookup[orderId] = { takePrice, stopPrice, tryLeft: opts.maxRetryOrders };
             },
             getTakes(orderId: string) {
                 return lookup[orderId];
@@ -87,24 +89,36 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
         async onBeforeClose(order, closing) {
             if (opts.maxRetryOrders) {
-                // +1 Because start order should not counted
-                if (opts.maxRetryOrders + 1 < this.debut.orders.length) {
-                    await this.debut.createOrder(order.type);
+                let { stopPrice, takePrice, tryLeft } = lookup[closing.orderId] || {};
+
+                // Skip orders closed above stop price, its take
+                if (order.price >= stopPrice) {
+                    return;
+                }
+
+                if (tryLeft) {
+                    tryLeft--;
+                    // Create same type as origin order
+                    await this.debut.createOrder(closing.type);
                     const price = this.debut.currentCandle.c;
 
-                    let { stopPrice, takePrice } = lookup[closing.orderId];
 
-                    stopPrice = price + stopPrice - order.price;
                     takePrice = takePrice;
+                    stopPrice = price + stopPrice - order.price;
 
                     // Update takes and stops for all
-                    for (const order of this.debut.orders) {
-                        lookup[order.orderId] = { takePrice, stopPrice };
+                    for (const activeOrder of this.debut.orders) {
+                        if (activeOrder.type === closing.type) {
+                            lookup[activeOrder.orderId] = { takePrice, stopPrice };
+                        }
                     }
 
+                    // Rewrite tries left to closing order
+                    lookup[closing.orderId].tryLeft = tryLeft;
+
+                    trackZeroClose = tryLeft === 0;
+
                     return true;
-                } else {
-                    trackZeroClose = true;
                 }
             }
         },
@@ -132,9 +146,9 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 /**
  * Проверяем достижение тейка на оснвании текущей цены
  */
-function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
+function checkClose(this: PluginCtx, order: ExecutedOrder, price: number, lookup: TakesLookup) {
     const { type, orderId } = order;
-    const { takePrice, stopPrice } = lookup[orderId];
+    const { takePrice, stopPrice } = lookup[orderId] || {};
 
     if (!takePrice || !stopPrice) {
         throw 'Unknown take data';

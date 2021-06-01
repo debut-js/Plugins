@@ -1,4 +1,5 @@
-import { OrderType, PluginInterface } from '@debut/types';
+import { PluginInterface } from '@debut/types';
+import { orders } from '@debut/plugin-utils';
 
 export function reinvestPlugin(): PluginInterface {
     return {
@@ -8,9 +9,9 @@ export function reinvestPlugin(): PluginInterface {
                 return;
             }
 
-            const rev = order.type === OrderType.SELL ? -1 : 1;
-            this.debut.opts.amount +=
-                (order.openPrice - order.price) * order.lots * rev - order.commission.value - closing.commission.value;
+            const profit = orders.getCurrencyProfit(closing, order.price) - order.commission.value;
+
+            this.debut.opts.amount += profit;
         },
     };
 }

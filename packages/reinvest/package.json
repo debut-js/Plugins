@@ -12,7 +12,7 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^1.0.6"
+        "@debut/types": "^1.0.7"
     },
     "repository": {
         "type": "git",

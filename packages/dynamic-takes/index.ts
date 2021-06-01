@@ -88,7 +88,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         },
 
         async onBeforeClose(order, closing) {
-            if (opts.maxRetryOrders) {
+            if (opts.maxRetryOrders && !order.force) {
                 let { stopPrice, takePrice, tryLeft } = lookup[closing.orderId] || {};
 
                 // Skip orders closed above stop price, its take

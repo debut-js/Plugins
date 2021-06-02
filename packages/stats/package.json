@@ -8,7 +8,7 @@
     "description": "Debut stretegies stats",
     "main": "dist/index.js",
     "peerDependencies": {
-        "@debut/types": "^1.0.7"
+        "@debut/types": "^1.0.8"
     },
     "scripts": {
         "build": "tsc",

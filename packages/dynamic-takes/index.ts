@@ -59,7 +59,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
         let newOrder: ExecutedOrder | null = null;
 
-        for (const order of ctx.debut.orders) {
+        for (const order of [...ctx.debut.orders]) {
             if (opts.trailing) {
                 trailingTakes(order, price, lookup);
             }

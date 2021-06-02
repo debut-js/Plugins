@@ -12,10 +12,10 @@
         "prepare": "npm run build"
     },
     "dependencies": {
-        "@debut/plugin-stats": "^1.0.0"
+        "@debut/plugin-stats": "^1.0.8"
     },
     "peerDependencies": {
-        "@debut/types": "^1.0.7"
+        "@debut/types": "^1.0.8"
     },
     "repository": {
         "type": "git",

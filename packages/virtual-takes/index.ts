@@ -24,7 +24,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
             return;
         }
 
-        for (const order of debut.orders) {
+        for (const order of [...debut.orders]) {
             if (opts.trailing) {
                 trailingTakes(order, price, lookup);
             }

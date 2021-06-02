@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-dynamic-takes",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "publishConfig": {
         "access": "public"
     },
@@ -8,8 +8,8 @@
     "description": "Dynamic takes plugin for Debut",
     "main": "dist/index.js",
     "peerDependencies": {
-        "@debut/plugin-utils": "^1.0.5",
-        "@debut/types": "^1.0.7"
+        "@debut/plugin-utils": "^1.0.8",
+        "@debut/types": "^1.0.8"
     },
     "scripts": {
         "build": "tsc",

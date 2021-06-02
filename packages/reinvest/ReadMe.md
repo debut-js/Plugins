@@ -9,15 +9,18 @@ npm install @debut/plugin-reinvest --save
 
 ## Инициализация плагина
 ```javascript
-    // Конструктор стратегии в контексте Debut...
-    constructor(transport: BaseTransport, opts: CCIDynamicBotOptions) {
-        super(transport, opts);
+import { reinvestPlugin } from '@debut/plugin-reinvest';
 
-        this.registerPlugins([
-            // ...
-            // Можно задать опциональное включение кастомной настройкой, либо включать всегда
-            this.opts.reinvest ? reinvestPlugin() : null,
-            // ...
-        ]);
-    }
+// ...
+// Конструктор стратегии в контексте Debut...
+constructor(transport: BaseTransport, opts: MyStrategyOpts) {
+    super(transport, opts);
+
+    this.registerPlugins([
+        // ...
+        // Можно задать опциональное включение кастомной настройкой, либо включать всегда
+        this.opts.reinvest ? reinvestPlugin() : null,
+        // ...
+    ]);
+}
 ```

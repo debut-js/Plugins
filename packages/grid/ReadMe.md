@@ -23,6 +23,9 @@ npm install @debut/plugin-grid --save
 
 ## Инициализация плагина
 ```javascript
+import { gridPlugin, GridPluginOptions } from '@debut/plugin-grid';
+
+// ...
 export interface MyStrategyOptinos extends DebutOptions, GridPluginOptions;
 
 export class MyStrategy extends Debut {

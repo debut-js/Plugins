@@ -23,6 +23,8 @@ npm install @debut/plugin-genetic-shutdown --save
 Пример реализации в файле `meta.ts`
 
 ```javascript
+import { geneticShutdownPlugin } from '@debut/plugin-genetic-shutdown';
+// ...
 // Кастомный метод выключения
 const shutdown = (stats: StatsState, state: ShutdownState) => ...
 

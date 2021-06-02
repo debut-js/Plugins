@@ -12,7 +12,7 @@ export function inverseType(type: OrderType) {
  * Generate synthetic order id from order
  */
 export function syntheticOrderId(order: ExecutedOrder | OrderOptions) {
-    return `${order.time}-${order.type}-${order.price}`;
+    return `${Math.floor(Math.random() * 100000)}-${order.type}-${order.price}`;
 }
 
 /**

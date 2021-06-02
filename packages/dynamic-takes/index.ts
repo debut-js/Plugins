@@ -105,10 +105,8 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
             ctx = this;
         },
 
-        async onClose(order) {
-            if (order.openId) {
-                delete lookup[order.openId];
-            }
+        async onClose(order, closing) {
+            delete lookup[closing.orderId];
         },
 
         async onCandle(candle) {

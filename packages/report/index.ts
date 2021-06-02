@@ -39,9 +39,8 @@ export interface Indicator {
         name: string;
         getValue: () => number;
     }>;
-    color: string;
-    levels: number[];
-    inChart: boolean;
+    levels?: number[];
+    inChart?: boolean;
 }
 
 type Deal = {

@@ -16,7 +16,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+ssh://git@github.com/debut/Plugins.git"
+        "url": "git+ssh://git@github.com/debut-js/Plugins.git"
     },
     "keywords": [
         "Debut",
@@ -25,10 +25,10 @@
     "author": "Dmitriy Yurov",
     "license": "Apache-2.0",
     "bugs": {
-        "url": "https://github.com/debut/Plugins/issues"
+        "url": "https://github.com/debut-js/Plugins/issues"
     },
     "files": [
         "dist"
     ],
-    "homepage": "https://github.com/debut/Plugins#readme"
+    "homepage": "https://github.com/debut-js/Plugins#readme"
 }

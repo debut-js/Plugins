@@ -35,7 +35,6 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
         async onOpen(order) {
             if (!grid) {
                 grid = createGrid(order, opts);
-                console.log(grid);
             }
         },
 

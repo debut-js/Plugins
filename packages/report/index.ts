@@ -22,13 +22,13 @@ export interface ReportPluginAPI {
         setXRange: (from: number, to: number) => void;
         disableOrdersDisplay: () => void;
         setManualOrder: (
-            operation: 'Buy' | 'Sell',
+            operation: OrderType,
             openTime: string,
             closeTime: string,
             openPrice: number,
             closePrice: number,
         ) => void;
-        addOpenTarget: (time: string, price: number, operation: 'Buy' | 'Sell') => void;
+        addOpenTarget: (time: string, price: number, operation: OrderType) => void;
     };
 }
 
@@ -307,9 +307,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 visLayout.xaxis.autorange = false;
                 visLayout.xaxis.range = [from, to];
             },
-            addOpenTarget(time: string, price: number, operation: 'Buy' | 'Sell') {
+            addOpenTarget(time: string, price: number, operation: OrderType) {
                 deals.push({
-                    type: operation === 'Buy' ? 'Long' : 'Short',
+                    type: operation === OrderType.BUY ? 'Long' : 'Short',
                     openTime: time,
                     openPrice: price,
                     closeTime: time,
@@ -320,7 +320,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 isManualOrder = true;
             },
             setManualOrder(
-                operation: 'Buy' | 'Sell',
+                operation: OrderType,
                 openTime: string,
                 closeTime: string,
                 openPrice: number,
@@ -328,7 +328,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
             ) {
                 // Plotly visualization.
                 const deal = {
-                    type: operation === 'Buy' ? 'Long' : 'Short',
+                    type: operation === OrderType.BUY ? 'Long' : 'Short',
                     openTime,
                     openPrice,
                     closeTime,
@@ -419,12 +419,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 sandbox: order.sandbox,
             };
 
-            // if (
-            //     (order.operation === 'Buy' && closing.price < order.price) ||
-            //     (order.operation === 'Sell' && closing.price > order.price)
-            // ) {
             deals.push(deal);
-            // }
 
             if (!this.debut.orders.length) {
                 profit.push({ profit: stats.api.getState().profit, time: formatTime(order.time) });

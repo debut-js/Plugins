@@ -20,9 +20,13 @@ export function saveFile(path: string, data: any) {
  */
 export function ensureFile(path: string) {
     try {
-        if (!fs.existsSync(path)) {
-            const folderPath = path.substring(0, path.lastIndexOf('/'));
+        const folderPath = path.substring(0, path.lastIndexOf('/'));
+
+        if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
+        }
+
+        if (!fs.existsSync(path)) {
             fs.writeFileSync(path, '', { flag: 'wx' });
         }
     } catch (e) {

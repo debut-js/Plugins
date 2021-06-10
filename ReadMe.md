@@ -1,40 +1,40 @@
-# Офицальный каталог плагинов Debut
+# Official Debut plugin directory
+## Switch to [Russian 🇷🇺](ReadMe_ru.md)
 
-📦 Один универмаг для всех плагинов.
+📦 One department store for all plugins.
 
-Здесь собраны официальные плагины к [Debut](https://github.com/debut-js/Debut). Это монорепозиторий - дом для проверенных и качественных расширений разрабатываемых комьюнити.
-Не забывайте, что многие не официальные плагины могут негативно влиять на производительность.
+The official plugins for [Debut] (https://github.com/debut-js/Debut) are collected here. This is a mono-repository - home to proven and quality extensions developed by the community.
+Keep in mind that many unofficial plugins can negatively impact performance.
 
-## Список плагинов:
+## List of plugins:
 
-|         Название                            |      Описание                                                       |
-| ----------------------------------- | ---------------------------------------------------------- |
-| [dynamic-takes](packages/dynamic-takes) | Задание виртуальных stop/take для сделок, страховочные сделки, трейлинг |
-| [virtual-takes](packages/virtual-takes) | Упрощенная система виртуальных stop/take в виде постоянных процентов, трейлинг  |
-| [genetic-shutdown](packages/genetic-shutdown) | Ранний "выключатель" стратегий для генетика. Позволяет сильно экономить ресурсы |
-| [grid](packages/grid) | Для создания стратегий на основе сеток и мартингейла |
-| [neurofilter](packages/neurofilter) | Использует нейросеть для подтверждения и оценки входов в сделку |
-| [order-expire](packages/order-expire) | Ограничивает максимальную длительность сделки по кол-ву свечей |
-| [reinvest](packages/reinvest) | Реивестирует прибыль и пускает ее в оборот при следующих сделках |
-| [report](packages/report) | Создание отчетов тестирования стратегий, графика на основе [Plotly](https://plotly.com/javascript/), позволяет визуализировать также индикаторы|
-| [session](packages/session) | Задает время работы стратегии с точностью до минуты. Можно указать время начала и время конца работы |
-| [stats](packages/reinvest) | Плагин для сбора различной статистики по рабое стратегии. Показывает просадку, мат. ожидание и прочее |
-|
+| Name | Description |
+| ----------------------------------- | -------------------------------------------------- -------- |
+| [dynamic-takes] (packages / dynamic-takes) | Setting virtual stop / take for deals, insurance deals, trailing |
+| [virtual-takes] (packages / virtual-takes) | Simplified system of virtual stop / take in the form of constant interest, trailing |
+| [genetic-shutdown] (packages / genetic-shutdown) | An early "switch" of strategies for the geneticist. Allows you to greatly save resources |
+| [grid] (packages / grid) | To create strategies based on grids and martingale |
+| [neurofilter] (packages / neurofilter) | Uses a neural network to confirm and evaluate trade entries |
+| [order-expire] (packages / order-expire) | Limits the maximum duration of a trade by the number of candles |
+| [reinvest] (packages / reinvest) | Reveals profit and puts it into circulation on the following transactions |
+| [report] (packages / report) | Creation of strategy testing reports, charts based on [Plotly] (https://plotly.com/javascript/), also allows you to visualize indicators |
+| [session] (packages / session) | Sets the running time of the strategy to the nearest minute. Start time and end time can be specified |
+| [stats] (packages / reinvest) | Plugin for collecting various statistics on the slave strategy. Shows drawdown, checkmate. waiting and stuff |
 
 ## Contributing
-Для работы требуется npm v7.x.x
+Requires npm v7.x.x to work
 
-В root директории выполнить:
+In the root directory, execute:
 
-```bash
+bash
 npm i --workspaces
 npm run build --workspaces
-```
+``,
 
-для линковки на локальные пакеты использовать
-```bash
+to link to local packages use
+bash
 npm run link --workspaces
-```
+``,
 
-### Лицензия
-Лицензия Apache-2.0 запрещает коммерческое использование кодовой базы в составе текущего репозитория
+### License
+Apache-2.0 license prohibits commercial use of the codebase as part of the current repository

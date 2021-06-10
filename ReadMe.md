@@ -26,15 +26,15 @@ Requires npm v7.x.x to work
 
 In the root directory, execute:
 
-bash
+```bash
 npm i --workspaces
 npm run build --workspaces
-``,
+```
 
 to link to local packages use
-bash
+```bash
 npm run link --workspaces
-``,
+```
 
 ### License
 Apache-2.0 license prohibits commercial use of the codebase as part of the current repository

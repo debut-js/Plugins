@@ -19,7 +19,7 @@ Keep in mind that many unofficial plugins can negatively impact performance.
 | [reinvest](packages/reinvest) | Reveals profit and puts it into circulation on the following transactions |
 | [report](packages/report) | Creation of strategy testing reports, charts based on [Plotly](https://plotly.com/javascript/), also allows you to visualize indicators |
 | [session](packages/session) | Sets the running time of the strategy to the nearest minute. Start time and end time can be specified |
-| [stats](packages/reinvest) | Plugin for collecting various statistics on the slave strategy. Shows drawdown, checkmate. waiting and stuff |
+| [stats](packages/stats) | Plugin for collecting various statistics on the slave strategy. Shows drawdown, checkmate. waiting and stuff |
 
 ## Contributing
 Requires npm v7.x.x to work

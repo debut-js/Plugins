@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { logDebug } from './debug';
+import { dirname } from 'path';
 
 /**
  * Save file by path with any data
@@ -20,7 +21,7 @@ export function saveFile(path: string, data: any) {
  */
 export function ensureFile(path: string) {
     try {
-        const folderPath = path.substring(0, path.lastIndexOf('/'));
+        const folderPath = dirname(path);
 
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });

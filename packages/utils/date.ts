@@ -1,4 +1,4 @@
-import { TimeFrame } from "@debut/types";
+import { TimeFrame } from '@debut/types';
 
 /**
  * Compare two dates and check if they are have same day of month.

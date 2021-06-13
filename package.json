@@ -4,7 +4,8 @@
     "description": "Official Debut plugins store",
     "scripts": {
         "build": "npm run build --workspaces",
-        "upgrade:all": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --upgrade \\;"
+        "upgrade:all": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --upgrade \\;",
+        "prettier": "prettier --config .prettierrc --write packages/**/*.ts"
     },
     "author": "Dmitry Yurov",
     "license": "Apache-2.0",

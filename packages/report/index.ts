@@ -319,6 +319,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
             disableOrdersDisplay() {
                 isManualOrder = true;
             },
+            resetOrders() {
+                deals.length = 0;
+            },
             setManualOrder(
                 operation: OrderType,
                 openTime: string,
@@ -335,7 +338,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     closePrice,
                 };
 
-                deals.length = 0;
                 deals.push(deal);
             },
         },

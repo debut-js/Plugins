@@ -177,7 +177,7 @@
                         };
 
                         if (open) {
-                            result.text = type === 'Long' ? 'Лонг' : 'Шорт';
+                            result.text = type;
                             result.y = result.ay + (type === 'Long' ? 1 : -1) * result.ay * 0.025;
                         }
 

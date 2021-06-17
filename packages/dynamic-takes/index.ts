@@ -76,10 +76,10 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
                 // Create same type as origin order
                 if (!newOrder) {
-                    newOrder =  await ctx.debut.createOrder(order.type);
+                    newOrder = await ctx.debut.createOrder(order.type);
                     lookup[newOrder.orderId] = {
                         takePrice: takes.takePrice,
-                        stopPrice: takes.stopPrice
+                        stopPrice: takes.stopPrice,
                     };
                 }
             } else if (closeReason === CloseType.STOP || closeReason === CloseType.TAKE) {

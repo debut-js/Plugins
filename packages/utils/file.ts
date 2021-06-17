@@ -41,7 +41,7 @@ export function ensureFile(path: string) {
  */
 export function readFile(path: string) {
     try {
-        // Если файла еще нет ничего не делаем
+        // Nothing to do if ile not exists
         if (!fs.existsSync(path)) {
             return null;
         }

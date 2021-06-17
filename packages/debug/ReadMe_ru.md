@@ -1,23 +1,21 @@
 # @debut/plugin-debug
-## Switch to [Russian 🇷🇺](ReadMe_ru.md)
+Плагин Debut, для вывода дебаг информации во время работы процесса node (когда приложение на основе Debut запущено).
+## Установка
 
-Debut plugin, for displaying debug information while the node process is running (when the Debut-based application is running).
-## Installation
-
-```bash
+```
 npm install @debut/plugin-debug --save
 ```
 
-## Usage
+## Использование
 
-Use your process manager to send the [SIGUSR1](https://ru.wikipedia.org/wiki/SIGUSR1_%D0%B8_SIGUSR2) command to the application process.
+Используейте ваш менеджер процессов для отправки команды [SIGUSR1](https://ru.wikipedia.org/wiki/SIGUSR1_%D0%B8_SIGUSR2) процессу приложения.
 
-Or linux command:
+Или команду linux:
 ```bash
-kill -USR1 $ pid
+kill -USR1 $pid
 ```
-## Example of console output
 
+## Пример вывода в консоль
 ```bash
 ------ DEBUG MYSTRATEGY - NEARUSDT -------
 

@@ -75,7 +75,7 @@ async create(transport: BaseTransport, cfg: MyStrategyNameOptions, env: WorkingE
 | Название  | Тип        | Описание   |
 |-----------|------------|------------|
 name | string | Имя группы кривых, не отображается на графике, служит для создания и хранения служебной информации о индикаторе.
-lines | Array<{ name: string; getValue: () => number; }> | Массив линий, поле `name` - описывает название линии на графике, метод `getValue` - возвращает актуальное значение индикатора на данный момент времени
+figures | Array<{ name: string; getValue: () => number; fill: boolean; type: FigureType; }> | Массив линий, поле `name` - описывает название линии на графике, метод `getValue` - возвращает актуальное значение индикатора на данный момент времени, `fill` - позволяет выполнить заливку зоны линии к оси Y, `FigureType` поддерживает типы линия и bar.
 levels | number[] | Массив чисел, для отрисовки постоянных линий уровней на графике
 inChart | boolean | Способ размещения индикатора. Если `true` индикатор будет рисоваться на свечном графике, поверх свеч. Если `false`, то индикатор рисуется отдельно от графика цен. Например индикаторы _SMA_ или _Bollinger Bands_ - разумно рисовать в режиме `inChart: true`
 
@@ -91,3 +91,38 @@ disableOrdersDisplay | При вызове отключает визуализа
 setManualOrder | Позволяет отрисовать на графике любую сделку в ручном режиме, с помощью переданных параметров цен и времени.
 addOpenTarget | Позволяет создать на графике только точку открытия сделки в ручном режиме
 resetOrders | Очистить сделки на графике
+
+### Пример MACD индикатор
+
+```javascript
+public getIndicators = (): IndicatorsSchema => {
+    return [
+        {
+            name: 'MACD Indicator',
+            figures: [
+                {
+                    name: 'signal',
+                    fill: FillType.tozeroy,
+                    getValue: () => {
+                        return this.macdValue.signal;
+                    },
+                },
+                {
+                    name: 'macd',
+                    fill: FillType.tozeroy,
+                    getValue: () => {
+                        return this.macdValue.macd;
+                    },
+                },
+                {
+                    name: 'histogram',
+                    type: FigureType.bar,
+                    getValue: () => {
+                        return this.macdValue.histogram;
+                    },
+                },
+            ],
+        },
+    ];
+};
+```

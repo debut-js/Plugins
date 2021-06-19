@@ -20,7 +20,7 @@
     },
     "peerDependencies": {
         "@debut/plugin-utils": "^1.0.12",
-        "@debut/types": "^1.0.8"
+        "@debut/types": "^1.0.13"
     },
     "devDependencies": {
         "@types/express": "^4.17.12"

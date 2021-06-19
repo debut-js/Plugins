@@ -3,6 +3,15 @@ import { file } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
 
+export const enum FigureType {
+    'bar' = 'bar',
+    'line' = 'scatter',
+}
+
+export const enum FillType {
+    'tozeroy' = 'tozeroy',
+    'tonexty' = 'tonexty'
+}
 export interface IndicatorsData {
     line: {
         width: number;
@@ -10,6 +19,7 @@ export interface IndicatorsData {
     mode: string;
     name: string;
     type: string;
+    fill?: 'tozeroy' | 'tonexty';
     x: string[];
     y: number[];
     yaxis: string;
@@ -35,8 +45,10 @@ export interface ReportPluginAPI {
 export type IndicatorsSchema = Array<Indicator>;
 export interface Indicator {
     name: string;
-    lines: Array<{
+    figures: Array<{
         name: string;
+        type?: FigureType;
+        fill?: FillType;
         getValue: () => number;
     }>;
     levels?: number[];
@@ -269,14 +281,15 @@ export function reportPlugin(showMargin = true): PluginInterface {
                             ...inChart,
                         };
 
-                        schema.lines.forEach((line) => {
+                        schema.figures.forEach((figure, idx) => {
                             data.push({
                                 line: {
                                     width: 1,
                                 },
                                 mode: 'lines',
-                                name: line.name,
-                                type: 'scatter',
+                                name: figure.name,
+                                type: figure.type || 'scatter',
+                                fill: figure.fill,
                                 x: [],
                                 y: [],
                                 yaxis: schema.inChart ? inChartAxisName : axisShortName, // y1 y2 заняты
@@ -387,10 +400,10 @@ export function reportPlugin(showMargin = true): PluginInterface {
             indicatorsSchema.forEach((schema) => {
                 const data = indicatorsData[schema.name];
 
-                schema.lines.forEach((line, idx) => {
+                schema.figures.forEach((figure, idx) => {
                     const lineData = data[idx];
 
-                    lineData.y.push(line.getValue());
+                    lineData.y.push(figure.getValue());
                     lineData.x.push(formatTime(candle.time));
                 });
             });

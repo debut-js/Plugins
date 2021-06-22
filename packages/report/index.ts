@@ -130,7 +130,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
     }
 
     function formatTime(stamp: number) {
-        return new Date(stamp).toISOString();
+        return new Date(stamp).toLocaleString();
     }
 
     function createCandlesAndDealsVisData() {

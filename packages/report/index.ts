@@ -362,9 +362,11 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 throw 'Genetic Shutdown: stats plugin is required!';
             }
 
+            visLayout.title = this.debut.opts.ticker;
+
             // Replace for binance BTCUSDT, removes USDT
             if (this.debut.opts.ticker.endsWith(this.debut.opts.currency)) {
-                visLayout.title = this.debut.opts.ticker.replace(this.debut.opts.currency, '');
+                visLayout.title = visLayout.title.replace(this.debut.opts.currency, '');
             }
 
             visLayout.title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`

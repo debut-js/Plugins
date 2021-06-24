@@ -65,42 +65,13 @@ export function createSessionValidator(start: string, end: string, noDST?: boole
     let dailyToStamp: number;
     let currentDayMarker = 0;
     let timeMode: TimeMode;
+    const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
 
     if (noDST) {
         timeMode = TimeMode.Summer;
     }
 
     return (stamp: number): SessionValidatorResult => {
-        // !NB: TODO Сделать колбеки для часовых изменений и для дневных изменений и решить проблемы с офсетом времени
-        // this.timeHandler = (startStamp: number) => {
-        //     const offsetStamp = (this.opts.brokerUTCoffset || 0) * 3_600_000;
-        //     let dayStartStamp = ~~(startStamp / 86_400_000) * 86_400_000 + offsetStamp;
-        //     let dayEndStamp = dayStartStamp + 86_400_000 - 1;
-        //     let prevStamp = 0;
-        //     let prevHour = ~~((startStamp - dayStartStamp) / 3_600_000);
-
-        //     return (stamp: number) => {
-        //         const hour = ~~((stamp - dayStartStamp) / 3_600_000);
-        //         const isHourEnd = prevHour !== hour;
-        //         const isDayEnd = prevStamp <= dayEndStamp && stamp > dayEndStamp;
-
-        //         if (isHourEnd) {
-        //             prevHour = hour;
-
-        //             // hook hour end
-        //         }
-
-        //         if (isDayEnd) {
-        //             dayStartStamp = ~~(stamp / 86_400_000) * 86_400_000 + offsetStamp;
-        //             dayEndStamp = dayStartStamp + 86_400_000 - 1;
-
-        //             // hook day end
-        //         }
-
-        //         prevStamp = stamp;
-        //     };
-        // };
-
         const dayChanged = stamp > currentDayMarker;
 
         if (dayChanged && !noDST) {
@@ -112,8 +83,7 @@ export function createSessionValidator(start: string, end: string, noDST?: boole
             // Коррекция дат, для разных часовых поясов, время старта указывается в летнем времени
             const startHrs = timeMode === TimeMode.Summer ? fromHour : fromHour + 1;
             const endHrs = timeMode === TimeMode.Summer ? toHour : toHour + 1;
-            // Pro tip: Be careful with negative numbers!
-            const from = ~~(stamp / 86400000) * 86400000 - 180 * 60 * 1000; // - timezone offset = -180 GMT+3;
+            const from = ~~(stamp / 86400000) * 86400000 - timezoneOffset;
             currentDayMarker = from + 86400000 - 1;
 
             // Переводич часы и минуты в stamp и прибавляем к дате

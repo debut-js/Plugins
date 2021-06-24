@@ -13,7 +13,7 @@
     },
     "peerDependencies": {
         "@debut/plugin-stats": "^1.0.11",
-        "@debut/types": "^1.0.16"
+        "@debut/types": "^1.0.17"
     },
     "repository": {
         "type": "git",

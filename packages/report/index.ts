@@ -129,7 +129,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
         return x;
     }
 
-    function formatTime(stamp: number) {
+    function formatTime(stamp: number | string) {
         return new Date(stamp).toLocaleString();
     }
 
@@ -323,9 +323,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
             addOpenTarget(time: string, price: number, operation: OrderType) {
                 deals.push({
                     type: operation === OrderType.BUY ? 'Long' : 'Short',
-                    openTime: time,
+                    openTime: formatTime(time),
                     openPrice: price,
-                    closeTime: time,
+                    closeTime: formatTime(time),
                     open: true,
                 });
             },
@@ -345,9 +345,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 // Plotly visualization.
                 const deal = {
                     type: operation === OrderType.BUY ? 'Long' : 'Short',
-                    openTime,
+                    openTime: formatTime(openTime),
                     openPrice,
-                    closeTime,
+                    closeTime: formatTime(closeTime),
                     closePrice,
                 };
 

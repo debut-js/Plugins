@@ -407,7 +407,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
         async onAfterCandle(candle) {
             if (limitTo && limitFrom && (candle.time < limitFrom || candle.time > limitTo)) {
-                console.log('skip candle', 'from', limitFrom, 'to', limitTo, 'candle time', candle.time);
                 return;
             }
 

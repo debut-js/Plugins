@@ -71,6 +71,8 @@ export function reportPlugin(showMargin = true): PluginInterface {
     const profit: Array<{ profit: number; time: string }> = [];
     const equity: Array<{ balance: number; time: string }> = [];
     const margins: Array<{ usage: number; time: string }> = [];
+    let limitFrom: number;
+    let limitTo: number;
 
     let startTime: string;
     let lastTick: Candle;
@@ -317,8 +319,15 @@ export function reportPlugin(showMargin = true): PluginInterface {
             },
 
             setXRange(from: number, to: number) {
-                visLayout.xaxis.autorange = false;
-                visLayout.xaxis.range = [from, to];
+                limitFrom = from;
+                limitTo = to;
+
+                // chartData = chartData.filter(item => item.time);
+                // indicatorsData;
+                // deals;
+                // profit;
+                // equity;
+                // margins;
             },
             addOpenTarget(time: string, price: number, operation: OrderType) {
                 deals.push({
@@ -377,6 +386,10 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onCandle(tick) {
+            if (limitTo && limitFrom && (tick.time < limitFrom || tick.time > limitTo)) {
+                return;
+            }
+
             let profit = 0;
 
             for (const order of this.debut.orders) {
@@ -393,6 +406,11 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onAfterCandle(candle) {
+            if (limitTo && limitFrom && (candle.time < limitFrom || candle.time > limitTo)) {
+                console.log('skip candle', 'from', limitFrom, 'to', limitTo, 'candle time', candle.time);
+                return;
+            }
+
             chartData.push({
                 time: formatTime(candle.time),
                 open: candle.o,
@@ -418,12 +436,20 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onBeforeClose(order) {
+            if (limitTo && limitFrom && (order.time < limitFrom || order.time > limitTo)) {
+                return;
+            }
+
             const usage = this.debut.orders.reduce((sum, order) => sum + order.lots * order.price, 0);
 
             margins.push({ usage, time: formatTime(order.time) });
         },
 
         async onClose(order, closing) {
+            if (limitTo && limitFrom && (order.time < limitFrom || order.time > limitTo)) {
+                return;
+            }
+
             if (isManualOrder) {
                 return;
             }
@@ -446,14 +472,16 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onDispose() {
-            // Последняя свечка
-            chartData.push({
-                time: formatTime(lastTick.time),
-                open: lastTick.o,
-                high: lastTick.h,
-                low: lastTick.l,
-                close: lastTick.c,
-            });
+            if (!limitTo || !limitFrom || lastTick.time >= limitFrom && lastTick.time <= limitTo) {
+                // Последняя свечка
+                chartData.push({
+                    time: formatTime(lastTick.time),
+                    open: lastTick.o,
+                    high: lastTick.h,
+                    low: lastTick.l,
+                    close: lastTick.c,
+                });
+            }
 
             indicatorsSchema.forEach((schema, schemaIdx) => {
                 if (schema.levels) {

@@ -1,13 +1,16 @@
 import { PluginInterface } from '@debut/types';
+import { orders } from '@debut/plugin-utils';
 
 export type OrderExpireOptions = {
     orderCandlesLimit: number;
+    closeAtZero?: boolean;
 };
 
 type LimitLookup = Record<string, number>;
 
 export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
     const lookup: LimitLookup = {};
+    const halfLimit = opts.orderCandlesLimit / 2;
 
     return {
         name: 'order-expire',
@@ -22,10 +25,21 @@ export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
             }
         },
 
-        async onCandle() {
+        async onCandle({ c, time}) {
             for (const order of [...this.debut.orders]) {
-                if (++lookup[order.orderId] >= opts.orderCandlesLimit) {
+                const counter = ++lookup[order.orderId];
+
+                if (counter >= opts.orderCandlesLimit) {
                     await this.debut.closeOrder(order);
+                }
+
+                if (opts.closeAtZero && counter > halfLimit) {
+                    const profit = orders.getCurrencyProfit(order, c);
+                    const percentProfit = (profit / this.debut.opts.amount) * 100;
+
+                    if (percentProfit >= (this.debut.opts.fee || 0)) {
+                        await this.debut.closeOrder(order);
+                    }
                 }
             }
         },

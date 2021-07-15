@@ -12,3 +12,4 @@ npm install @debut/plugin-order-expire --save
 | Название | Тип | Описание   |
 |-----------|----------|------------|
 | orderCandlesLimit  |  number | Максимальное время жизни сделки в количестве свеч |
+| closeAtZero  |  number |  На половине лимита начинаем закрывать сделку в ноль |

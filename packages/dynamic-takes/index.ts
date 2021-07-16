@@ -93,6 +93,10 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
         api: {
             setForOrder(orderId: string, takePrice: number, stopPrice: number) {
+                if (!takePrice || !stopPrice) {
+                    throw `prices in setForOrder() should be a number, current take: ${takePrice}, stop: ${stopPrice}`;
+                }
+
                 // Only for orders seted up using API
                 lookup[orderId] = { takePrice, stopPrice, tryLeft: opts.maxRetryOrders };
             },

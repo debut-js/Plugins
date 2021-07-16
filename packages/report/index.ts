@@ -64,7 +64,7 @@ type Deal = {
 };
 
 export function reportPlugin(showMargin = true): PluginInterface {
-    let indicatorsSchema: IndicatorsSchema;
+    let indicatorsSchema: IndicatorsSchema = [];
     const indicatorsData: Record<string, IndicatorsData[]> = {};
     const chartData: Array<{ time: string; open: number; high: number; low: number; close: number }> = [];
     const deals: Deal[] = [];
@@ -343,6 +343,24 @@ export function reportPlugin(showMargin = true): PluginInterface {
             },
             resetOrders() {
                 deals.length = 0;
+            },
+            cleanup() {
+                deals.length = 0;
+                chartData.length = 0;
+                equity.length = 0;
+                profit.length = 0;
+
+                if (indicatorsSchema.length) {
+                    indicatorsSchema.forEach((schema) => {
+                        const data = indicatorsData[schema.name];
+
+                        schema.figures.forEach((figure, idx) => {
+                            const lineData = data[idx];
+                            lineData.x.length = 0;
+                            lineData.y.length = 0;
+                        });
+                    });
+                }
             },
             setManualOrder(
                 operation: OrderType,

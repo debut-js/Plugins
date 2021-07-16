@@ -31,6 +31,7 @@ export interface ReportPluginAPI {
         disableProfitPlot: () => void;
         setXRange: (from: number, to: number) => void;
         disableOrdersDisplay: () => void;
+        cleanup: () => void;
         setManualOrder: (
             operation: OrderType,
             openTime: string,

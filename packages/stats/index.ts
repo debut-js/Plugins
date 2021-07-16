@@ -39,6 +39,7 @@ export interface StatsPluginAPI {
 export interface Methods {
     report(): StatsState;
     getState(): StatsState;
+    cleanup(): void;
 }
 
 export interface StatsInterface extends PluginInterface {
@@ -47,33 +48,37 @@ export interface StatsInterface extends PluginInterface {
 }
 
 export function statsPlugin(opts: StatsOptions): StatsInterface {
-    const state: StatsState = {
-        startBalance: opts.amount,
-        balance: opts.amount,
-        maxBalance: opts.amount,
-        minBalance: opts.amount,
-        maxMarginUsage: opts.amount,
-        profit: 0,
-        long: 0,
-        longRight: 0,
-        short: 0,
-        shortRight: 0,
-        absoluteDD: 0,
-        relativeDD: 0,
-        maxWin: 0,
-        maxLoose: 0,
-        profitProb: 0,
-        looseProb: 0,
-        avgProfit: 0,
-        avgLoose: 0,
-        expectation: 0,
-        failLine: 0,
-        rightLine: 0,
-        avgFailLine: 0,
-        avgRightLine: 0,
-        ticksHandled: 0,
-        candlesHandled: 0,
-    };
+    function getState() {
+        return {
+            startBalance: opts.amount,
+            balance: opts.amount,
+            maxBalance: opts.amount,
+            minBalance: opts.amount,
+            maxMarginUsage: opts.amount,
+            profit: 0,
+            long: 0,
+            longRight: 0,
+            short: 0,
+            shortRight: 0,
+            absoluteDD: 0,
+            relativeDD: 0,
+            maxWin: 0,
+            maxLoose: 0,
+            profitProb: 0,
+            looseProb: 0,
+            avgProfit: 0,
+            avgLoose: 0,
+            expectation: 0,
+            failLine: 0,
+            rightLine: 0,
+            avgFailLine: 0,
+            avgRightLine: 0,
+            ticksHandled: 0,
+            candlesHandled: 0,
+        };
+    }
+
+    let state: StatsState = getState();
 
     const temp = {
         sumLooseStreak: 0,
@@ -91,6 +96,9 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
 
         api: {
             getState: () => state,
+            cleanup: () => {
+                state = getState();
+            },
             report: () => {
                 const res = { ...state };
                 const ordersCount = res.long + res.short;

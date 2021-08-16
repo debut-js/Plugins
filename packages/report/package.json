@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "publishConfig": {
         "access": "public"
     },
@@ -15,15 +15,15 @@
         "prepare": "npm run build"
     },
     "dependencies": {
-        "@debut/plugin-stats": "^1.0.11",
+        "@debut/plugin-stats": "^1.0.14",
         "express": "^4.17.1"
     },
     "peerDependencies": {
-        "@debut/plugin-utils": "^1.0.13",
-        "@debut/types": "^1.0.17"
+        "@debut/plugin-utils": "^1.0.15",
+        "@debut/types": "^1.0.24"
     },
     "devDependencies": {
-        "@types/express": "^4.17.12"
+        "@types/express": "^4.17.13"
     },
     "repository": {
         "type": "git",

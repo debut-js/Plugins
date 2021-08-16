@@ -14,7 +14,7 @@ Keep in mind that many unofficial plugins can negatively impact performance.
 | [virtual-takes](packages/virtual-takes) | Simplified system of virtual stop/take in the form of constant interest, trailing |
 | [genetic-shutdown](packages/genetic-shutdown) | An early "switch" of strategies for the geneticist. Allows you to greatly save resources |
 | [grid](packages/grid) | To create strategies based on grids and martingale |
-| [neurofilter](packages/neurofilter) | Uses a neural network to confirm and evaluate trade entries |
+| [neuro-vision](packages/neuro-vision) | Uses a neural network to filterning or forecasting prices and entry points |
 | [order-expire](packages/order-expire) | Limits the maximum duration of a trade by the number of candles |
 | [reinvest](packages/reinvest) | Reveals profit and puts it into circulation on the following transactions |
 | [report](packages/report) | Creation of strategy testing reports, charts based on [Plotly](https://plotly.com/javascript/), also allows you to visualize indicators |

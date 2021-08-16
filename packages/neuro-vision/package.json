@@ -1,0 +1,37 @@
+{
+    "name": "@debut/plugin-neuro-vision",
+    "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
+    "module": "true",
+    "description": "Neural network trend forecasting",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "prepare": "npm run build"
+    },
+    "peerDependencies": {
+        "@debut/types": "^1.0.24"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/debut-js/Plugins.git"
+    },
+    "keywords": [
+        "Debut",
+        "Plugin"
+    ],
+    "author": "Dmitriy Yurov",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/debut-js/Plugins/issues"
+    },
+    "files": [
+        "dist"
+    ],
+    "homepage": "https://github.com/debut-js/Plugins#readme",
+    "dependencies": {
+        "brain.js": "^2.0.0-beta.2"
+    }
+}

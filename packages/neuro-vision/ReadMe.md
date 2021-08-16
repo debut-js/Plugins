@@ -19,6 +19,13 @@ npm install @debut/plugin-neuro-vision --save
 | precision  |  number | Количество знаков после запятой, при округлениях (Влияет на распределение) |
 | hiddenLayers?  |  number | Опционально, количество скрытых слоев, по умолчанию [32, 16] |
 
+## API Плагина
+| Метод | Описание   |
+|-----------|------------|
+| nextValue | Для обученной нейросети подает на вход свечу, как только наберется input, будет прогноз значения |
+| addTrainValue  | Добавить в обучающую выборку свечу (использовать только при `--neuroTrain`) |
+| restore  | Количество знаков после запятой, при округлениях (Влияет на распределение) |
+| isTraining  | Вернет флаг тренинга, при `--neuroTrain` true, иначе false |
 ## Инициализация плагина
 ```javascript
 import { neuroVisionPlugin, NeuroVisionPluginAPI } from '@debut/plugin-neuro-vision';
@@ -28,6 +35,7 @@ export interface MyStrategyOptions extends DebutOptions, NeuroVisionPluginOption
 
 export class MyStrategy extends Debut {
     declare plugins: NeuroVisionPluginAPI;
+    private neuroTraining = false;
 
     constructor(transport: BaseTransport, opts: MyStrategyOptions) {
         super(transport, opts);
@@ -39,7 +47,36 @@ export class MyStrategy extends Debut {
             // neuroVisionPlugin(opts),
             // ...
         ]);
+
+        this.neuroTraining = this.plugins.neuroVision.isTraining();
+
+        if (!this.neuroTraining) {
+            this.plugins.neuroVision.restore();
+        }
     }
+```
+
+```javascript
+//...
+ async onCandle(candle: Candle) {
+     // training
+    if (this.neuroTraining) {
+        this.plugins.neuroVision.addTrainValue(candle);
+        return;
+    }
+
+    // usage
+    this.neuroVision = this.plugins.neuroVision.nextValue(candle);
+ }
+```
+## Обучение нейросети
+
+Для обучения используется стандартный механизм тестирования Debut
+Добавьте флаг `--neuroTrain` для обучения нейросети. Не забудьте задать `gap`, чтобы можно было проверить на необученных данных.
+Данные обучения автоматически сохранятся в конце процесса. В директорию торговой стратегии в `src`. При использовании и вызове метода `restore` сеть будет воссоздана из сохраненных данных.
+
+```bash
+npm run compile && npm run testing -- --bot=Name --ticker=ETHUSDT --days=600 --gap=60 --neuroTrain
 ```
 
 ## Алгоритм

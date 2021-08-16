@@ -1,4 +1,4 @@
-import { ExecutedOrder, OrderOptions, OrderType } from '@debut/types';
+import { ExecutedOrder, PendingOrder, OrderType } from '@debut/types';
 import { getPrecision, percentChange } from './math';
 
 /**
@@ -11,7 +11,7 @@ export function inverseType(type: OrderType) {
 /**
  * Generate synthetic order id from order
  */
-export function syntheticOrderId(order: ExecutedOrder | OrderOptions) {
+export function syntheticOrderId(order: ExecutedOrder | PendingOrder) {
     return `${Math.floor(Math.random() * 100000)}-${order.type}-${order.price}`;
 }
 
@@ -33,11 +33,13 @@ export function getCurrencyProfit(order: ExecutedOrder, price: number) {
 }
 
 /** Calculate batch orders profit */
-export function getCurrencyBatchProfit(orders: ExecutedOrder[], price: number) {
+export function getCurrencyBatchProfit(orders: Array<ExecutedOrder | PendingOrder>, price: number) {
     let totalProfit = 0;
 
     for (const order of orders) {
-        totalProfit += getCurrencyProfit(order, price);
+        if ('orderId' in order) {
+            totalProfit += getCurrencyProfit(order, price);
+        }
     }
 
     return totalProfit;

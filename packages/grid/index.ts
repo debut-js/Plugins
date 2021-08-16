@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, OrderType } from '@debut/types';
+import { PluginInterface, ExecutedOrder, OrderType, Candle } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
 
 type Grid = {
@@ -32,13 +32,13 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
             startMultiplier = this.debut.opts.lotsMultiplier || 1;
         },
 
-        async onOpen(order) {
+        async onOpen(order: ExecutedOrder) {
             if (!grid) {
                 grid = createGrid(order, opts);
             }
         },
 
-        async onTick(tick) {
+        async onTick(tick: Candle) {
             if (this.debut.orders.length) {
                 const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
                 const percentProfit = (profit / this.debut.opts.amount) * 100;

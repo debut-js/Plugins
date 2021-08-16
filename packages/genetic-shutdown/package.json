@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-genetic-shutdown",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "publishConfig": {
         "access": "public"
     },
@@ -12,8 +12,8 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/plugin-stats": "^1.0.11",
-        "@debut/types": "^1.0.17"
+        "@debut/plugin-stats": "^1.0.14",
+        "@debut/types": "^1.0.24"
     },
     "repository": {
         "type": "git",

@@ -25,8 +25,12 @@ export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
             }
         },
 
-        async onCandle({ c, time}) {
+        async onCandle({ c, time }) {
             for (const order of [...this.debut.orders]) {
+                if (!('orderId' in order)) {
+                    return;
+                }
+
                 const counter = ++lookup[order.orderId];
 
                 if (counter >= opts.orderCandlesLimit) {

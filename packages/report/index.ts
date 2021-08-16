@@ -10,7 +10,7 @@ export const enum FigureType {
 
 export const enum FillType {
     'tozeroy' = 'tozeroy',
-    'tonexty' = 'tonexty'
+    'tonexty' = 'tonexty',
 }
 export interface IndicatorsData {
     line: {
@@ -397,7 +397,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 visLayout.title = visLayout.title.replace(this.debut.opts.currency, '');
             }
 
-            visLayout.title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`
+            visLayout.title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`;
         },
 
         async onTick(tick) {
@@ -490,7 +490,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onDispose() {
-            if (!limitTo || !limitFrom || lastTick.time >= limitFrom && lastTick.time <= limitTo) {
+            if (!limitTo || !limitFrom || (lastTick.time >= limitFrom && lastTick.time <= limitTo)) {
                 // Последняя свечка
                 chartData.push({
                     time: formatTime(lastTick.time),

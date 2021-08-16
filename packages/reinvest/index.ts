@@ -5,7 +5,8 @@ export function reinvestPlugin(): PluginInterface {
     return {
         name: 'reinvest',
         async onClose(order, closing) {
-            if (!order.openPrice) {
+            // Dont accumulate learning orders
+            if (!order.openPrice || order.learning) {
                 return;
             }
 

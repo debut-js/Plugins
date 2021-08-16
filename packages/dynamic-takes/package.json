@@ -8,8 +8,8 @@
     "description": "Dynamic takes plugin for Debut",
     "main": "dist/index.js",
     "peerDependencies": {
-        "@debut/plugin-utils": "^1.0.13",
-        "@debut/types": "^1.0.17"
+        "@debut/plugin-utils": "^1.0.14",
+        "@debut/types": "^1.0.24"
     },
     "scripts": {
         "build": "tsc",

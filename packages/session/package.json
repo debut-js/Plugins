@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-session",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "publishConfig": {
         "access": "public"
     },
@@ -12,10 +12,10 @@
         "prepare": "npm run build"
     },
     "dependencies": {
-        "@debut/plugin-stats": "^1.0.11"
+        "@debut/plugin-stats": "^1.0.14"
     },
     "peerDependencies": {
-        "@debut/types": "^1.0.17"
+        "@debut/types": "^1.0.24"
     },
     "repository": {
         "type": "git",

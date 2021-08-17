@@ -64,19 +64,21 @@ export function getDistribution(ratioCandles: RatioCandle[], segmentsCount = 6, 
     });
 
     const segments: DistributionSegment[] = [];
-    const segmentSize = ratioCandles.length / segmentsCount;
+    const segmentSize = Math.ceil(ratioCandles.length / segmentsCount);
     let localCountSum = 0;
-    let ratioFrom = 0;
+    let ratioFrom = gaussianDistr[0].ratio;
 
     gaussianDistr.forEach((item, idx) => {
-        const isLast = gaussianDistr.length - 1 === idx;
+        const isLast = idx === gaussianDistr.length - 1;
+        const isFilled = segments.length === segmentsCount - 1;
+        const nextSum = localCountSum + item.count;
 
-        if (localCountSum + item.count > segmentSize || isLast) {
-            segments.push({ ratioFrom, ratioTo: isLast ? 1.1 : item.ratio, count: localCountSum });
+        if ((nextSum > segmentSize && !isFilled) || isLast) {
+            segments.push({ ratioFrom, ratioTo: item.ratio, count: localCountSum });
             localCountSum = item.count;
             ratioFrom = item.ratio;
         } else {
-            localCountSum += item.count;
+            localCountSum = nextSum;
         }
     });
 

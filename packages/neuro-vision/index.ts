@@ -11,6 +11,7 @@ export interface NeuroVisionPluginOptions {
     segmentsCount: number; // 6
     precision: number; // 3
     hiddenLayers?: number[];
+    debug?: boolean;
 }
 
 interface Methods {

@@ -81,11 +81,15 @@ export class Network {
         this.prevCandle = candle;
 
         if (ratioCandle) {
-            const groupId = this.normalize(
-                this.distribution.findIndex(
-                    (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,
-                ),
+            let idx = this.distribution.findIndex(
+                (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,
             );
+
+            if (idx === -1) {
+                idx = ratioCandle.ratio < this.distribution[0].ratioFrom ? 0 : this.distribution.length - 1;
+            }
+
+            const groupId = this.normalize(idx);
 
             this.input.push(groupId);
 
@@ -95,6 +99,10 @@ export class Network {
 
                 const denormalized = this.denormalize(forecast[0]);
                 const group = this.distribution[denormalized];
+
+                if (!group) {
+                    console.log(denormalized);
+                }
 
                 return {
                     maxPrice: candle.c * group.ratioTo,
@@ -150,6 +158,6 @@ export class Network {
 
     private denormalize(value: number) {
         // return Math.round(value);
-        return Math.floor(value * this.params.segmentsCount);
+        return Math.min(Math.floor(value * this.params.segmentsCount), this.params.segmentsCount - 1);
     }
 }

@@ -38,6 +38,13 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
             }
         },
 
+        async onClose() {
+            // When all orders are closed - revert multiplier
+            if (this.debut.orders.length === 0) {
+                this.debut.opts.lotsMultiplier = startMultiplier;
+            }
+        },
+
         async onTick(tick: Candle) {
             if (this.debut.orders.length) {
                 const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);

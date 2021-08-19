@@ -83,7 +83,7 @@ export function createSessionValidator(start: string, end: string, noDST?: boole
             // Коррекция дат, для разных часовых поясов, время старта указывается в летнем времени
             const startHrs = timeMode === TimeMode.Summer ? fromHour : fromHour + 1;
             const endHrs = timeMode === TimeMode.Summer ? toHour : toHour + 1;
-            const from = ~~(stamp / 86400000) * 86400000 - timezoneOffset;
+            const from = ~~(stamp / 86400000) * 86400000 + timezoneOffset;
             currentDayMarker = from + 86400000 - 1;
 
             // Переводич часы и минуты в stamp и прибавляем к дате

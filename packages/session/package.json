@@ -11,9 +11,7 @@
         "build": "tsc",
         "prepare": "npm run build"
     },
-    "dependencies": {
-        "@debut/plugin-stats": "^1.0.14"
-    },
+    "dependencies": {},
     "peerDependencies": {
         "@debut/types": "^1.0.24"
     },

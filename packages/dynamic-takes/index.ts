@@ -18,8 +18,8 @@ export type DynamicTakesPluginOptions = {
 };
 
 interface Methods {
-    setForOrder(orderId: string, takePrice: number, stopPrice: number): void;
-    getTakes(orderId: string): OrderTakes;
+    setForOrder(cid: number, takePrice: number, stopPrice: number): void;
+    getTakes(cid: number): OrderTakes;
 }
 
 type OrderTakes = {
@@ -63,6 +63,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
             if (!('orderId' in order)) {
                 continue;
             }
+
             if (opts.trailing) {
                 trailingTakes(order, price, lookup);
             }
@@ -95,16 +96,16 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         name: 'dynamicTakes',
 
         api: {
-            setForOrder(orderId: string, takePrice: number, stopPrice: number) {
+            setForOrder(cid: number, takePrice: number, stopPrice: number) {
                 if (!takePrice || !stopPrice) {
                     throw `prices in setForOrder() should be a number, current take: ${takePrice}, stop: ${stopPrice}`;
                 }
 
                 // Only for orders seted up using API
-                lookup[orderId] = { takePrice, stopPrice, tryLeft: opts.maxRetryOrders };
+                lookup[cid] = { takePrice, stopPrice, tryLeft: opts.maxRetryOrders };
             },
-            getTakes(orderId: string) {
-                return lookup[orderId];
+            getTakes(cid: number) {
+                return lookup[cid];
             },
         },
 
@@ -113,7 +114,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         },
 
         async onClose(order, closing) {
-            delete lookup[closing.orderId];
+            delete lookup[closing.cid];
         },
 
         async onCandle(candle) {
@@ -134,11 +135,12 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
  * Проверяем достижение тейка на оснвании текущей цены
  */
 function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
-    const { type, orderId } = order;
-    const { takePrice, stopPrice } = lookup[orderId] || {};
+    const { type, cid } = order;
+    const { takePrice, stopPrice } = lookup[cid] || {};
 
     if (!takePrice || !stopPrice) {
-        throw 'Unknown take data';
+        // Order is not added to plugin, skip this
+        return;
     }
 
     const isBuy = type === OrderType.BUY;
@@ -153,8 +155,8 @@ function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
 }
 
 function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
-    const { orderId } = order;
-    const takes = lookup[orderId];
+    const { cid } = order;
+    const takes = lookup[cid];
 
     if (!takes) {
         return;

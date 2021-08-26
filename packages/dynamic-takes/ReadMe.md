@@ -34,10 +34,10 @@ async onCandle({ c }) {
         [take, stop] = [stop, take];
     }
 
-    // Зададим плагину цены, передав также orderId
+    // Зададим плагину цены, передав также cid (client-id)
     // Далее он будет осуществлять мониторинг достижения тейка или стопа
     // После которого автоматически закроет сделку
-    this.plugins.dynamicTakes.setForOrder(order.orderId, take, stop);
+    this.plugins.dynamicTakes.setForOrder(order.cid, take, stop);
 
     return order;
 }

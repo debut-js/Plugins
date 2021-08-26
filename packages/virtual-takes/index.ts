@@ -25,6 +25,10 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
         }
 
         for (const order of [...debut.orders]) {
+            if (!('orderId' in order)) {
+                continue;
+            }
+
             if (opts.trailing) {
                 trailingTakes(order, price, lookup);
             }
@@ -66,8 +70,8 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
  * Проверяем достижение тейка на оснвании текущей цены
  */
 function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
-    const { type, orderId } = order;
-    const { takePrice, stopPrice } = lookup[orderId] || {};
+    const { type, cid } = order;
+    const { takePrice, stopPrice } = lookup[cid] || {};
 
     if (!takePrice || !stopPrice) {
         throw 'Unknown take data';
@@ -77,19 +81,19 @@ function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
 }
 
 function createTakes(order: ExecutedOrder, opts: VirtualTakesOptions, lookup: TakesLookup) {
-    const { type, price, orderId } = order;
+    const { type, price, cid } = order;
     const rev = type === OrderType.SELL ? -1 : 1;
 
     // XXX Так как тейки и стопы виртуальные, можем их не делать реальными ценами с шагом
     const stopPrice = price - rev * price * (opts.stopLoss / 100);
     const takePrice = price + rev * price * (opts.takeProfit / 100);
 
-    lookup[orderId] = { stopPrice, takePrice, price };
+    lookup[cid] = { stopPrice, takePrice, price };
 }
 
 function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
-    const { orderId } = order;
-    const takes = lookup[orderId];
+    const { cid } = order;
+    const takes = lookup[cid];
 
     if (!takes) {
         return;

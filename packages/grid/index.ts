@@ -33,6 +33,10 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
         },
 
         async onOpen(order: ExecutedOrder) {
+            if (!('orderId' in order)) {
+                throw `Grid Creating error with order ${orders}`;
+            }
+
             if (!grid) {
                 grid = createGrid(order, opts);
             }

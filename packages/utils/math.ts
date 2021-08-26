@@ -9,7 +9,7 @@ export function clamp(num: number, min: number, max: number) {
  * Get count number after point
  */
 export function getPrecision(number: number | string) {
-    const s = `${number}`;
+    const s = `${Number(number)}`;
     const d = s.indexOf('.') + 1;
 
     return !d ? 0 : s.length - d;

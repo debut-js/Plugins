@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-virtual-takes",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "publishConfig": {
         "access": "public"
     },
@@ -12,7 +12,7 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^1.0.24"
+        "@debut/types": "^1.1.0"
     },
     "repository": {
         "type": "git",

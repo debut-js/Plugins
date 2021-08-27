@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-reinvest",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "publishConfig": {
         "access": "public"
     },
@@ -12,7 +12,7 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^1.0.24"
+        "@debut/types": "^1.1.0"
     },
     "repository": {
         "type": "git",

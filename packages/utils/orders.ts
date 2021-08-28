@@ -20,6 +20,12 @@ export function syntheticOrderId(order: ExecutedOrder | PendingOrder) {
  */
 export function getMinIncrementValue(price: number | string) {
     const precision = getPrecision(price);
+
+    // Corner case, minimal precision is for next formula uses
+    if (precision === 1) {
+        return '0.1';
+    }
+
     return Number(`${parseFloat('0').toFixed(precision - 1)}1`);
 }
 

@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "publishConfig": {
         "access": "public"
     },
@@ -19,7 +19,7 @@
         "express": "^4.17.1"
     },
     "peerDependencies": {
-        "@debut/plugin-utils": "^1.0.17",
+        "@debut/plugin-utils": "^1.0.19",
         "@debut/types": "^1.1.0"
     },
     "devDependencies": {

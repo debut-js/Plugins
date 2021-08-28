@@ -13,7 +13,7 @@
         "./packages/*"
     ],
     "devDependencies": {
-        "@types/node": "^16.7.2",
+        "@types/node": "^16.7.4",
         "@types/node-telegram-bot-api": "^0.51.4",
         "@types/ws": "^7.4.7",
         "@typescript-eslint/eslint-plugin": "^4.29.3",

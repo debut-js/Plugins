@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-utils",
-    "version": "1.0.17",
+    "version": "1.0.19",
     "publishConfig": {
         "access": "public"
     },

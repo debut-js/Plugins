@@ -13,6 +13,7 @@
 | [virtual-takes](packages/virtual-takes) | Упрощенная система виртуальных stop/take в виде постоянных процентов, трейлинг  |
 | [genetic-shutdown](packages/genetic-shutdown) | Ранний "выключатель" стратегий для генетика. Позволяет сильно экономить ресурсы |
 | [grid](packages/grid) | Для создания стратегий на основе сеток и мартингейла |
+| [more-candles](packages/more-candles) | Для хранения любого количества свеч вместо 10 в this.candles |
 | [neuro-vision](packages/neuro-vision) | Нейронная сеть для прогнозирования изменения цен и фильтрации точек входа |
 | [order-expire](packages/order-expire) | Ограничивает максимальную длительность сделки по кол-ву свечей |
 | [reinvest](packages/reinvest) | Реивестирует прибыль и пускает ее в оборот при следующих сделках |

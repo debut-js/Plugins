@@ -14,6 +14,7 @@ Keep in mind that many unofficial plugins can negatively impact performance.
 | [virtual-takes](packages/virtual-takes) | Simplified system of virtual stop/take in the form of constant interest, trailing |
 | [genetic-shutdown](packages/genetic-shutdown) | An early "switch" of strategies for the geneticist. Allows you to greatly save resources |
 | [grid](packages/grid) | To create strategies based on grids and martingale |
+| [more-candles](packages/more-candles) | Allows to get more than 10 candles in history |
 | [neuro-vision](packages/neuro-vision) | Uses a neural network to filterning or forecasting prices and entry points |
 | [order-expire](packages/order-expire) | Limits the maximum duration of a trade by the number of candles |
 | [reinvest](packages/reinvest) | Reveals profit and puts it into circulation on the following transactions |

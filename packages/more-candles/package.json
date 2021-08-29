@@ -1,0 +1,34 @@
+{
+    "name": "@debut/plugin-more-candles",
+    "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
+    "module": "true",
+    "description": "Plugin that allows to get more than 10 candles in history",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "prepare": "npm run build"
+    },
+    "peerDependencies": {
+        "@debut/types": "^1.1.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/debut-js/Plugins.git"
+    },
+    "keywords": [
+        "Debut",
+        "Plugin"
+    ],
+    "author": "Stanislav Staren",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/debut-js/Plugins/issues"
+    },
+    "files": [
+        "dist"
+    ],
+    "homepage": "https://github.com/debut-js/Plugins#readme"
+}

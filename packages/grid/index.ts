@@ -46,7 +46,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
              * Create new grid immediatly
              */
             createGrid(price: number) {
-                createGrid(price, opts);
+                grid = createGrid(price, opts);
             },
             /**
              * Return grid instance if exists

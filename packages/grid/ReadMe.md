@@ -40,10 +40,10 @@ export class MyStrategy extends Debut {
         ]);
     }
 
-    onCandle() {
+    onCandle(candle) {
         // Grid can created manually withoun order
         // if (!this.orders.length) {
-        //     this.plugins.grid.createGrid();
+        //     this.plugins.grid.createGrid(candle.c;
         // }
 
         // By default, the grid is created automatically, instead of closing the first order at a loss

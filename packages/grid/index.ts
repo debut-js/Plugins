@@ -7,7 +7,8 @@ type Grid = {
 };
 
 interface Methods {
-    createGrid(): void;
+    createGrid(price: number): void;
+    getGrid(): Grid | null;
 }
 
 export interface GridPluginInterface extends PluginInterface {
@@ -32,7 +33,6 @@ export type GridPluginOptions = {
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let grid: Grid | null;
     let startMultiplier: number;
-    let ctx: PluginCtx;
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;
@@ -42,12 +42,20 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
         name: 'grid',
 
         api: {
-            createGrid() {
-                createGrid(ctx.debut.currentCandle.c, opts);
+            /**
+             * Create new grid immediatly
+             */
+            createGrid(price: number) {
+                createGrid(price, opts);
+            },
+            /**
+             * Return grid instance if exists
+             */
+            getGrid() {
+                return grid;
             },
         },
         onInit() {
-            ctx = this;
             startMultiplier = this.debut.opts.lotsMultiplier || 1;
         },
 

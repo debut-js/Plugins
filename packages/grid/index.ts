@@ -1,14 +1,9 @@
 import { PluginInterface, ExecutedOrder, OrderType, Candle, PluginCtx } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
 
-type Grid = {
-    lowLevels: number[];
-    upLevels: number[];
-};
-
+type GridLevel = { price: number; activated: boolean };
 interface Methods {
-    createGrid(price: number): void;
-    getGrid(): Grid | null;
+    createGrid(price: number): Grid;
 }
 
 export interface GridPluginInterface extends PluginInterface {
@@ -31,7 +26,7 @@ export type GridPluginOptions = {
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
-    let grid: Grid | null;
+    let grid: GridClass | null;
     let startMultiplier: number;
 
     if (!opts.levelsCount) {
@@ -46,12 +41,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
              * Create new grid immediatly
              */
             createGrid(price: number) {
-                grid = createGrid(price, opts);
-            },
-            /**
-             * Return grid instance if exists
-             */
-            getGrid() {
+                grid = new GridClass(price, opts);
                 return grid;
             },
         },
@@ -65,7 +55,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             }
 
             if (!grid) {
-                grid = createGrid(order.price, opts);
+                grid = new GridClass(order.price, opts);
             }
         },
 
@@ -104,48 +94,80 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             }
 
             if (grid) {
-                if (tick.c <= grid.lowLevels[0]) {
-                    grid.lowLevels.shift();
-
+                if (tick.c <= grid.getNextLow()?.price) {
                     const lotsMulti = opts.martingale ** (opts.levelsCount - grid.lowLevels.length);
                     this.debut.opts.lotsMultiplier = lotsMulti;
-
                     await this.debut.createOrder(OrderType.BUY);
+                    grid.activateLow();
                 }
 
-                if (tick.c >= grid.upLevels[0]) {
-                    grid.upLevels.shift();
-
+                if (tick.c >= grid.getNextUp()?.price) {
                     const lotsMulti = opts.martingale ** (opts.levelsCount - grid.upLevels.length);
                     this.debut.opts.lotsMultiplier = lotsMulti;
-
                     await this.debut.createOrder(OrderType.SELL);
+                    grid.activateUp();
                 }
             }
         },
     };
 }
 
-function createGrid(price: number, options: GridPluginOptions): Grid {
-    const lowLevels = [];
-    const upLevels = [];
+export interface Grid {
+    nextUpIdx: number;
+    nextLowIdx: number;
+    upLevels: GridLevel[];
+    lowLevels: GridLevel[];
+}
+class GridClass implements Grid {
+    public nextUpIdx = 0;
+    public nextLowIdx = 0;
+    public upLevels: GridLevel[] = [];
+    public lowLevels: GridLevel[] = [];
 
-    const step = price * (options.step / 100);
-    const fiboSteps: number[] = [step];
+    constructor(price: number, options: GridPluginOptions) {
+        const step = price * (options.step / 100);
+        const fiboSteps: number[] = [step];
 
-    for (let i = 1; i <= options.levelsCount; i++) {
-        if (options.fibo) {
-            const fiboStep = fiboSteps.slice(-2).reduce((sum, item) => item + sum, 0);
+        for (let i = 1; i <= options.levelsCount; i++) {
+            if (options.fibo) {
+                const fiboStep = fiboSteps.slice(-2).reduce((sum, item) => item + sum, 0);
 
-            fiboSteps.push(fiboStep);
+                fiboSteps.push(fiboStep);
 
-            upLevels.push(price + fiboStep);
-            lowLevels.push(price - fiboStep);
-        } else {
-            upLevels.push(price + step * i);
-            lowLevels.push(price - step * i);
+                this.upLevels.push({ price: price + fiboStep, activated: false });
+                this.lowLevels.push({ price: price - fiboStep, activated: false });
+            } else {
+                this.upLevels.push({ price: price + step * i, activated: false });
+                this.lowLevels.push({ price: price - step * i, activated: false });
+            }
         }
     }
 
-    return { lowLevels, upLevels };
+    activateUp() {
+        const upLevel = this.upLevels[this.nextUpIdx];
+
+        if (upLevel) {
+            upLevel.activated = true;
+        }
+
+        this.nextUpIdx++;
+    }
+
+    activateLow() {
+        const lowLevel = this.lowLevels[this.nextLowIdx];
+
+        if (lowLevel) {
+            lowLevel.activated = true;
+        }
+
+        this.nextLowIdx++;
+    }
+
+    getNextUp() {
+        return this.upLevels[this.nextUpIdx];
+    }
+
+    getNextLow() {
+        return this.lowLevels[this.nextLowIdx];
+    }
 }

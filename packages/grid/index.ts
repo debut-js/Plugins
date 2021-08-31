@@ -1,10 +1,23 @@
-import { PluginInterface, ExecutedOrder, OrderType, Candle } from '@debut/types';
+import { PluginInterface, ExecutedOrder, OrderType, Candle, PluginCtx } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
 
 type Grid = {
     lowLevels: number[];
     upLevels: number[];
 };
+
+interface Methods {
+    createGrid(): void;
+}
+
+export interface GridPluginInterface extends PluginInterface {
+    name: 'grid';
+    api: Methods;
+}
+
+export interface GridPluginAPI {
+    grid: Methods;
+}
 
 export type GridPluginOptions = {
     step: number; // дистанция первого уровня или всех, если не включен фибо
@@ -13,22 +26,28 @@ export type GridPluginOptions = {
     levelsCount: number; // кол-во уровней грида
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
     stopLoss: number; // общий стоп в процентах для всего грида
-    reversed?: boolean; // использовать грид для докупок
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
 };
 
-export function gridPlugin(opts: GridPluginOptions): PluginInterface {
+export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let grid: Grid | null;
     let startMultiplier: number;
+    let ctx: PluginCtx;
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;
     }
 
     return {
-        name: 'takes',
+        name: 'grid',
 
+        api: {
+            createGrid() {
+                createGrid(ctx.debut.currentCandle.c, opts);
+            },
+        },
         onInit() {
+            ctx = this;
             startMultiplier = this.debut.opts.lotsMultiplier || 1;
         },
 
@@ -38,7 +57,7 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
             }
 
             if (!grid) {
-                grid = createGrid(order, opts);
+                grid = createGrid(order.price, opts);
             }
         },
 
@@ -83,7 +102,7 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
                     const lotsMulti = opts.martingale ** (opts.levelsCount - grid.lowLevels.length);
                     this.debut.opts.lotsMultiplier = lotsMulti;
 
-                    await this.debut.createOrder(opts.reversed ? OrderType.BUY : OrderType.SELL);
+                    await this.debut.createOrder(OrderType.BUY);
                 }
 
                 if (tick.c >= grid.upLevels[0]) {
@@ -92,18 +111,18 @@ export function gridPlugin(opts: GridPluginOptions): PluginInterface {
                     const lotsMulti = opts.martingale ** (opts.levelsCount - grid.upLevels.length);
                     this.debut.opts.lotsMultiplier = lotsMulti;
 
-                    await this.debut.createOrder(opts.reversed ? OrderType.SELL : OrderType.BUY);
+                    await this.debut.createOrder(OrderType.SELL);
                 }
             }
         },
     };
 }
 
-function createGrid(order: ExecutedOrder, options: GridPluginOptions): Grid {
+function createGrid(price: number, options: GridPluginOptions): Grid {
     const lowLevels = [];
     const upLevels = [];
 
-    const step = order.price * (options.step / 100);
+    const step = price * (options.step / 100);
     const fiboSteps: number[] = [step];
 
     for (let i = 1; i <= options.levelsCount; i++) {
@@ -112,11 +131,11 @@ function createGrid(order: ExecutedOrder, options: GridPluginOptions): Grid {
 
             fiboSteps.push(fiboStep);
 
-            upLevels.push(order.price + fiboStep);
-            lowLevels.push(order.price - fiboStep);
+            upLevels.push(price + fiboStep);
+            lowLevels.push(price - fiboStep);
         } else {
-            upLevels.push(order.price + step * i);
-            lowLevels.push(order.price - step * i);
+            upLevels.push(price + step * i);
+            lowLevels.push(price - step * i);
         }
     }
 

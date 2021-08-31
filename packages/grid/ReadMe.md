@@ -1,27 +1,27 @@
 # @debut/plugin-grid
-Плагин Debut, позволяет организовать работу двух видов стратегий на системах сеток. Трендовую "Ловушку" для цены, либо контр трендовую, систему докупок по мартингейлу, используя уровни сетки. Есть также возможность использовать фибоначчи дистанцию между уровнями.
+The Debut plugin allows you to organize the operation of strategies on a grid system (DCA). It is a system of additional purchases with an increase in volumes at each additional purchase by martingale. To open trades, grid levels with a fixed distance between them are used. It is also possible to use the Fibonacci distance between the levels.
 
-## Установка
+## Install
 
 ```
 npm install @debut/plugin-grid --save
 ```
 
-## Настройки
+## Settings
 
-| Название | Тип | Описание   |
-|-----------|----------|------------|
-| step  |  number | Шаг сетки, значение в процентах. Шаг всегда одинаковый, если не активирована опция `fibo` |
-| fibo  |  boolean | Расчет уровней по фибоначчи. Каждый следующий уровень сетки равен сумме двух предыдущих |
-| martingale  |  number | Коэффициент мартингейла. Определяет количество лотов для сделки. В классической системе мартингейла равен 2, означает что всегда удваиваем лотность предыдущей сделки, в значении 1 - лот будет фиксированным |
-| levelsCount  |  number | Количество уровней сетки, чем больше тем больше средств вам потребуется |
-| takeProfit  |  number | Тейк профит в процентах. Считается как общая прибыль от открытых позиций по отношению к начальному капиталу |
-| stopLoss  |  number | Стоп лосс в процентах. Считается по сумме всех открытых позиций, как и takeProfit * |
-| reversed  |  boolean | При значении `false`, сетка работает по тренду, создавая сделки в направлении движения цены, в значении `true` против тренда, создавая сделки совпадающие со стартовой по направлению |
+| Name | Type | Description |
+| ----------- | ---------- | ------------ |
+| step | number | Grid step, percentage. The step is always the same if the `fibo` option is not activated |
+| fibo | boolean | Calculation of Fibonacci levels. Each next level of the grid is equal to the sum of the two previous |
+| martingale | number | Martingale coefficient. Determines the number of lots for a trade. In the classic martingale system it is equal to 2, which means that we always double the lot of the previous deal, if 1 - the lot will be fixed |
+| levelsCount | number | The number of grid levels, the more the more funds you need |
+| takeProfit | number | Take profit as a percentage. Calculated as the total profit from open positions in relation to the initial capital |
+| stopLoss | number | Stop loss in percentage. It is calculated by the sum of all open positions, as well as takeProfit* |
+| reduceEquity | boolean | Each next grid start lot will reduced |
 
-\* Стоп/Тейк работают не на основе цены, а на основе процента от средств.
+\* Stop/Take does not work on the basis of price, but on the basis of a percentage of funds.
 
-## Инициализация плагина
+## Plugin initialization
 ```javascript
 import { gridPlugin, GridPluginOptions } from '@debut/plugin-grid';
 
@@ -29,6 +29,7 @@ import { gridPlugin, GridPluginOptions } from '@debut/plugin-grid';
 export interface MyStrategyOptinos extends DebutOptions, GridPluginOptions;
 
 export class MyStrategy extends Debut {
+    declare plugins: GridPluginAPI;
     constructor(transport: BaseTransport, opts: CCISolderGOptions) {
         super(transport, opts);
 
@@ -38,10 +39,20 @@ export class MyStrategy extends Debut {
             // ...
         ]);
     }
+
+    onCandle() {
+        // Grid can created manually withoun order
+        // if (!this.orders.length) {
+        //     this.plugins.grid.createGrid();
+        // }
+
+        // By default, the grid is created automatically, instead of closing the first order at a loss
+    }
 ```
 
-## Скриншоты (плагин [Report](../report/))
+## Screenshots (by report plugin [Report](../report/))
 
-"Ловушка" для цены           |  Торговля против тренда по сетке сделок
-:------------------------------------------------------------------:|:-------------------------------------------------------------------------:
-<img alt="Grid Strategy price trap" src="img/screen1.png" width="400">  |  <img alt="Мартингейл, сетка" src="img/screen2.png" width="400">
+<p>
+<img alt="Grid Strategy price trap" src="img/screen2.png" width="400"></br>
+Trading against the trend on a grid of transactions
+</p>

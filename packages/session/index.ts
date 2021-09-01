@@ -35,7 +35,7 @@ export function sessionPlugin(options: SessionPluginOptions, onDayEnd?: (...args
         api: {
             createSessionValidator,
         },
-        async onTick(tick) {
+        async onBeforeTick(tick) {
             const stamp = tick.time;
             const result = !!sessionValidator && sessionValidator(stamp);
 

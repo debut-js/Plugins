@@ -82,7 +82,6 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                 if (percentProfit >= opts.takeProfit || percentProfit <= -opts.stopLoss) {
                     grid = null;
-                    console.log(this.debut.orders);
                     await this.debut.closeAll();
                     // Вернем лотность наместо
                     this.debut.opts.lotsMultiplier = startMultiplier;
@@ -105,17 +104,17 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
             if (grid) {
                 if (tick.c <= grid.getNextLow()?.price) {
+                    grid.activateLow();
                     const lotsMulti = opts.martingale ** (grid.nextLowIdx + 1);
                     this.debut.opts.lotsMultiplier = lotsMulti;
                     await this.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
-                    grid.activateLow();
                 }
 
                 if (tick.c >= grid.getNextUp()?.price) {
+                    grid.activateUp();
                     const lotsMulti = opts.martingale ** (grid.nextUpIdx + 1);
                     this.debut.opts.lotsMultiplier = lotsMulti;
                     await this.debut.createOrder(opts.trend ? OrderType.BUY : OrderType.SELL);
-                    grid.activateUp();
                 }
             }
         },

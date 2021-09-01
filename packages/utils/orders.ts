@@ -30,7 +30,7 @@ export function getMinIncrementValue(price: number | string): number {
 }
 
 /**
- * Calculate order profit
+ * Calculate order profit in currency
  */
 export function getCurrencyProfit(order: ExecutedOrder, price: number) {
     const rev = order.type === OrderType.SELL ? -1 : 1;

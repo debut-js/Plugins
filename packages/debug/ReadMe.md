@@ -1,5 +1,4 @@
 # @debut/plugin-debug
-## Switch to [Russian 🇷🇺](ReadMe_ru.md)
 
 Debut plugin, for displaying debug information while the node process is running (when the Debut-based application is running).
 ## Installation

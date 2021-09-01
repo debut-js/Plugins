@@ -1,50 +1,50 @@
 # @debut/plugin-dynamic-takes
-Плагин Debut, для задания тейков и стопов в ручном режиме. Позволяет в любое время задать или изменить цены стоп и тейк для открытых позиций, используя их идентификатор. А также опционально осуществлять докупки, вместо закрытия убыточных позиций.
+The Debut plugin for setting take and stop prices in manual mode. Allows you to set or change stop and take prices for open positions at any time using their identifier. It also allows you to optionally make fill-ups instead of closing unprofitable positions.
 
-## Установка
+## Setting
 
 ```
 npm install @debut/plugin-dynamic-takes --save
 ```
 
-## Настройки
+## Settings
 
-| Название | Тип | Значение по умолчанию | Описание   |
+| Name | Type | Default value | Description |
 |-----------|------------|----------|------------|
-| trailing  |  boolean | false | трейлинг стоп позиции после задания тейков и стопов |
-| ignoreTicks  |  boolean | false | Игнорировать тики, тк часто бывает что стопы могут выбить тенью, но не телом свечи |
-| maxRetryOrders  |  number | 0 | Устанавливает количество докупок * |
+| trailing | boolean | false | trailing a stop position after setting the takes and stops |
+| ignoreTicks | boolean | false | ignore ticks, because it often happens that stops can be knocked out by the shadow but not the body of the candle |
+| maxRetryOrders | number | 0 | Sets the number of buybacks |
 
-#### \* Докупки всегда того же обьема что и оригинальная позиция. Они выполняются при достижении стопа последней созданной сделкой. Уровни стопа будут копироваться из оригинальной сделки.
+#### \* The rebates are always of the same size as the original position. They are executed when the stop of the last created trade reaches the stop. Stop levels will be copied from the original trade.
 
-#### \*\* Если количество докупок не установлено, то позиция будет закыта при достижении стопа.
-При достижении максимального количества докупок, система выставит тейки на уровень безубытка по всем сдекам, при этом если цена все же не развернется, закрываем все ранее созданые сделки в убыток.
+#### \*\** If the number of pending orders is not set, the position will be closed when the stop is reached.
+When the maximum number of pending orders is reached, the system will set takeovers to the breakeven level on all trades, and if the price does not turn around, all previously created trades will be closed at a loss.
 
-## Задание тейков
+## Takeaway setting
 ```javascript
-// в контексте Debut...
+// in context of Debut...
 async onCandle({ c }) {
-    // некоторые условия входа
+    // some entry conditions
     const order = await this.createOrder(target);
-    let take = c + c * 0.15; // Допустим 15%
-    let stop = c - c * 0.10; // А стоп 10%
+    let take = c + c * 0.15; // Assume 15%
+    let stop = c - c * 0.10; // And the stop is 10%
 
-    // Если сделка типа SELL, поменяем местами стоп и тейк
+    // If the trade is of the SELL type, swap the stop and take positions
     if (target === OrderType.SELL) {
         [take, stop] = [stop, take];
     }
 
-    // Зададим плагину цены, передав также cid (client-id)
-    // Далее он будет осуществлять мониторинг достижения тейка или стопа
-    // После которого автоматически закроет сделку
+    // Hand over the cid (client-id) to the price plugin.
+    // Then it will monitor when it reaches a take or stop
+    // after which it will automatically close the trade
     this.plugins.dynamicTakes.setForOrder(order.cid, take, stop);
 
     return order;
 }
 ```
 
-## Скриншоты (плагин [Report](../report/))
+## Screenshots (plugin [Report](../report/))
 
-Сделка с выводом в уровень безубытка            |  Сделка с докупкой и прибылью
+Order with zero loose level | Profitable close with support order
 :------------------------------------------------------------------:|:-------------------------------------------------------------------------:
-<img alt="Сделка с выводом в 0" src="img/screen1.png" width="400">  |  <img alt="Прибыльная делка с докупкой" src="img/screen2.png" width="400">
+<img alt="Deal with withdrawal at 0" src="img/screen1.png" width="400"> | <img alt="Profitable deal with docup" src="img/screen2.png" width="400">

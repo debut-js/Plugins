@@ -18,6 +18,7 @@ npm install @debut/plugin-grid --save
 | takeProfit | number | Take profit as a percentage. Calculated as the total profit from open positions in relation to the initial capital |
 | stopLoss | number | Stop loss in percentage. It is calculated by the sum of all open positions, as well as takeProfit* |
 | reduceEquity | boolean | Each next grid start lot will reduced |
+| trend | boolean | default - false, true mean top levels initiate buy, bottom levels initiate sell (reversed) |
 
 \* Stop/Take does not work on the basis of price, but on the basis of a percentage of funds.
 

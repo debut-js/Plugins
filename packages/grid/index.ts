@@ -4,6 +4,7 @@ import { orders } from '@debut/plugin-utils';
 type GridLevel = { price: number; activated: boolean };
 interface Methods {
     createGrid(price: number): Grid;
+    getGrid(): Grid | null;
 }
 
 export interface GridPluginInterface extends PluginInterface {
@@ -23,6 +24,7 @@ export type GridPluginOptions = {
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
     stopLoss: number; // общий стоп в процентах для всего грида
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
+    trend?: boolean; // по тренду или против
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -42,6 +44,13 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
              */
             createGrid(price: number) {
                 grid = new GridClass(price, opts);
+                return grid;
+            },
+
+            /**
+             * Get existing grid
+             */
+            getGrid() {
                 return grid;
             },
         },
@@ -97,14 +106,14 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 if (tick.c <= grid.getNextLow()?.price) {
                     const lotsMulti = opts.martingale ** (opts.levelsCount - grid.lowLevels.length);
                     this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(OrderType.BUY);
+                    await this.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
                     grid.activateLow();
                 }
 
                 if (tick.c >= grid.getNextUp()?.price) {
                     const lotsMulti = opts.martingale ** (opts.levelsCount - grid.upLevels.length);
                     this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(OrderType.SELL);
+                    await this.debut.createOrder(opts.trend ? OrderType.BUY : OrderType.SELL);
                     grid.activateUp();
                 }
             }

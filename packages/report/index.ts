@@ -1,5 +1,5 @@
 import { PluginInterface, Candle, OrderType } from '@debut/types';
-import { file } from '@debut/plugin-utils';
+import { file, orders } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
 
@@ -407,13 +407,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 return;
             }
 
-            let profit = 0;
-
-            for (const order of this.debut.orders) {
-                const rev = order.type === OrderType.SELL ? -1 : 1;
-                const lots = order.lots * this.debut.instrument.lot;
-                profit += (tick.c - order.price) * lots * rev;
-            }
+            let profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
 
             if (profit === 0) {
                 return;

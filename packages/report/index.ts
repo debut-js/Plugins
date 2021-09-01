@@ -458,7 +458,13 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 return;
             }
 
-            const usage = this.debut.orders.reduce((sum, order) => sum + order.lots * order.price, 0);
+            const usage = this.debut.orders.reduce((sum, order) => {
+                if ('orderId' in order) {
+                    return sum + order.lots * order.price;
+                }
+
+                return sum;
+            }, 0);
 
             margins.push({ usage, time: formatTime(order.time) });
         },

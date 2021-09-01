@@ -1,7 +1,7 @@
 # @debut/plugin-reinvest
 Debut plugin, for adding profits from trades to your starting capital (re-investment). It is mainly used to increase profits. When enabled, all profits or losses from trades will be subtracted or added to the initial capital.
 
-## Setup
+## Install
 
 ```
 npm install @debut/plugin-reinvest --save

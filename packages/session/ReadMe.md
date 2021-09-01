@@ -1,7 +1,7 @@
 # @debut/plugin-session
 The Debut plugin, for limiting the trading session time. Allows you to configure the working hours for the strategy, as well as to detect the change of the day. The plugin automatically performs the correction of time zones, at the transition of USA to summer and winter time, so there are no failures on time shifts during testing. It is recommended to use to block work on pre or post market exchanges.
 
-## Setup
+## Install
 
 ```
 npm install @debut/plugin-session --save

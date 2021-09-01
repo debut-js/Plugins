@@ -12,7 +12,7 @@ Absolute drawdown is over 35%
 5. Less than 30 Long or Short trades in 30 days
 6. Less than half of any positions were profitable
 
-## Setting
+## Install
 
 ```
 npm install @debut/plugin-genetic-shutdown --save

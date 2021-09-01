@@ -1,7 +1,7 @@
 # @debut/plugin-order-expire
 The Debut plugin allows you to limit the lifetime of open positions by the number of candles in the current time frame. It is mainly used for closing "hanging" positions during long sideways periods or when the original signal for a trade loses its relevance after some time.
 
-## Setting
+## Install
 
 ```
 npm install @debut/plugin-order-expire --save

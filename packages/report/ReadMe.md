@@ -5,7 +5,7 @@
 Debut plugin, for setting targets and stops in manual mode. Allows you to set or change the stop and take prices for open positions at any time, using their identifier. It also allows you to optionally make additions instead of closing unprofitable positions.
 By default, the plugin draws balance changes and the used margin (if the strategy has more than 1 trade at a time). It has some API to customize it.
 
-## Setup
+## Install
 
 ```
 npm install @debut/plugin-report --save

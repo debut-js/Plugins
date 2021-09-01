@@ -1,7 +1,7 @@
 # @debut/plugin-dynamic-takes
 The Debut plugin for setting take and stop prices in manual mode. Allows you to set or change stop and take prices for open positions at any time using their identifier. It also allows you to optionally make fill-ups instead of closing unprofitable positions.
 
-## Setup
+## Install
 
 ```
 npm install @debut/plugin-dynamic-takes --save

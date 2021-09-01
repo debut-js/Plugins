@@ -4,7 +4,7 @@
 
 Debut plugin, allows you to train a neural network on historical data. Use it to filter trades as well as to directly predict price direction. Forecasting is based on the algorithm of price change clustering, in which each price change for a time period is proportional to the price for the previous time period. Such changes are clustered in a Gaussian distribution, creating a uniform pattern for the neural network to work and train. In other words, each candlestick falls into a finite number of groups (from 5 to 11) and then the next candlestick, or rather the group it will be adjacent to, is predicted.
 
-## Setup
+## Install
 
 ```
 npm install @debut/plugin-neuro-vision --save

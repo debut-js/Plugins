@@ -1,7 +1,7 @@
 # @debut/plugin-utils
-Набор незаменимых утилит для экосистемы Debut.
+A set of indispensable utilities for the Debut ecosystem.
 
-## Установка
+## Installation
 
 ```
 npm install @debut/plugin-utils --save
@@ -9,21 +9,21 @@ npm install @debut/plugin-utils --save
 
 <hr/>
 
-## CLI - Утилиты для работы Command Line Interface
+## CLI - Command Line Interface utilities
 
 ### `requireUncached(module: string)`
-Позволяет подключить указаный модуль без стандартного кеширования Node. Вместо нативного вызова `require(module: string)`
+Allows the specified module to be connected without the standard Node caching. Instead of a native call to `require(module: string)`
 
 ### `getBotsSchema()`
-Получение содержимого файла `schema.json`
+Get the contents of `schema.json` file
 
 ### `getBotData(name: string, schema = getBotsSchema())`
-Получение мета данных бота по имени конструктора.
+Getting the bot's meta data by the name of the constructor.
 
 ### `getArgs<T>()`
-Получение аргументов переданных при запуске. Возвращает обьект ключ - значение.
+Gets the arguments passed at startup. Returns an object key-value.
 
-Пример: `node ./myscript.js --arg1=foo --arg2=bar`
+Example: `node ./myscript.js --arg1=foo --arg2=bar`.
 
 ```javascript
 import { cli } from '@debut/plugin-utils`;
@@ -31,95 +31,95 @@ import { cli } from '@debut/plugin-utils`;
 const args = getArgs(); // { arg1: "foo", arg2: "bar" }
 ```
 
-### `getTokens()`
-Получение объекта с приватными ключами для работы с API брокера. Из файла `.tokens.json` в рабочей директории проекта.
+### `getTokens()`.
+Getting an object with private keys to work with the broker's API. From the file `.tokens.json` in the working directory of the project.
 
-<hr/>
+<hr/>.
 
-## Date - Утилиты для работы с датами
+## Date - Utilities for working with dates
 
 ### `isSameDay(d1: Date, d2: Date)`
-Являются ли две даты одним и тем же днем
+Are the two dates the same day
 
 ### `isWeekend(d: string | number | Date)`
-Является ли дата выходным днем
+Is the date the same day off
 
 ### `toIsoString(d: string | number | Date)`
-Конвертация даты в кастомный ISO формат для работы с тинькофф API.
+Convert date to custom ISO format to work with tinkoff API.
 
 ### `getWeekDay(stamp: number)`
-Получение дня недели по таймстампу UTC
+Get the day of the week in UTC time stamp
 
 ### `intervalToMs(interval: TimeFrame)`
-Преобразование таймфрейма свеч в значение в милисекундах
+Converting candlestick timeframe into a value in milliseconds
 
 <hr/>
 
-## Debug - Утилиты отладки
+## Debug - Debugging utilities
 
 ### `logDebug(...data: any[])`
-Логирование с информацией о времени события
+Logging with event time information
 
 <hr/>
 
-## File - Утилиты для работы с файлами
+## File - Utilities for working with files
 
 ### `saveFile(path: string, data: any)`
-Сохранить переданные данные по пути `path`
+## `saveFile(path: string: data: any`) ## Save the transferred data to the `path` path
 
 ### `ensureFile(path: string)`
-Проверяет существование пути, если путь не существует создает его
+Checks if the path exists; if it does not, creates it
 
 ### `readFile(path: string)`
-Безопасное чтение файла
+Safely reads a file
 
 ### `isDir(path: string)`
-Является ли путь директорией
+Is the path a directory
 
 <hr/>
 
-## Math - Утилиты вычислений
+## Math - Calculation utilities
 
 ### `clamp(num: number, min: number, max: number)`
-Зажатие числа между минимальным и максимальным значением
+Clamping a number between a minimum and a maximum value
 
 ### `getPrecision(number: number | string)`
-Получение точности вычисления числа с плавающей точкой
+Getting the precision of a floating point number calculation
 
 ### `percentChange(current: number, prev: number)`
-Разница в процентах между двумя числами
+Percentage difference between two numbers
 
 ### `toFixed(num: number, precision = 2)`
-Быстрая фиксация точности вычислений, без потери типа
+A quick fix for the accuracy of a calculation, without losing type
 
 ### `getRandomArbitrary(min: number, max: number, odd?: boolean)`
-Генерация случайного числа в диапазоне [min, max] и опционально нечетного
+Generation of a random number in the range [min, max] and optionally an odd number
 
 ### `getRandomInt(min: number, max: number, odd?: boolean)`
-Генерация случайного целого в диапазоне [min, max], опционально нечентного
+Generation of a random integer in the range [min, max], optionally odd
 
 <hr/>
 
-## Orders - Утилиты для работы со сделками
+## Orders - Utilities for working with deals
 
 ### `inverseType(type: OrderType)`
-Инвертирует тип сделки
+Inverts the type of a trade
 
 ### `syntheticOrderId(order: ExecutedOrder | OrderOptions)`
-Синтетический случайный индетификатор для сделки
+Synthetic random identifier for a trade
 
 ### `getMinIncrementValue(price: number | string)`
-Минимальное значение в точности переданного числа
+Minimum value in the accuracy of the passed number
 
 ### `getCurrencyProfit(order: ExecutedOrder, price: number)`
-Подсчет текущей прибыли в валюте сделки
+Counting the current profit in the currency of the trade
 
 ### `getCurrencyBatchProfit(orders: ExecutedOrder[], price: number)`
-Подсчет текущей прибыли в валюте сделки для нескольких ордеров одновременно
+Counting current profit in the currency of the trade for several orders simultaneously
 
 <hr/>
 
 ## Promise
 
 ### `sleep(ms: number)`
-Инициализирует простой на какое-то время в милисекундах
+Initializes downtime for some time in milliseconds

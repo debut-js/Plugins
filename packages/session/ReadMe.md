@@ -1,24 +1,24 @@
 # @debut/plugin-session
-Плагин Debut, для ограничения времени торговой сессии. Позволяет настроить рабочие часы для стратегии, а также детектировать смену дня. Плагин автоматически выполняет коррекцию часовых поясов, при переходе США на летнее и зимнее время, таким образом во время тестирования не происходит сбоев на смещении времени. Рекомендуется использовать для блокировки работы на пре или пост маркетах биржи.
+The Debut plugin, for limiting the trading session time. Allows you to configure the working hours for the strategy, as well as to detect the change of the day. The plugin automatically performs the correction of time zones, at the transition of USA to summer and winter time, so there are no failures on time shifts during testing. It is recommended to use to block work on pre or post market exchanges.
 
-## Установка
+## Setup
 
 ```
 npm install @debut/plugin-session --save
 ```
 
-## Настройки
-Плагин имеет ряд параметров, доступных к настройке при инициализации.
+## Settings
+The plugin has a number of parameters available for customization during initialization.
 
-## Параметры
-| Название | Тип | Описание   |
+## Parameters
+| Name | Type | Description |
 |-----------|----------|------------|
-| from  |  string | Строка в формате `HH:MM`, например `10:00` (GMT+3) время открытия основной сессии биржи MOEX |
-| to  |  string | Строка в формате `HH:MM`, например `19:00` (GMT+3) время окончания основной сессии биржи MOEX |
-| onDayChanged  |  Function | Опционально, можно передать функцию, которая будет вызываться на смену дня |
+| from | string | string in format `HH:MM`, for example `10:00` (GMT+3) time of opening of the main session of exchange MOEX |
+| to | string | string in the format `HH:MM`, for example `19:00` (GMT+3) time of the end of the main session of the MOEX |
+| onDayChanged | Function | Optionally, you can pass a function to be called on day change |
 
-Время задается локальное. Плагин автоматически подстраивается под текущую тайм зону.
-## Инициализация
+The time is set locally. The plugin automatically adjusts for the current time zone.
+## Initialization
 ```javascript
 import { SessionPluginOptions, sessionPlugin } from '@debut/plugin-session';
 
@@ -35,10 +35,10 @@ constructor(transport: BaseTransport, opts: MyStrategyOpts) {
     ]);
 ```
 
-## Работа с Genetic
-Плагин автоматически удаляет свечи не вошедшие в заданый в настройках времени диапазон. Это повзоляет увеличить скрорость оптимизации стратегии.
+## Work with Genetic
+The plugin automatically removes candles, which are not within a range specified in the time settings. This will increase the speed of the strategy optimization.
 
-Для включения фукнции фильтрации свеч необходимо в мета файле (`meta.ts`) добавить соответствующий фильтр
+To enable the candlestick filtration, add the appropriate filter in the meta file (`meta.ts`)
 
 ```javascript
 import { createSessionValidator } from '@debut/plugin-session';

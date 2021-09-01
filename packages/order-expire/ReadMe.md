@@ -1,15 +1,15 @@
 # @debut/plugin-order-expire
-Плагин Debut, позволяет ограничивать время жизни открытых позиций по количеству прошедших свечей в текущем тайм фрейме. В основном используется для закрытия "подвисших" позиций во время длительных боковиков или когда исходный сигнал на сделку теряет актуальность спустя некоторое время.
+The Debut plugin allows you to limit the lifetime of open positions by the number of candles in the current time frame. It is mainly used for closing "hanging" positions during long sideways periods or when the original signal for a trade loses its relevance after some time.
 
-## Установка
+## Setting
 
 ```
 npm install @debut/plugin-order-expire --save
 ```
 
-## Настройки
+## Settings
 
-| Название | Тип | Описание   |
+| Name | Type | Description
 |-----------|----------|------------|
-| orderCandlesLimit  |  number | Максимальное время жизни сделки в количестве свеч |
-| closeAtZero  |  number |  На половине лимита начинаем закрывать сделку в ноль |
+| orderCandlesLimit | number | number Maximum lifetime of the trade in number of candles |
+| closeAtZero | number | at half of the limit start to close the trade at zero |

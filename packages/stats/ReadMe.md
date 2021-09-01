@@ -1,48 +1,48 @@
 # @debut/plugin-stats
-Плагин Debut, для сбора статистики торговли. Работает как в реальном режиме времени, так и в тестере стратегий.
+The Debut plugin, for collecting trade statistics. It works both in real time and in the strategy tester.
 
-## Установка
+## Installation
 
 ```
 npm install @debut/plugin-stats --save
 ```
 
-## Параметры
-| Название | Тип | Описание   |
+## Parameters
+| Name | Type | Description |
 |-----------|----------|------------|
-| amount  |  number | Начальное количество средств для торговли |
+| amount | number | number Initial amount to trade |
 
 ## API
-Плагин имеет всего два метода:
+The plugin has only two methods:
 
-`this.plugins.stats.report()` - позволяет сформировать отчет в человеко-понятной форме, с округлениями цифр до 2х знаков после запятой
+`this.plugins.stats.report()` - allows you to generate a report in human-understandable form, with rounded numbers to 2 decimal places
 
-`this.plugins.stats.getState()` - отдает текущее состояние данных без всякой обработки, позволяет в случае необходимости быстро получать реальные данные не вызывая медленное форматирование
+`this.plugins.stats.getState()` - gives the current state of data without any processing, allows to get real data quickly, if necessary, without causing slow formatting
 
 
-## Описание статистики
-| Название | Описание   |
+## Stats description
+| Name | Description |
 |----------|------------|
-| startBalance   |  Стартовые средства |
-| balance   |  Конечный (текущий) уровень средств |
-| maxBalance   |  Максимальный уровень средств за период торговли  |
-| minBalance   |  Минимальный уровень средств за период торговли |
-| maxMarginUsage   |  Максимальная маржа (средства сверх одной сделки) |
-| profit   |  Чистая прибыль за вычетом комиссий |
-| long   |  Количество сделок на покупку |
-| longRight   |  Количество прибыльных сделок покупки |
-| short   |  Количество шортов |
-| shortRight   |  Количество прибыльних шортов |
-| absoluteDD   |  Абсолютная просадка |
-| relativeDD   |  Относительная просадка |
-| maxWin   |  Максимальный выигрыш за сделку |
-| maxLoose   |  Максимальная потеря за сделку |
-| profitProb   |  Вероятность прибыльной сделкки |
-| looseProb   |  Вероятность убыльной сделки |
-| expectation   |  Математическое ожидание выигрыша |
-| failLine   |  Максимальная длинна серии убыточных сделок любого типа |
-| rightLine   |  Максимальная длинна серии прибыльных сделок любого типа |
-| avgFailLine   |  Средняя длинна серии убыточных сделок |
-| avgRightLine   |  Средняя длинна серии прибыльных сделок |
-| ticksHandled   |  Количество обработаных тиков за период работы |
-| candlesHandled   |  Количество обработаных свеч за период работы |
+| startBalance | start means |
+| balance | end (current) level of funds |
+| maxBalance | maximum level of funds for the trading period |
+| minBalance | minimum level of funds for the trading period |
+| maxMarginUsage | maximum margin (funds over one trade) |
+| profit | net profit excluding commissions |
+| long | number of buy trades |
+| longRight | Number of profitable buy trades |
+| short | number of shorts |
+| shortRight | Number of profitable shorts |
+| absoluteDD | absolute drawdown |
+| relativeDD | relative drawdown |
+| maxWin | Maximum gain per trade |
+| maxLoose | Maximum loss per trade |
+| profitProb | Probability of profitable trade |
+| looseProb | Probability of losing trade |
+| expectation | mathematical expectation of winning |
+| failLine | Maximum length of a series of losing trades of any type |
+| rightLine | Maximum length of a series of profitable trades of any type |
+| avgFailLine | Average length of the series of losing trades |
+| avgRightLine | Average length of the series of profitable trades |
+| ticksHandled | Number of processed ticks for the period of work |
+| candlesHandled | Number of candles processed during the period of work |

@@ -1,24 +1,24 @@
 # @debut/plugin-reinvest
-Плагин Debut, для добавления прибыли от сделок к стартовому капиталу (ренивестирование). В основном используется для увеличения прибыли. При включении, вся прибыль ули убыток от сделок, будут вычитаться или складываться с начальным капиталом.
+Debut plugin, for adding profits from trades to your starting capital (re-investment). It is mainly used to increase profits. When enabled, all profits or losses from trades will be subtracted or added to the initial capital.
 
-## Установка
+## Setup
 
 ```
 npm install @debut/plugin-reinvest --save
 ```
 
-## Инициализация плагина
+## Initializing the plugin
 ```javascript
 import { reinvestPlugin } from '@debut/plugin-reinvest';
 
 // ...
-// Конструктор стратегии в контексте Debut...
+// Strategy constructor in the context of Debut...
 constructor(transport: BaseTransport, opts: MyStrategyOpts) {
     super(transport, opts);
 
     this.registerPlugins([
         // ...
-        // Можно задать опциональное включение кастомной настройкой, либо включать всегда
+        // You can optionally enable it with a custom configuration, or always enable it
         this.opts.reinvest ? reinvestPlugin() : null,
         // ...
     ]);

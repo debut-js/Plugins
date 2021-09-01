@@ -32,10 +32,14 @@ export function getMinIncrementValue(price: number | string): number {
 /**
  * Calculate order profit in currency
  */
-export function getCurrencyProfit(order: ExecutedOrder, price: number) {
-    const rev = order.type === OrderType.SELL ? -1 : 1;
+export function getCurrencyProfit(order: ExecutedOrder | PendingOrder, price: number) {
+    if ('orderId' in order) {
+        const rev = order.type === OrderType.SELL ? -1 : 1;
 
-    return (price - order.price) * order.executedLots * rev - order.commission.value;
+        return (price - order.price) * order.executedLots * rev - order.commission.value;
+    }
+
+    return 0;
 }
 
 /** Calculate batch orders profit */
@@ -43,9 +47,7 @@ export function getCurrencyBatchProfit(orders: Array<ExecutedOrder | PendingOrde
     let totalProfit = 0;
 
     for (const order of orders) {
-        if ('orderId' in order) {
-            totalProfit += getCurrencyProfit(order, price);
-        }
+        totalProfit += getCurrencyProfit(order, price);
     }
 
     return totalProfit;

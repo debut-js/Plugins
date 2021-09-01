@@ -185,9 +185,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
         return {
             x: margins.map((o) => o.time),
             y: margins.map((o) => o.usage),
-            type: 'scatter',
-            mode: 'lines',
-            line: { width: 1 },
+            type: 'bar',
             marker: { color: 'orange' },
             name: 'Margin',
             yaxis: 'y2',

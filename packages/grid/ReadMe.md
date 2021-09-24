@@ -16,7 +16,7 @@ npm install @debut/plugin-grid --save
 | martingale | number | Martingale coefficient. Determines the number of lots for a trade. In the classic martingale system it is equal to 2, which means that we always double the lot of the previous deal, if 1 - the lot will be fixed |
 | levelsCount | number | The number of grid levels, the more the more funds you need |
 | takeProfit | number | Take profit as a percentage. Calculated as the total profit from open positions in relation to the initial capital |
-| stopLoss | number | Stop loss in percentage. It is calculated by the sum of all open positions, as well as takeProfit* |
+| stopLoss | number | Stop loss in percentage. (May be Infinity assigned, this is correct number type ) It is calculated by the sum of all open positions, as well as takeProfit* |
 | reduceEquity | boolean | Each next grid start lot will reduced |
 | trend | boolean | default - false, true mean top levels initiate buy, bottom levels initiate sell (reversed) |
 

@@ -27,6 +27,7 @@ Requires npm v7.x.x to work
 In the root directory, execute:
 
 ```bash
+npm i
 npm i --workspaces
 npm run build --workspaces
 ```

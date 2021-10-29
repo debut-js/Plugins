@@ -42,12 +42,34 @@ export function getCurrencyProfit(order: ExecutedOrder | PendingOrder, price: nu
     return 0;
 }
 
-/** Calculate batch orders profit */
+/** Calculate batch orders profit in currency */
 export function getCurrencyBatchProfit(orders: Array<ExecutedOrder | PendingOrder>, price: number) {
     let totalProfit = 0;
 
     for (const order of orders) {
         totalProfit += getCurrencyProfit(order, price);
+    }
+
+    return totalProfit;
+}
+
+/** Calculate order comission (based on predictable comission level) */
+export function getCurrencyComissions(order: ExecutedOrder | PendingOrder, price: number, fee: number) {
+    if ('orderId' in order) {
+        const rev = order.type === OrderType.SELL ? -1 : 1;
+
+        return (price - order.price) * order.executedLots * rev * fee;
+    }
+
+    return 0;
+}
+
+/** Calculate batch orders profit */
+export function getCurrencyBatchComissions(orders: Array<ExecutedOrder | PendingOrder>, price: number, fee: number) {
+    let totalProfit = 0;
+
+    for (const order of orders) {
+        totalProfit += getCurrencyComissions(order, price, fee);
     }
 
     return totalProfit;

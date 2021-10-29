@@ -32,6 +32,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let startMultiplier: number;
     let amount: number;
     let ctx: PluginCtx;
+    let fee: number;
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;
@@ -61,6 +62,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
         onInit() {
             ctx = this;
             startMultiplier = this.debut.opts.lotsMultiplier || 1;
+            fee = (this.debut.opts.fee || 0.02) / 100;
         },
 
         async onOpen(order: ExecutedOrder) {
@@ -85,7 +87,8 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
         async onTick(tick: Candle) {
             if (this.debut.orders.length) {
                 // TODO: Create streaming profit watcher with nextValue
-                const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
+                const closingComission = orders.getCurrencyBatchComissions(this.debut.orders, tick.c, fee);
+                const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c) - closingComission;
                 const percentProfit = (profit / amount) * 100;
 
                 if (percentProfit >= opts.takeProfit || percentProfit <= -opts.stopLoss) {

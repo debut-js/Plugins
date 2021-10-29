@@ -30,6 +30,8 @@ export type GridPluginOptions = {
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let grid: GridClass | null;
     let startMultiplier: number;
+    let amount: number;
+    let ctx: PluginCtx;
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;
@@ -44,6 +46,8 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
              */
             createGrid(price: number) {
                 grid = new GridClass(price, opts);
+                // Fixation amount for all time grid lifecycle
+                amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
                 return grid;
             },
 
@@ -55,6 +59,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             },
         },
         onInit() {
+            ctx = this;
             startMultiplier = this.debut.opts.lotsMultiplier || 1;
         },
 
@@ -65,6 +70,8 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
             if (!grid) {
                 grid = new GridClass(order.price, opts);
+                // Fixation amount for all time grid lifecycle
+                amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
             }
         },
 
@@ -77,8 +84,9 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
         async onTick(tick: Candle) {
             if (this.debut.orders.length) {
+                // TODO: Create streaming profit watcher with nextValue
                 const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
-                const percentProfit = (profit / this.debut.opts.amount) * 100;
+                const percentProfit = (profit / amount) * 100;
 
                 if (percentProfit >= opts.takeProfit || percentProfit <= -opts.stopLoss) {
                     grid = null;

@@ -145,6 +145,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
         },
 
         async onClose(order: ExecutedOrder, closing: ExecutedOrder) {
+            const amount = this.debut.opts.amount * (this.debut.opts.equityLevel || 1);
+
             state.maxMarginUsage = Math.max(
                 state.maxMarginUsage,
                 this.debut.orders.reduce((sum, order) => sum + order.lots * order.price, 0),
@@ -152,7 +154,7 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
 
             // Прибыль минус налог на закрытии
             const profit = orders.getCurrencyProfit(closing, order.price) - order.commission.value;
-            const percentProfit = (profit / this.debut.opts.amount) * 100;
+            const percentProfit = (profit / amount) * 100;
             const isLastOrder = !this.debut.orders.length;
 
             state.balance += profit;
@@ -172,8 +174,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
 
             if (isLastOrder && state.profit < 0) {
                 // Инверсия для того чтобы убрать знак минус
-                const currentEquity = this.debut.opts.amount - state.profit;
-                const dd = math.percentChange(currentEquity, this.debut.opts.amount);
+                const currentEquity = amount - state.profit;
+                const dd = math.percentChange(currentEquity, amount);
 
                 if (state.absoluteDD < dd) {
                     state.absoluteDD = dd;

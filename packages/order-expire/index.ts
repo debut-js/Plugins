@@ -11,11 +11,13 @@ type LimitLookup = Record<string, number>;
 export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
     const lookup: LimitLookup = {};
     const halfLimit = opts.orderCandlesLimit / 2;
+    let amount: number;
 
     return {
         name: 'order-expire',
 
         async onOpen(order) {
+            amount = this.debut.opts.amount * (this.debut.opts.equityLevel || 1);
             lookup[order.orderId] = 0;
         },
 
@@ -39,7 +41,7 @@ export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
 
                 if (opts.closeAtZero && counter > halfLimit) {
                     const profit = orders.getCurrencyProfit(order, c);
-                    const percentProfit = (profit / this.debut.opts.amount) * 100;
+                    const percentProfit = (profit / amount) * 100;
 
                     if (percentProfit >= (this.debut.opts.fee || 0)) {
                         await this.debut.closeOrder(order);

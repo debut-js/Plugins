@@ -117,6 +117,12 @@ Counting the current profit in the currency of the trade
 ### `getCurrencyBatchProfit(orders: ExecutedOrder[], price: number)`
 Counting current profit in the currency of the trade for several orders simultaneously
 
+### `getCurrencyComissions(orders: ExecutedOrder[], price: number, fee: number)`
+Counting current commision for single order based on predicatable fee number
+
+### `getCurrencyBatchComissions(orders: ExecutedOrder[], price: number, fee: number)`
+Counting current commision for several orders order based on predicatable fee number
+
 <hr/>
 
 ## Promise

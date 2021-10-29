@@ -1,5 +1,5 @@
 import { ExecutedOrder, PendingOrder, OrderType } from '@debut/types';
-import { getPrecision, percentChange } from './math';
+import { getPrecision } from './math';
 
 /**
  * Reverse order type
@@ -56,9 +56,7 @@ export function getCurrencyBatchProfit(orders: Array<ExecutedOrder | PendingOrde
 /** Calculate order comission (based on predictable comission level) */
 export function getCurrencyComissions(order: ExecutedOrder | PendingOrder, price: number, fee: number) {
     if ('orderId' in order) {
-        const rev = order.type === OrderType.SELL ? -1 : 1;
-
-        return (price - order.price) * order.executedLots * rev * fee;
+        return price * order.executedLots * fee;
     }
 
     return 0;

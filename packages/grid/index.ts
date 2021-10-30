@@ -1,5 +1,6 @@
 import { PluginInterface, ExecutedOrder, OrderType, Candle, PluginCtx } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
+import { DynamicTakesPlugin } from '@debut/plugin-dynamic-takes';
 
 type GridLevel = { price: number; activated: boolean };
 interface Methods {
@@ -25,6 +26,7 @@ export type GridPluginOptions = {
     stopLoss: number; // общий стоп в процентах для всего грида
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
     trend?: boolean; // по тренду или против
+    trailing?: boolean; // трейлинг последней сделки, требует плагин dynamic-takes
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -33,6 +35,10 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let amount: number;
     let ctx: PluginCtx;
     let fee: number;
+    let zeroPrice = 0;
+    let prevProfit = 0;
+    let dynamicTakesPlugin: DynamicTakesPlugin;
+    let trailingSetted = false;
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;
@@ -63,17 +69,23 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             ctx = this;
             startMultiplier = this.debut.opts.lotsMultiplier || 1;
             fee = (this.debut.opts.fee || 0.02) / 100;
+
+            if (opts.trailing) {
+                dynamicTakesPlugin = this.findPlugin<DynamicTakesPlugin>('dynamicTakes');
+
+                if (!dynamicTakesPlugin) {
+                    throw new Error('@debut/plugin-dynamic-takes is required for trailing');
+                }
+            }
         },
 
         async onOpen(order: ExecutedOrder) {
-            if (!('orderId' in order)) {
-                throw `Grid Creating error with order ${orders}`;
-            }
-
             if (!grid) {
                 grid = new GridClass(order.price, opts);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
+            } else {
+                zeroPrice = order.price;
             }
         },
 
@@ -81,19 +93,38 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             // When all orders are closed - revert multiplier
             if (this.debut.orders.length === 0) {
                 this.debut.opts.lotsMultiplier = startMultiplier;
+                grid = null;
+                trailingSetted = false;
             }
         },
 
         async onTick(tick: Candle) {
-            if (this.debut.orders.length) {
+            if (trailingSetted) {
+                return;
+            }
+
+            const ordersLen = this.debut.orders.length;
+
+            if (ordersLen) {
                 // TODO: Create streaming profit watcher with nextValue
                 const closingComission = orders.getCurrencyBatchComissions(this.debut.orders, tick.c, fee);
                 const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c) - closingComission;
                 const percentProfit = (profit / amount) * 100;
 
-                if (percentProfit >= opts.takeProfit || percentProfit <= -opts.stopLoss) {
-                    grid = null;
+                if (prevProfit < 0 && profit >= 0 && ordersLen > 1) {
+                    zeroPrice = tick.c;
+                }
+
+                prevProfit = profit;
+
+                if (percentProfit <= -opts.stopLoss) {
                     await this.debut.closeAll();
+                    // Вернем лотность наместо
+                    this.debut.opts.lotsMultiplier = startMultiplier;
+                    return;
+                }
+
+                if (percentProfit >= opts.takeProfit) {
                     // Вернем лотность наместо
                     this.debut.opts.lotsMultiplier = startMultiplier;
 
@@ -109,6 +140,19 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                             this.debut.dispose();
                         }
                     }
+
+                    if (opts.trailing) {
+                        // Close all orders exclude last order
+                        while (this.debut.orders.length !== 1) {
+                            await this.debut.closeOrder(this.debut.orders[0]);
+                        }
+
+                        dynamicTakesPlugin.api.setTrailingForOrder(this.debut.orders[0].cid, zeroPrice);
+                        trailingSetted = true;
+                    } else {
+                        await this.debut.closeAll();
+                    }
+
                     return;
                 }
             }
@@ -143,6 +187,8 @@ class GridClass implements Grid {
     public nextLowIdx = 0;
     public upLevels: GridLevel[] = [];
     public lowLevels: GridLevel[] = [];
+    public zeroPointPrice = 0;
+    public paused = false;
 
     constructor(price: number, options: GridPluginOptions) {
         const step = price * (options.step / 100);

@@ -12,8 +12,8 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^1.2.2",
-        "@debut/plugin-utils": "^1.0.22"
+        "@debut/plugin-utils": "^1.0.22",
+        "@debut/types": "^1.2.3"
     },
     "repository": {
         "type": "git",
@@ -32,5 +32,8 @@
     "files": [
         "dist"
     ],
-    "homepage": "https://github.com/debut-js/Plugins#readme"
+    "homepage": "https://github.com/debut-js/Plugins#readme",
+    "dependencies": {
+        "@debut/plugin-dynamic-takes": "^1.2.0"
+    }
 }

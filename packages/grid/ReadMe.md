@@ -19,6 +19,7 @@ npm install @debut/plugin-grid --save
 | stopLoss | number | Stop loss in percentage. (May be Infinity assigned, this is correct number type ) It is calculated by the sum of all open positions, as well as takeProfit* |
 | reduceEquity | boolean | Each next grid start lot will reduced |
 | trend | boolean | default - false, true mean top levels initiate buy, bottom levels initiate sell (reversed) |
+| trailing | boolean | default - false, true mean trailing profit apllied to last or first order after grid take reached  |
 
 \* Stop/Take does not work on the basis of price, but on the basis of a percentage of funds.
 

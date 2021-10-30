@@ -119,15 +119,10 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                 if (percentProfit <= -opts.stopLoss) {
                     await this.debut.closeAll();
-                    // Вернем лотность наместо
-                    this.debut.opts.lotsMultiplier = startMultiplier;
                     return;
                 }
 
                 if (percentProfit >= opts.takeProfit) {
-                    // Вернем лотность наместо
-                    this.debut.opts.lotsMultiplier = startMultiplier;
-
                     if (opts.reduceEquity) {
                         if (!this.debut.opts.equityLevel) {
                             this.debut.opts.equityLevel = 1;

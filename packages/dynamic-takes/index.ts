@@ -168,9 +168,9 @@ function checkClose(order: ExecutedOrder | PendingOrder, price: number, lookup: 
  */
 function checkTrailingClose(order: ExecutedOrder | PendingOrder, price: number, lookup: TakesLookup) {
     const { type, cid } = order;
-    const { takePrice, stopPrice } = lookup[cid] || {};
+    const { stopPrice } = lookup[cid] || {};
 
-    if (!takePrice || !stopPrice) {
+    if (!stopPrice) {
         // Order is not added to plugin, skip this
         return;
     }

@@ -15,6 +15,13 @@ npm install @debut/plugin-dynamic-takes --save
 | ignoreTicks | boolean | false | ignore ticks, because it often happens that stops can be knocked out by the shadow but not the body of the candle |
 | maxRetryOrders | number | 0 | Sets the number of buybacks |
 
+## Plugin API
+| Name | Description |
+|-----------|------------|
+| setTrailingForOrder | start trailing for a single target order |
+| setForOrder | setup stop and take prices for signle order, setting up by passed options parameters |
+| getTakes | get take and stop price for order from plugin state |
+
 #### \* The rebates are always of the same size as the original position. They are executed when the stop of the last created trade reaches the stop. Stop levels will be copied from the original trade.
 
 #### \*\** If the number of pending orders is not set, the position will be closed when the stop is reached.

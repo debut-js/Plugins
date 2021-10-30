@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType } from '@debut/types';
+import { PluginInterface, ExecutedOrder, Candle, PluginCtx, OrderType, PendingOrder } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
 
 export interface DynamicTakesPlugin extends PluginInterface {
@@ -18,6 +18,7 @@ export type DynamicTakesPluginOptions = {
 };
 
 interface Methods {
+    setTrailingForOrder(cid: number, stopPrice: number): void;
     setForOrder(cid: number, takePrice: number, stopPrice: number): void;
     getTakes(cid: number): OrderTakes;
 }
@@ -37,6 +38,7 @@ type TakesLookup = Record<string, OrderTakes>;
 
 export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInterface {
     const lookup: TakesLookup = {};
+    const trailingSingleOrder = new Map();
     let ctx: PluginCtx;
 
     async function handleTick(tick: Candle) {
@@ -60,19 +62,21 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         let newOrder: ExecutedOrder | null = null;
 
         for (const order of [...ctx.debut.orders]) {
-            if (!('orderId' in order)) {
+            const isTraling = opts.trailing || trailingSingleOrder.has(order.cid);
+
+            if (order.processing) {
                 continue;
             }
 
-            if (opts.trailing) {
+            if (isTraling) {
                 trailingTakes(order, price, lookup);
             }
 
-            const closeReason = checkClose(order, price, lookup);
-            const takes = lookup[order.orderId];
+            const closeReason = isTraling ? checkTrailingClose(order, price, lookup) : checkClose(order, price, lookup);
+            const takes = lookup[order.cid];
 
             // Stop achieved
-            if (opts.maxRetryOrders! > 0 && !order.processing && closeReason === CloseType.STOP) {
+            if (opts.maxRetryOrders! > 0 && closeReason === CloseType.STOP) {
                 // Move takes
 
                 takes.stopPrice += takes.stopPrice - order.price;
@@ -81,7 +85,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
                 // Create same type as origin order
                 if (!newOrder) {
                     newOrder = await ctx.debut.createOrder(order.type);
-                    lookup[newOrder.orderId] = {
+                    lookup[newOrder.cid] = {
                         takePrice: takes.takePrice,
                         stopPrice: takes.stopPrice,
                     };
@@ -96,6 +100,10 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         name: 'dynamicTakes',
 
         api: {
+            setTrailingForOrder(cid: number, stopPrice: number) {
+                trailingSingleOrder.set(cid, true);
+                lookup[cid] = { takePrice: 0, stopPrice };
+            },
             setForOrder(cid: number, takePrice: number, stopPrice: number) {
                 if (!takePrice || !stopPrice) {
                     throw `prices in setForOrder() should be a number, current take: ${takePrice}, stop: ${stopPrice}`;
@@ -115,6 +123,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
         async onClose(order, closing) {
             delete lookup[closing.cid];
+            trailingSingleOrder.delete(closing.cid);
         },
 
         async onCandle(candle) {
@@ -134,7 +143,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 /**
  * Проверяем достижение тейка на оснвании текущей цены
  */
-function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
+function checkClose(order: ExecutedOrder | PendingOrder, price: number, lookup: TakesLookup) {
     const { type, cid } = order;
     const { takePrice, stopPrice } = lookup[cid] || {};
 
@@ -154,7 +163,28 @@ function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     return;
 }
 
-function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
+/**
+ * Проверяем достижение тейка на оснвании текущей цены
+ */
+function checkTrailingClose(order: ExecutedOrder | PendingOrder, price: number, lookup: TakesLookup) {
+    const { type, cid } = order;
+    const { takePrice, stopPrice } = lookup[cid] || {};
+
+    if (!takePrice || !stopPrice) {
+        // Order is not added to plugin, skip this
+        return;
+    }
+
+    const isBuy = type === OrderType.BUY;
+
+    if (isBuy ? price <= stopPrice : price >= stopPrice) {
+        return CloseType.STOP;
+    }
+
+    return;
+}
+
+function trailingTakes(order: ExecutedOrder | PendingOrder, price: number, lookup: TakesLookup) {
     const { cid } = order;
     const takes = lookup[cid];
 
@@ -173,7 +203,6 @@ function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup)
     ) {
         const delta = price - takes.price;
 
-        takes.takePrice += delta;
         takes.stopPrice += delta;
         takes.price = price;
     }

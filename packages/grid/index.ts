@@ -23,7 +23,7 @@ export type GridPluginOptions = {
     martingale: number; // коэффициент мартингейла от 1-2
     levelsCount: number; // кол-во уровней грида
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
-    stopLoss: number; // общий стоп в процентах для всего грида
+    stopLoss?: number; // общий стоп в процентах для всего грида
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
     trend?: boolean; // по тренду или против
     trailing?: boolean; // трейлинг последней сделки, требует плагин dynamic-takes
@@ -39,6 +39,10 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let prevProfit = 0;
     let dynamicTakesPlugin: DynamicTakesPlugin;
     let trailingSetted = false;
+
+    if (!opts.stopLoss) {
+        opts.stopLoss = Infinity;
+    }
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;

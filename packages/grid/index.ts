@@ -121,7 +121,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                 prevProfit = profit;
 
-                if (percentProfit <= -opts.stopLoss) {
+                if (percentProfit <= -opts.stopLoss!) {
                     await this.debut.closeAll();
                     return;
                 }

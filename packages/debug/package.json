@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-debug",
-    "version": "1.0.12",
+    "version": "1.0.14",
     "publishConfig": {
         "access": "public"
     },
@@ -32,5 +32,8 @@
     "files": [
         "dist"
     ],
-    "homepage": "https://github.com/debut-js/Plugins#readme"
+    "homepage": "https://github.com/debut-js/Plugins#readme",
+    "devDependencies": {
+        "@types/node": "^16.11.7"
+    }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-order-expire",
-    "version": "1.0.17",
+    "version": "1.0.19",
     "publishConfig": {
         "access": "public"
     },
@@ -12,7 +12,8 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^2.0.0"
+        "@debut/types": "^2.0.0",
+        "@debut/plugin-utils": "^1.1.0"
     },
     "repository": {
         "type": "git",

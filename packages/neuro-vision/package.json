@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-neuro-vision",
-    "version": "1.0.4",
+    "version": "1.0.6",
     "publishConfig": {
         "access": "public"
     },
@@ -12,10 +12,11 @@
         "prepare": "npm run build"
     },
     "peerDependencies": {
+        "@debut/plugin-utils": "^1.1.0",
         "@debut/types": "^2.0.0"
     },
     "dependencies": {
-        "brain.js": "2.0.0-beta.4"
+        "brain.js": "2.0.0-beta.2"
     },
     "repository": {
         "type": "git",
@@ -33,5 +34,8 @@
     "files": [
         "dist"
     ],
-    "homepage": "https://github.com/debut-js/Plugins#readme"
+    "homepage": "https://github.com/debut-js/Plugins#readme",
+    "devDependencies": {
+        "@types/node": "^16.11.7"
+    }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-order-expire",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "publishConfig": {
         "access": "public"
     },

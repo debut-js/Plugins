@@ -155,7 +155,7 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
             // Прибыль минус налог на закрытии
             const profit = orders.getCurrencyProfit(closing, order.price) - order.commission.value;
             const percentProfit = (profit / amount) * 100;
-            const isLastOrder = !this.debut.orders.length;
+            const isLastOrder = !this.debut.ordersCount;
 
             state.balance += profit;
             state.profit += profit;

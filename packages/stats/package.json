@@ -8,11 +8,11 @@
     "description": "Debut stretegies stats",
     "main": "dist/index.js",
     "peerDependencies": {
-        "@debut/types": "^2.0.0"
+        "@debut/types": "^2.0.5"
     },
     "scripts": {
         "build": "tsc",
-        "prepare": "npm run build"
+        "preversion": "npm run build"
     },
     "repository": {
         "type": "git",

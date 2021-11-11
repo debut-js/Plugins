@@ -482,7 +482,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
             deals.push(deal);
 
-            if (!this.debut.orders.length) {
+            if (!this.debut.ordersCount) {
                 profit.push({ profit: stats.api.getState().profit, time: formatTime(order.time) });
             }
         },

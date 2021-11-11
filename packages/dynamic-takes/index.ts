@@ -43,7 +43,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
 
     async function handleTick(tick: Candle) {
         const price = tick.c;
-        const orderCount = ctx.debut.orders.length;
+        const orderCount = ctx.debut.ordersCount;
         // No orders => no tracking
         if (!orderCount) {
             return;

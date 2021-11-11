@@ -95,7 +95,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
         async onClose() {
             // When all orders are closed - revert multiplier
-            if (this.debut.orders.length === 0) {
+            if (this.debut.ordersCount === 0) {
                 this.debut.opts.lotsMultiplier = startMultiplier;
                 grid = null;
                 trailingSetted = false;
@@ -107,7 +107,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 return;
             }
 
-            const ordersLen = this.debut.orders.length;
+            const ordersLen = this.debut.ordersCount;
 
             if (ordersLen) {
                 // TODO: Create streaming profit watcher with nextValue
@@ -142,7 +142,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                     if (opts.trailing) {
                         // Close all orders exclude last order
-                        while (this.debut.orders.length !== 1) {
+                        while (this.debut.ordersCount !== 1) {
                             await this.debut.closeOrder(this.debut.orders[0]);
                         }
 

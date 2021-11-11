@@ -20,7 +20,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
     async function handleTick(debut: DebutCore, tick: Candle) {
         const price = tick.c;
         // Нет заявки активной - нет мониторинга
-        if (!debut.orders.length) {
+        if (!debut.ordersCount) {
             return;
         }
 

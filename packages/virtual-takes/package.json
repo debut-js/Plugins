@@ -9,10 +9,10 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "tsc",
-        "prepare": "npm run build"
+        "preversion": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^2.0.0"
+        "@debut/types": "^2.0.5"
     },
     "repository": {
         "type": "git",

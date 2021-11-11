@@ -8,12 +8,12 @@
     "description": "Dynamic takes plugin for Debut",
     "main": "dist/index.js",
     "peerDependencies": {
-        "@debut/plugin-utils": "^1.1.0",
-        "@debut/types": "^2.0.0"
+        "@debut/plugin-utils": "^1.1.2",
+        "@debut/types": "^2.0.5"
     },
     "scripts": {
         "build": "tsc",
-        "prepare": "npm run build"
+        "preversion": "npm run build"
     },
     "repository": {
         "type": "git",

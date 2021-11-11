@@ -5,6 +5,7 @@
     "scripts": {
         "build": "npm run build --workspaces",
         "upgrade:all": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --upgrade \\;",
+        "install:all": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir npm install \\;",
         "prettier": "prettier --config .prettierrc --write packages/**/*.ts"
     },
     "author": "Dmitry Yurov",
@@ -14,7 +15,6 @@
     ],
     "devDependencies": {
         "@types/node": "^16.11.7",
-        "@types/node-telegram-bot-api": "^0.53.2",
         "@types/ws": "^8.2.0",
         "@typescript-eslint/eslint-plugin": "^5.3.1",
         "@typescript-eslint/parser": "^5.3.1",

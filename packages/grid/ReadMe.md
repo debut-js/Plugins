@@ -44,7 +44,7 @@ export class MyStrategy extends Debut {
 
     onCandle(candle) {
         // Grid can created manually withoun order
-        // if (!this.orders.length) {
+        // if (!this.ordersCount) {
         //     this.plugins.grid.createGrid(candle.c;
         // }
 

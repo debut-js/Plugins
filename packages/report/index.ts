@@ -458,7 +458,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 return sum;
             }, 0);
 
-            margins.push({ usage, time: formatTime(order.time) });
+            if (usage > this.debut.opts.amount && showMargin) {
+                margins.push({ usage, time: formatTime(order.time) });
+            }
         },
 
         async onClose(order, closing) {

@@ -150,7 +150,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                         dynamicTakesPlugin.api.setTrailingForOrder(this.debut.orders[0].cid, zeroPrice);
                         trailingSetted = true;
                     } else {
-                        await this.debut.closeAll();
+                        await this.debut.closeAll(opts.collapse);
                     }
 
                     return;

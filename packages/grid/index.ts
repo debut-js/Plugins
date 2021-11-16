@@ -27,6 +27,7 @@ export type GridPluginOptions = {
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
     trend?: boolean; // по тренду или против
     trailing?: boolean; // трейлинг последней сделки, требует плагин dynamic-takes
+    collapse?: boolean; // collapse orders when close
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -122,7 +123,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 prevProfit = profit;
 
                 if (percentProfit <= -opts.stopLoss!) {
-                    await this.debut.closeAll();
+                    await this.debut.closeAll(opts.collapse);
                     return;
                 }
 

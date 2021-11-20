@@ -458,7 +458,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 return sum;
             }, 0);
 
-            if (usage > this.debut.opts.amount * (this.debut.opts.equityLevel || 1) && showMargin) {
+            if (Math.floor(usage) > this.debut.opts.amount * (this.debut.opts.equityLevel || 1) && showMargin) {
                 margins.push({ usage, time: formatTime(order.time) });
             }
         },

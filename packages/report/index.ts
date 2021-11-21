@@ -445,7 +445,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
             }
         },
 
-        async onBeforeClose(order) {
+        onBeforeClose(order) {
             if (limitTo && limitFrom && (order.time < limitFrom || order.time > limitTo)) {
                 return;
             }

@@ -12,7 +12,7 @@
         "preversion": "npm run build"
     },
     "peerDependencies": {
-        "@debut/types": "^2.1.0"
+        "@debut/types": "^3.0.0"
     },
     "repository": {
         "type": "git",

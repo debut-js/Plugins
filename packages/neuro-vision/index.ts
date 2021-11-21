@@ -2,6 +2,14 @@ import { Candle, PluginInterface } from '@debut/types';
 import { cli } from '@debut/plugin-utils';
 import { Network } from './neural';
 
+export enum NeuroVision {
+    'HIGH_UPTREND',
+    'LOW_UPTREND',
+    'NEUTRAL',
+    'LOW_DOWNTREND',
+    'HIGH_DOWNTREND',
+}
+
 export interface NeuroVisionPluginArgs {
     neuroTrain: boolean;
 }
@@ -12,10 +20,11 @@ export interface NeuroVisionPluginOptions {
     precision: number; // 3
     hiddenLayers?: number[];
     debug?: boolean;
+    crossValidate?: boolean;
 }
 
 interface Methods {
-    nextValue(candle: Candle): { maxPrice: number; minPrice: number } | undefined;
+    nextValue(candle: Candle): NeuroVision | undefined;
     addTrainValue(candle: Candle): void;
     restore(): void;
     isTraining(): boolean;

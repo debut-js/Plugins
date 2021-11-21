@@ -1,8 +1,9 @@
-import { CrossValidate, NeuralNetwork } from 'brain.js';
+import { CrossValidate, INeuralNetworkOptions, NeuralNetwork } from 'brain.js';
 import { file, math } from '@debut/plugin-utils';
 import { Candle } from '@debut/types';
 import path from 'path';
 import { getDistribution, getQuoteRatioData, RatioCandle, DistributionSegment } from './utils';
+import { NeuroVision } from './index';
 
 export interface Params {
     segmentsCount: number;
@@ -11,10 +12,11 @@ export interface Params {
     workingDir: string;
     hiddenLayers?: number[];
     debug?: boolean;
+    crossValidate?: boolean;
 }
 
 export class Network {
-    private crossValidate: CrossValidate;
+    private crossValidate: CrossValidate = null!;
     private network: NeuralNetwork = null!;
     private dataset: RatioCandle[] = [];
     private trainingSet: Array<{ input: number[]; output: number[] }> = [];
@@ -25,11 +27,16 @@ export class Network {
     private gaussPath: string;
 
     constructor(private params: Params) {
-        this.crossValidate = new CrossValidate(NeuralNetwork, {
+        const nnOpts: INeuralNetworkOptions = {
             hiddenLayers: params.hiddenLayers || [32, 16], // array of ints for the sizes of the hidden layers in the network
             activation: 'sigmoid', // supported activation types: ['sigmoid', 'relu', 'leaky-relu', 'tanh'],
             leakyReluAlpha: 0.01,
-        });
+        };
+        if (this.params.crossValidate) {
+            this.crossValidate = new CrossValidate(NeuralNetwork, nnOpts);
+        } else {
+            this.network = new NeuralNetwork(nnOpts);
+        }
 
         this.gaussPath = path.resolve(params.workingDir, './gaussian-groups.json');
         this.layersPath = path.resolve(params.workingDir, './nn-layers.json');
@@ -54,28 +61,40 @@ export class Network {
             console.log(this.distribution);
         }
 
-        this.dataset.forEach((ratioCandle) => {
+        for (let i = 0; i < this.dataset.length; i++) {
+            const ratioCandle = this.dataset[i];
             const groupId = this.normalize(
                 this.distribution.findIndex(
                     (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,
                 ),
             );
 
+            this.input.push(groupId);
+
             if (this.input.length === this.params.windowSize) {
-                this.trainingSet.push({ input: [...this.input], output: [groupId] });
+                const forecastingRatio = this.dataset[i + 1]?.ratio;
+
+                if (!forecastingRatio) {
+                    break;
+                }
+
+                const outputGroupId = this.distribution.findIndex(
+                    (group) => forecastingRatio >= group.ratioFrom && forecastingRatio < group.ratioTo,
+                );
+                const normalizedOutput = this.normalize(outputGroupId);
+
+                this.trainingSet.push({ input: [...this.input], output: [normalizedOutput] });
                 this.input.shift();
             }
 
-            this.input.push(groupId);
-
             // this.input.push(this.normalize(groupId));
-        });
+        }
     };
 
     /**
      * Run forecast
      */
-    activate(candle: Candle) {
+    activate(candle: Candle): NeuroVision | undefined {
         const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
 
         this.prevCandle = candle;
@@ -104,19 +123,17 @@ export class Network {
                     console.log(denormalized);
                 }
 
-                return {
-                    maxPrice: candle.c * group.ratioTo,
-                    minPrice: candle.c * group.ratioFrom || candle.c,
-                };
+                return group.classify;
             }
         }
     }
 
     save() {
+        const source = this.crossValidate || this.network;
         file.ensureFile(this.gaussPath);
         file.ensureFile(this.layersPath);
         file.saveFile(this.gaussPath, this.distribution);
-        file.saveFile(this.layersPath, this.crossValidate.toJSON());
+        file.saveFile(this.layersPath, source.toJSON());
     }
 
     restore() {
@@ -134,11 +151,18 @@ export class Network {
         const nnLayers = JSON.parse(nnLayersData);
 
         this.distribution = JSON.parse(groupsData);
-        this.network = this.crossValidate.fromJSON(nnLayers);
+
+        if (this.params.crossValidate) {
+            this.network = this.crossValidate.fromJSON(nnLayers);
+        } else {
+            this.network.fromJSON(nnLayers);
+        }
     }
 
     training() {
-        this.crossValidate.train(this.trainingSet, {
+        const source = this.crossValidate || this.network;
+
+        source.train(this.trainingSet, {
             // Defaults values --> expected validation
             iterations: 40000, // the maximum times to iterate the training data --> number greater than 0
             errorThresh: 0.001, // the acceptable error percentage from training data --> number between 0 and 1
@@ -148,7 +172,10 @@ export class Network {
             momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
             timeout: 1500000,
         });
-        this.network = this.crossValidate.toNeuralNetwork();
+
+        if (!this.network) {
+            this.network = this.crossValidate.toNeuralNetwork();
+        }
     }
 
     private normalize(groupId: number) {

@@ -33,7 +33,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
                 trailingTakes(order, price, lookup);
             }
 
-            if (!order.processing && checkClose(order, price, lookup)) {
+            if (checkClose(order, price, lookup)) {
                 await debut.closeOrder(order);
             }
         }

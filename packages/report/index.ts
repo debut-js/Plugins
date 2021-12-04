@@ -288,7 +288,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                                 line: {
                                     width: 1,
                                 },
-                                mode: 'lines',
+                                mode: figure.type === FigureType.dot ? 'markers' : 'lines',
                                 name: figure.name,
                                 type: figure.type || 'scatter',
                                 fill: figure.fill,

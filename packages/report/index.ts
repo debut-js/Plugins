@@ -6,6 +6,7 @@ import path from 'path';
 export const enum FigureType {
     'bar' = 'bar',
     'line' = 'scatter',
+    'dot' = 'markers',
 }
 
 export const enum FillType {

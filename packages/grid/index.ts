@@ -158,14 +158,16 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             }
 
             if (grid) {
-                if (tick.c <= grid.getNextLow()?.price) {
+                // Dont active when grid getted direaction to short side
+                if (!grid.nextUpIdx && tick.c <= grid.getNextLow()?.price) {
                     grid.activateLow();
                     const lotsMulti = opts.martingale ** grid.nextLowIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;
                     await this.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
                 }
 
-                if (tick.c >= grid.getNextUp()?.price) {
+                // Dont active when grid getted direaction to long side
+                if (!!grid.nextLowIdx && tick.c >= grid.getNextUp()?.price) {
                     grid.activateUp();
                     const lotsMulti = opts.martingale ** grid.nextUpIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;

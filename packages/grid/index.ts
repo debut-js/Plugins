@@ -167,7 +167,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 }
 
                 // Dont active when grid getted direaction to long side
-                if (!!grid.nextLowIdx && tick.c >= grid.getNextUp()?.price) {
+                if (!grid.nextLowIdx && tick.c >= grid.getNextUp()?.price) {
                     grid.activateUp();
                     const lotsMulti = opts.martingale ** grid.nextUpIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;

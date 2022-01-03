@@ -12,6 +12,7 @@ export const enum FigureType {
 export const enum FillType {
     'tozeroy' = 'tozeroy',
     'tonexty' = 'tonexty',
+    'toself' = 'toself',
 }
 export interface IndicatorsData {
     line: {

@@ -106,6 +106,8 @@ public getIndicators = (): IndicatorsSchema => {
                     getValue: () => {
                         return this.macdValue.signal;
                     },
+                    color: 'red',
+                    fillcolor: 'rgba(255, 0, 0, 0.2)',
                 },
                 {
                     name: 'macd',

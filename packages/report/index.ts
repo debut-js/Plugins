@@ -17,11 +17,13 @@ export const enum FillType {
 export interface IndicatorsData {
     line: {
         width: number;
+        color?: string;
     };
     mode: string;
     name: string;
     type: string;
-    fill?: 'tozeroy' | 'tonexty';
+    fill?: FillType;
+    fillcolor?: string;
     x: string[];
     y: number[];
     yaxis: string;
@@ -52,6 +54,8 @@ export interface Indicator {
         name: string;
         type?: FigureType;
         fill?: FillType;
+        fillcolor?: string;
+        color?: string;
         getValue: () => number;
     }>;
     levels?: number[];
@@ -285,18 +289,22 @@ export function reportPlugin(showMargin = true): PluginInterface {
                         };
 
                         schema.figures.forEach((figure, idx) => {
-                            data.push({
+                            const lineData = {
                                 line: {
                                     width: 1,
+                                    color: figure.color,
                                 },
                                 mode: figure.type === FigureType.dot ? 'markers' : 'lines',
                                 name: figure.name,
                                 type: figure.type || 'scatter',
                                 fill: figure.fill,
+                                fillcolor: figure.fillcolor,
                                 x: [],
                                 y: [],
                                 yaxis: schema.inChart ? inChartAxisName : axisShortName, // y1 y2 заняты
-                            });
+                            };
+
+                            data.push(lineData);
                         });
 
                         indicatorsData[schema.name] = data;

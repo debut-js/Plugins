@@ -427,12 +427,16 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onAfterCandle(candle) {
-            if (limitTo && limitFrom && (candle.time < limitFrom || candle.time > limitTo)) {
+            const time = candle.time;
+
+            if (limitTo && limitFrom && (time < limitFrom || time > limitTo)) {
                 return;
             }
 
+            const formattedTime = formatTime(time);
+
             chartData.push({
-                time: formatTime(candle.time),
+                time: formattedTime,
                 open: candle.o,
                 high: candle.h,
                 low: candle.l,
@@ -446,12 +450,12 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     const lineData = data[idx];
 
                     lineData.y.push(figure.getValue());
-                    lineData.x.push(formatTime(candle.time));
+                    lineData.x.push(formattedTime);
                 });
             });
 
             if (!startTime) {
-                startTime = formatTime(candle.time);
+                startTime = formattedTime;
             }
         },
 
@@ -482,21 +486,19 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 return;
             }
 
+            const closeTime = formatTime(order.time);
             // Plotly visualization.
             const deal = {
                 type: closing.type === OrderType.BUY ? 'Long' : 'Short',
                 openTime: formatTime(closing.time),
                 openPrice: closing.price,
-                closeTime: formatTime(order.time),
+                closeTime: closeTime,
                 closePrice: order.price,
                 sandbox: order.sandbox,
             };
 
             deals.push(deal);
-
-            if (!this.debut.ordersCount) {
-                profit.push({ profit: stats.api.getState().profit, time: formatTime(order.time) });
-            }
+            profit.push({ profit: stats.api.getState().profit, time: closeTime });
         },
 
         async onDispose() {

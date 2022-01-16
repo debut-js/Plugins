@@ -1,9 +1,9 @@
 import { PluginInterface, ExecutedOrder, DebutCore, Candle, OrderType } from '@debut/types';
 
 export type VirtualTakesOptions = {
-    stopLoss: number; // Стоп лосс
-    takeProfit: number; // Тейк профит
-    trailing?: boolean;
+    stopLoss: number; // Stop in percent 12 = 12%
+    takeProfit: number; // Take in percent 20 = 20%
+    trailing?: number; // 1 or 2 1 - Trailing from start 2 - after take trailing
     ignoreTicks?: boolean;
 };
 
@@ -13,10 +13,12 @@ type OrderTakes = {
     price: number;
 };
 
-type TakesLookup = Record<string, OrderTakes>;
+type TakesLookup = Map<number, OrderTakes>;
+type TrailingLookup = Set<number>;
 
 export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
-    const lookup: TakesLookup = {};
+    const lookup: TakesLookup = new Map();
+    const trailing: TrailingLookup = new Set();
     async function handleTick(debut: DebutCore, tick: Candle) {
         const price = tick.c;
         // Нет заявки активной - нет мониторинга
@@ -29,11 +31,25 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
                 continue;
             }
 
-            if (opts.trailing) {
+            if (trailing.has(order.cid)) {
                 trailingTakes(order, price, lookup);
+
+                if (checkClose(order, price, lookup)) {
+                    await debut.closeOrder(order);
+                }
+
+                continue;
             }
 
-            if (checkClose(order, price, lookup)) {
+            const closeState = checkClose(order, price, lookup);
+
+            if (opts.trailing === 2 && closeState === 'take') {
+                const data = lookup.get(order.cid) || ({} as OrderTakes);
+
+                data.stopPrice = order.price;
+                data.price = price;
+                trailing.add(order.cid);
+            } else if (closeState) {
                 await debut.closeOrder(order);
             }
         }
@@ -44,11 +60,16 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
 
         async onOpen(order) {
             createTakes(order, opts, lookup);
+
+            if (opts.trailing === 1) {
+                trailing.add(order.cid);
+            }
         },
 
         async onClose(order) {
             if (order.openId) {
-                delete lookup[order.openId];
+                trailing.delete(order.cid);
+                lookup.delete(order.cid);
             }
         },
 
@@ -71,13 +92,17 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
  */
 function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     const { type, cid } = order;
-    const { takePrice, stopPrice } = lookup[cid] || {};
+    const { takePrice, stopPrice } = lookup.get(cid) || ({} as OrderTakes);
 
-    if (!takePrice || !stopPrice) {
-        throw 'Unknown take data';
+    if ((type === OrderType.BUY && price >= takePrice) || (type === OrderType.SELL && price <= takePrice)) {
+        return 'take';
     }
 
-    return type === OrderType.BUY ? price >= takePrice || price <= stopPrice : price <= takePrice || price >= stopPrice;
+    if ((type === OrderType.BUY && price <= stopPrice) || (type === OrderType.SELL && price >= stopPrice)) {
+        return 'stop';
+    }
+
+    return void 0;
 }
 
 function createTakes(order: ExecutedOrder, opts: VirtualTakesOptions, lookup: TakesLookup) {
@@ -88,16 +113,18 @@ function createTakes(order: ExecutedOrder, opts: VirtualTakesOptions, lookup: Ta
     const stopPrice = price - rev * price * (opts.stopLoss / 100);
     const takePrice = price + rev * price * (opts.takeProfit / 100);
 
-    lookup[cid] = { stopPrice, takePrice, price };
+    lookup.set(cid, { stopPrice, takePrice, price });
 }
 
 function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     const { cid } = order;
-    const takes = lookup[cid];
+    const takes = lookup.get(cid);
 
     if (!takes) {
         return;
     }
+
+    takes.takePrice = order.type === OrderType.BUY ? Infinity : -Infinity;
 
     if (
         (order.type === OrderType.BUY && price > takes.price) ||
@@ -105,7 +132,6 @@ function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup)
     ) {
         const delta = price - takes.price;
 
-        takes.takePrice += delta;
         takes.stopPrice += delta;
         takes.price = price;
     }

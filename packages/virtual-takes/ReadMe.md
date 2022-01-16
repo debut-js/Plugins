@@ -13,5 +13,5 @@ npm install @debut/plugin-virtual-takes --save
 |-----------|----------|------------|
 | takeProfit | number | Percentage level from order opening price |
 | stopLoss | number | Percentage level from order opening price (positive number as well) |
-| trailing | boolean | User stop loss trailing (disabled by default) |
+| trailing | number | 1 - tradiling from opening, 2 - trailing ater take reached trailing is disabled by default |
 | ignoreTicks | boolean | Ignore ticks, check takes on each candle closed |

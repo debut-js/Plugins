@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-virtual-takes",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "publishConfig": {
         "access": "public"
     },

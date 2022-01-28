@@ -3,7 +3,7 @@ import { PluginInterface, ExecutedOrder, DebutCore, Candle, OrderType } from '@d
 export type VirtualTakesOptions = {
     stopLoss: number; // Stop in percent 12 = 12%
     takeProfit: number; // Take in percent 20 = 20%
-    trailing?: number; // 1 or 2 1 - Trailing from start 2 - after take trailing
+    trailing?: number; // 1 or 2; 1 - Trailing from start | 2 - after take trailing | 3 - trailing after each take
     ignoreTicks?: boolean;
 };
 
@@ -43,7 +43,9 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
 
             const closeState = checkClose(order, price, lookup);
 
-            if (opts.trailing === 2 && closeState === 'take') {
+            if (opts.trailing === 3 && closeState === 'take') {
+                createTakes(order, opts, lookup, price);
+            } else if (opts.trailing === 2 && closeState === 'take') {
                 const data = lookup.get(order.cid) || ({} as OrderTakes);
 
                 data.stopPrice = order.price;
@@ -105,8 +107,10 @@ function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     return void 0;
 }
 
-function createTakes(order: ExecutedOrder, opts: VirtualTakesOptions, lookup: TakesLookup) {
-    const { type, price, cid } = order;
+function createTakes(order: ExecutedOrder, opts: VirtualTakesOptions, lookup: TakesLookup, customPrice?: number) {
+    const { type, cid } = order;
+
+    const price = customPrice || order.price;
     const rev = type === OrderType.SELL ? -1 : 1;
 
     // XXX Так как тейки и стопы виртуальные, можем их не делать реальными ценами с шагом

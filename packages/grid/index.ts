@@ -4,7 +4,7 @@ import { DynamicTakesPlugin } from '@debut/plugin-dynamic-takes';
 
 type GridLevel = { price: number; activated: boolean };
 interface Methods {
-    createGrid(price: number): Grid;
+    createGrid(price: number, type?: OrderType): Grid;
     getGrid(): Grid | null;
 }
 
@@ -25,7 +25,6 @@ export type GridPluginOptions = {
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
     stopLoss?: number; // общий стоп в процентах для всего грида
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
-    trend?: boolean; // по тренду или против
     trailing?: boolean; // трейлинг последней сделки, требует плагин dynamic-takes
     collapse?: boolean; // collapse orders when close
 };
@@ -56,8 +55,8 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             /**
              * Create new grid immediatly
              */
-            createGrid(price: number) {
-                grid = new GridClass(price, opts);
+            createGrid(price: number, type?: OrderType) {
+                grid = new GridClass(price, opts, type);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
                 return grid;
@@ -86,7 +85,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
         async onOpen(order: ExecutedOrder) {
             if (!grid) {
-                grid = new GridClass(order.price, opts);
+                grid = new GridClass(order.price, opts, order.type);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
             } else {
@@ -163,7 +162,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                     grid.activateLow();
                     const lotsMulti = opts.martingale ** grid.nextLowIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
+                    await this.debut.createOrder(OrderType.BUY);
                 }
 
                 // Dont active when grid getted direaction to long side
@@ -171,7 +170,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                     grid.activateUp();
                     const lotsMulti = opts.martingale ** grid.nextUpIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(opts.trend ? OrderType.BUY : OrderType.SELL);
+                    await this.debut.createOrder(OrderType.SELL);
                 }
             }
         },
@@ -192,21 +191,34 @@ class GridClass implements Grid {
     public zeroPointPrice = 0;
     public paused = false;
 
-    constructor(price: number, options: GridPluginOptions) {
+    constructor(price: number, options: GridPluginOptions, type?: OrderType) {
         const step = price * (options.step / 100);
         const fiboSteps: number[] = [step];
 
         for (let i = 1; i <= options.levelsCount; i++) {
+            let upLevel: GridLevel;
+            let lowLevel: GridLevel;
+
             if (options.fibo) {
                 const fiboStep = fiboSteps.slice(-2).reduce((sum, item) => item + sum, 0);
 
                 fiboSteps.push(fiboStep);
-
-                this.upLevels.push({ price: price + fiboStep, activated: false });
-                this.lowLevels.push({ price: price - fiboStep, activated: false });
+                upLevel = { price: price + fiboStep, activated: false };
+                lowLevel = { price: price - fiboStep, activated: false };
             } else {
-                this.upLevels.push({ price: price + step * i, activated: false });
-                this.lowLevels.push({ price: price - step * i, activated: false });
+                upLevel = { price: price + step * i, activated: false };
+                lowLevel = { price: price - step * i, activated: false };
+            }
+
+            if (type) {
+                if (type === OrderType.BUY) {
+                    this.lowLevels.push(lowLevel);
+                } else {
+                    this.upLevels.push(upLevel);
+                }
+            } else {
+                this.upLevels.push(upLevel);
+                this.lowLevels.push(lowLevel);
             }
         }
     }

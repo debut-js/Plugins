@@ -64,7 +64,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
         for (const order of [...ctx.debut.orders]) {
             const isTraling = opts.trailing || trailingSingleOrder.has(order.cid);
 
-            if (order.processing) {
+            if (!('orderId' in order)) {
                 continue;
             }
 

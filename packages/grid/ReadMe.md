@@ -12,7 +12,7 @@ npm install @debut/plugin-grid --save
 | Name | Type | Description |
 | ----------- | ---------- | ------------ |
 | step | number | Grid step, percentage. The step is always the same if the `fibo` option is not activated |
-| fibo | boolean | Calculation of Fibonacci levels. Each next level of the grid is equal to the sum of the two previous |
+| fibo | number | Calculation of Fibonacci levels. Each next level of the grid is equal to previous x fibo, value range from 1 to 2, default is disabled |
 | martingale | number | Martingale coefficient. Determines the number of lots for a trade. In the classic martingale system it is equal to 2, which means that we always double the lot of the previous deal, if 1 - the lot will be fixed |
 | levelsCount | number | The number of grid levels, the more the more funds you need |
 | takeProfit | number | Take profit as a percentage. Calculated as the total profit from open positions in relation to the initial capital |

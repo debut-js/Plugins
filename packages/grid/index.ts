@@ -19,7 +19,7 @@ export interface GridPluginAPI {
 
 export type GridPluginOptions = {
     step: number; // дистанция первого уровня или всех, если не включен фибо
-    fibo?: boolean; // фибоначи уровни
+    fibo?: number; // коэффициент фибоначи уровней
     martingale: number; // коэффициент мартингейла от 1-2
     levelsCount: number; // кол-во уровней грида
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
@@ -192,19 +192,16 @@ class GridClass implements Grid {
     public paused = false;
 
     constructor(price: number, options: GridPluginOptions, type?: OrderType) {
-        const step = price * (options.step / 100);
-        const fiboSteps: number[] = [step];
+        let step = price * (options.step / 100);
 
         for (let i = 1; i <= options.levelsCount; i++) {
             let upLevel: GridLevel;
             let lowLevel: GridLevel;
 
             if (options.fibo) {
-                const fiboStep = fiboSteps.slice(-2).reduce((sum, item) => item + sum, 0);
-
-                fiboSteps.push(fiboStep);
-                upLevel = { price: price + fiboStep, activated: false };
-                lowLevel = { price: price - fiboStep, activated: false };
+                upLevel = { price: price + step, activated: false };
+                lowLevel = { price: price - step, activated: false };
+                step *= options.fibo;
             } else {
                 upLevel = { price: price + step * i, activated: false };
                 lowLevel = { price: price - step * i, activated: false };

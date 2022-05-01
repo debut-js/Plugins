@@ -3,32 +3,11 @@ import { file, orders } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
 
-export const enum FigureType {
-    'bar' = 'bar',
-    'line' = 'scatter',
-    'dot' = 'markers',
-}
-
 export const enum FillType {
     'tozeroy' = 'tozeroy',
     'tonexty' = 'tonexty',
     'toself' = 'toself',
 }
-export interface IndicatorsData {
-    line: {
-        width: number;
-        color?: string;
-    };
-    mode: string;
-    name: string;
-    type: string;
-    fill?: FillType;
-    fillcolor?: string;
-    x: string[];
-    y: number[];
-    yaxis: string;
-}
-
 export interface ReportPluginAPI {
     report: {
         addIndicators(schema: IndicatorsSchema): void;
@@ -48,6 +27,18 @@ export interface ReportPluginAPI {
 }
 
 export type IndicatorsSchema = Array<Indicator>;
+
+interface IndicatorHeader {
+    // @deprecated
+    name: string;
+    type: 'Indicators';
+    data: Array<unknown>;
+    settings: {
+        schema: string[];
+        levels: number[];
+        colors: string[];
+    };
+}
 export interface Indicator {
     name: string;
     figures: Array<{
@@ -62,198 +53,96 @@ export interface Indicator {
     inChart?: boolean;
 }
 
-type Deal = {
-    type: string;
-    openTime: string;
-    openPrice: number;
-    closeTime: string;
-    open?: boolean;
-};
+export const enum FigureType {
+    'line' = 'line',
+    'hist' = 'hist',
+    'dot' = 'dot',
+    'bar' = 'bar',
+}
+const enum FigureModifier {
+    'color' = 'color',
+    'width' = 'width',
+    'value' = 'value',
+}
 
 export function reportPlugin(showMargin = true): PluginInterface {
     let indicatorsSchema: IndicatorsSchema = [];
-    const indicatorsData: Record<string, IndicatorsData[]> = {};
-    const chartData: Array<{ time: string; open: number; high: number; low: number; close: number }> = [];
-    const deals: Deal[] = [];
-    const profit: Array<{ profit: number; time: string }> = [];
-    const equity: Array<{ balance: number; time: string }> = [];
-    const margins: Array<{ usage: number; time: string }> = [];
-    let limitFrom: number;
-    let limitTo: number;
+    let title: string;
+    let indicatorsData: Record<string, IndicatorHeader> = {};
+    const ohlcv: Array<[time: number, open: number, high: number, low: number, close: number, volume: number]> = [];
+    const onchart: Array<unknown> = [];
+    const offchart: Array<unknown> = [];
+    const settings: {
+        rangeFrom?: number;
+        rangeTo?: number;
+    } = {};
 
-    let startTime: string;
+    const deals = {
+        type: 'Orders',
+        name: 'Orders',
+        data: [] as Array<
+            [
+                opentime: number,
+                type: number,
+                price: number,
+                name: string,
+                closetime: number,
+                closetype: number,
+                closeprice: number,
+                closename: string,
+            ]
+        >,
+        settings: {
+            'z-index': 1,
+        },
+    };
+    const equity: Array<[time: number, balance: number]> = [];
+    const margins: Array<[time: number, usage: number]> = [];
+
+    let startTime: number;
     let lastTick: Candle;
     let stats: StatsInterface;
     let disabledProfit = false;
     let isManualOrder = false;
-    let step = 0.2;
 
-    const visLayout: Record<string, any> = {
-        xaxis: {
-            showspikes: true,
-            spikemode: 'across',
-            autorange: true,
-            domain: [0, 1],
-            type: 'category',
-            rangeslider: { visible: false },
-            visible: false,
-        },
-        yaxis: {
-            autorange: true,
-            domain: [0, 1],
-            type: 'linear',
-            color: '#c2c2c2',
-            zerolinecolor: '#9E9E9E',
-            gridcolor: '#3b3d46',
-            title: {
-                font: {
-                    color: '#ffffff',
-                    size: 12,
-                },
-            },
-            rangebreaks: {
-                tick: {
-                    font: {
-                        color: '#FFFFFF',
-                        size: 12,
-                    },
-                },
-            },
-        },
-        yaxis2: {
-            autorange: true,
-            domain: [0, 0.2],
-            type: 'linear',
-        },
-        shapes: [],
-    };
+    function formatTime(originalTime: number | string) {
+        const d = new Date(originalTime);
 
-    function getVisXAxis() {
-        const x: string[] = [];
-
-        chartData.forEach((candle) => {
-            x.push(candle.time);
-        });
-
-        return x;
-    }
-
-    function formatTime(stamp: number | string) {
-        return new Date(stamp).toLocaleString();
-    }
-
-    function createCandlesAndDealsVisData() {
-        const candlesData = {
-            x: getVisXAxis(),
-            close: [] as number[],
-            high: [] as number[],
-            low: [] as number[],
-            open: [] as number[],
-        };
-
-        chartData.forEach((candle) => {
-            candlesData.open.push(candle.open);
-            candlesData.high.push(candle.high);
-            candlesData.low.push(candle.low);
-            candlesData.close.push(candle.close);
-        });
-
-        return { candlesData, deals };
-    }
-
-    function getProfitVisData() {
-        return {
-            x: profit.map((o) => o.time),
-            y: profit.map((o) => o.profit),
-            type: 'scatter',
-            mode: 'lines',
-            line: { width: 2 },
-            marker: { color: '#29ab16' },
-            name: 'Profit',
-            yaxis: 'y2',
-        };
-    }
-
-    function getEquityVisData() {
-        return {
-            x: equity.map((o) => o.time),
-            y: equity.map((o) => o.balance),
-            type: 'scatter',
-            mode: 'lines',
-            line: { width: 1 },
-            marker: { color: 'rgba(66, 206, 245, 0.6)' },
-            name: 'Equity',
-            yaxis: 'y2',
-        };
-    }
-
-    function getMarginVisData() {
-        return {
-            x: margins.map((o) => o.time),
-            y: margins.map((o) => o.usage),
-            type: 'bar',
-            marker: { color: 'orange' },
-            name: 'Margin',
-            yaxis: 'y2',
-        };
-    }
-
-    function setupDomains() {
-        const count = indicatorsSchema.filter((schema) => !schema.inChart).length + (disabledProfit ? 0 : 1);
-        let startDomain: number;
-        const offset = 0.015;
-
-        if (count === 0) {
-            startDomain = step;
-        } else {
-            startDomain = 0.5;
-        }
-
-        let currentDomainOffset = startDomain;
-        visLayout.yaxis.domain = [startDomain, 1];
-
-        step = (1 - startDomain) / count;
-
-        indicatorsSchema.forEach((schema, index) => {
-            const axisName = `yaxis${index + 3}`;
-
-            if (indicatorsData[schema.name]) {
-                let domain: number[] = [];
-
-                if (!schema.inChart) {
-                    domain = [currentDomainOffset - step, currentDomainOffset - offset];
-                    currentDomainOffset -= step;
-                }
-
-                visLayout[axisName].domain = domain;
-            }
-        });
-
-        visLayout.yaxis2.domain = [0, currentDomainOffset - offset];
+        return Date.UTC(
+            d.getFullYear(),
+            d.getMonth(),
+            d.getDate(),
+            d.getHours(),
+            d.getMinutes(),
+            d.getSeconds(),
+            d.getMilliseconds(),
+        );
     }
 
     function createVisualData() {
-        let subplots: any[] = [];
+        onchart.push(deals);
 
         if (!disabledProfit) {
-            subplots.push(getProfitVisData(), getEquityVisData());
+            const profitPayload = {
+                name: 'Balance & Equity',
+                type: 'Balance',
+                data: equity,
+                margins,
+            };
 
-            if (showMargin) {
-                subplots.push(getMarginVisData());
+            if (!showMargin) {
+                profitPayload.margins.length = 0;
             }
+
+            offchart.push(profitPayload);
         }
 
-        if (indicatorsSchema) {
-            indicatorsSchema.forEach((indicatorSchema) => {
-                subplots = subplots.concat(indicatorsData[indicatorSchema.name]);
-            });
+        if (!settings.rangeFrom && !settings.rangeTo) {
+            settings.rangeFrom = ohlcv[0][0];
+            settings.rangeTo = ohlcv[ohlcv.length - 1][0];
         }
 
-        return {
-            ...createCandlesAndDealsVisData(),
-            layout: visLayout,
-            subplots,
-        };
+        return { ohlcv, title, onchart, offchart, settings };
     }
 
     return {
@@ -262,114 +151,71 @@ export function reportPlugin(showMargin = true): PluginInterface {
         api: {
             addIndicators(schema: IndicatorsSchema) {
                 indicatorsSchema = schema;
-                let inChartAxisName: string;
 
                 schema.forEach((schema, index) => {
-                    const axisName = `yaxis${index + 3}`;
-                    const axisShortName = `y${index + 3}`;
+                    const indicatorHeader: IndicatorHeader = {
+                        name: schema.name,
+                        type: 'Indicators',
+                        data: [],
+                        settings: {
+                            schema: ['time'],
+                            colors: [],
+                            levels: [],
+                        },
+                    };
 
-                    if (!indicatorsData[schema.name]) {
-                        const data: IndicatorsData[] = [];
-                        const inChart = schema.inChart ? { overlaying: 'y1' } : {};
+                    indicatorsData[schema.name] = indicatorHeader;
 
-                        if (schema.inChart) {
-                            if (!inChartAxisName) {
-                                inChartAxisName = axisShortName;
-                            }
+                    if (schema.inChart) {
+                        onchart.push(indicatorHeader);
+                    } else {
+                        offchart.push(indicatorHeader);
+                    }
 
-                            visLayout.yaxis.matches = inChartAxisName;
+                    schema.figures.forEach((figure, idx) => {
+                        if (figure.color) {
+                            indicatorHeader.settings.colors.push(figure.color);
                         }
 
-                        visLayout[axisName] = {
-                            autorange: true,
-                            gridcolor: '#3b3d46',
-                            color: '#c2c2c2',
-                            type: 'linear',
-                            ...inChart,
-                        };
-
-                        schema.figures.forEach((figure, idx) => {
-                            const lineData = {
-                                line: {
-                                    width: 1,
-                                    color: figure.color,
-                                },
-                                mode: figure.type === FigureType.dot ? 'markers' : 'lines',
-                                name: figure.name,
-                                type: figure.type || 'scatter',
-                                fill: figure.fill,
-                                fillcolor: figure.fillcolor,
-                                x: [],
-                                y: [],
-                                yaxis: schema.inChart ? inChartAxisName : axisShortName, // y1 y2 заняты
-                            };
-
-                            data.push(lineData);
-                        });
-
-                        indicatorsData[schema.name] = data;
-                    }
+                        indicatorHeader.settings.schema.push(
+                            `${figure.name}.${figure.type || `line`}.${FigureModifier.value}`,
+                        );
+                    });
                 });
-
-                setupDomains();
             },
 
             disableProfitPlot() {
                 disabledProfit = true;
-
-                setupDomains();
-
-                delete visLayout.yaxis2;
-                const count = indicatorsSchema.filter((schema) => !schema.inChart).length;
-
-                if (count === 0) {
-                    visLayout.yaxis.domain = [0, 1];
-                }
             },
 
             setXRange(from: number, to: number) {
-                limitFrom = from;
-                limitTo = to;
-
-                // chartData = chartData.filter(item => item.time);
-                // indicatorsData;
-                // deals;
-                // profit;
-                // equity;
-                // margins;
+                settings.rangeFrom = from;
+                settings.rangeTo = to;
             },
             addOpenTarget(time: string, price: number, operation: OrderType) {
-                deals.push({
-                    type: operation === OrderType.BUY ? 'Long' : 'Short',
-                    openTime: formatTime(time),
-                    openPrice: price,
-                    closeTime: formatTime(time),
-                    open: true,
-                });
+                const fTime = formatTime(time);
+                deals.data.push([
+                    fTime,
+                    operation === OrderType.BUY ? 1 : 0,
+                    price,
+                    operation,
+                    fTime,
+                    1,
+                    price,
+                    'Exit',
+                ]);
             },
             disableOrdersDisplay() {
                 isManualOrder = true;
             },
             resetOrders() {
-                deals.length = 0;
+                deals.data.length = 0;
             },
             cleanup() {
-                deals.length = 0;
-                chartData.length = 0;
+                deals.data.length = 0;
+                ohlcv.length = 0;
                 equity.length = 0;
-                profit.length = 0;
-
-                if (indicatorsSchema.length) {
-                    indicatorsSchema.forEach((schema) => {
-                        const data = indicatorsData[schema.name];
-
-                        schema.figures.forEach((figure, idx) => {
-                            const lineData = data[idx];
-                            lineData.x.length = 0;
-                            lineData.y.length = 0;
-                        });
-                    });
-                }
+                indicatorsData = {};
             },
             setManualOrder(
                 operation: OrderType,
@@ -378,16 +224,18 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 openPrice: number,
                 closePrice: number,
             ) {
-                // Plotly visualization.
-                const deal = {
-                    type: operation === OrderType.BUY ? 'Long' : 'Short',
-                    openTime: formatTime(openTime),
-                    openPrice,
-                    closeTime: formatTime(closeTime),
-                    closePrice,
-                };
+                const isProfitable = operation === OrderType.BUY ? openPrice < closePrice : openPrice > closePrice;
 
-                deals.push(deal);
+                deals.data.push([
+                    formatTime(openTime),
+                    operation === OrderType.BUY ? 1 : 0,
+                    openPrice,
+                    operation,
+                    formatTime(closeTime),
+                    isProfitable ? 1 : 0,
+                    closePrice,
+                    isProfitable ? 'Exit' : 'Stop',
+                ]);
             },
         },
 
@@ -398,14 +246,14 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 throw 'Genetic Shutdown: stats plugin is required!';
             }
 
-            visLayout.title = this.debut.opts.ticker;
+            title = this.debut.opts.ticker;
 
             // Replace for binance BTCUSDT, removes USDT
             if (this.debut.opts.ticker.endsWith(this.debut.opts.currency)) {
-                visLayout.title = visLayout.title.replace(this.debut.opts.currency, '');
+                title = title.replace(this.debut.opts.currency, '');
             }
 
-            visLayout.title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`;
+            title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`;
         },
 
         async onTick(tick) {
@@ -413,45 +261,26 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         async onCandle(tick) {
-            if (limitTo && limitFrom && (tick.time < limitFrom || tick.time > limitTo)) {
-                return;
-            }
+            let profit = this.debut.ordersCount ? orders.getCurrencyBatchProfit(this.debut.orders, tick.c) : 0;
 
-            let profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c);
-
-            if (profit === 0) {
-                return;
-            }
-
-            equity.push({ balance: stats.api.getState().profit + profit, time: formatTime(tick.time) });
+            equity.push([formatTime(tick.time), stats.api.getState().profit + profit]);
         },
 
         async onAfterCandle(candle) {
             const time = candle.time;
-
-            if (limitTo && limitFrom && (time < limitFrom || time > limitTo)) {
-                return;
-            }
-
             const formattedTime = formatTime(time);
 
-            chartData.push({
-                time: formattedTime,
-                open: candle.o,
-                high: candle.h,
-                low: candle.l,
-                close: candle.c,
-            });
+            ohlcv.push([formattedTime, candle.o, candle.h, candle.l, candle.c, candle.v]);
 
             indicatorsSchema.forEach((schema) => {
-                const data = indicatorsData[schema.name];
+                const meta = indicatorsData[schema.name];
+                const step = [formattedTime];
 
-                schema.figures.forEach((figure, idx) => {
-                    const lineData = data[idx];
-
-                    lineData.y.push(figure.getValue());
-                    lineData.x.push(formattedTime);
+                schema.figures.forEach((figure) => {
+                    step.push(figure.getValue());
                 });
+
+                meta.data.push(step);
             });
 
             if (!startTime) {
@@ -460,10 +289,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
         },
 
         onBeforeClose(order) {
-            if (limitTo && limitFrom && (order.time < limitFrom || order.time > limitTo)) {
-                return;
-            }
-
             const usage = this.debut.orders.reduce((sum, order) => {
                 if ('orderId' in order) {
                     return sum + order.lots * order.price;
@@ -473,65 +298,34 @@ export function reportPlugin(showMargin = true): PluginInterface {
             }, 0);
 
             if (Math.floor(usage) > this.debut.opts.amount * (this.debut.opts.equityLevel || 1) && showMargin) {
-                margins.push({ usage, time: formatTime(order.time) });
+                margins.push([formatTime(order.time), usage]);
             }
         },
 
         async onClose(order, closing) {
-            if (limitTo && limitFrom && (order.time < limitFrom || order.time > limitTo)) {
-                return;
-            }
-
             if (isManualOrder) {
                 return;
             }
 
             const closeTime = formatTime(order.time);
-            // Plotly visualization.
-            const deal = {
-                type: closing.type === OrderType.BUY ? 'Long' : 'Short',
-                openTime: formatTime(closing.time),
-                openPrice: closing.price,
-                closeTime: closeTime,
-                closePrice: order.price,
-                sandbox: order.sandbox,
-            };
+            const openTime = formatTime(closing.time);
+            const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
 
-            deals.push(deal);
-            profit.push({ profit: stats.api.getState().profit, time: closeTime });
+            deals.data.push([
+                openTime,
+                closing.type == OrderType.BUY ? 1 : 0,
+                closing.price,
+                closing.type,
+                closeTime,
+                isProfitable ? 1 : 0,
+                order.price,
+                isProfitable ? 'Exit' : 'Stop',
+            ]);
         },
 
         async onDispose() {
-            if (!limitTo || !limitFrom || (lastTick.time >= limitFrom && lastTick.time <= limitTo)) {
-                // Последняя свечка
-                chartData.push({
-                    time: formatTime(lastTick.time),
-                    open: lastTick.o,
-                    high: lastTick.h,
-                    low: lastTick.l,
-                    close: lastTick.c,
-                });
-            }
-
-            indicatorsSchema.forEach((schema, schemaIdx) => {
-                if (schema.levels) {
-                    schema.levels.forEach((level) => {
-                        visLayout.shapes.push({
-                            type: 'line',
-                            yref: `y${schemaIdx + 3}`,
-                            x0: startTime,
-                            y0: level,
-                            x1: formatTime(lastTick.time),
-                            y1: level,
-                            line: {
-                                color: '#909090',
-                                width: 1,
-                                dash: 'dashdot',
-                            },
-                        });
-                    });
-                }
-            });
+            // Последняя свечка
+            ohlcv.push([formatTime(lastTick.time), lastTick.o, lastTick.h, lastTick.l, lastTick.c, lastTick.v]);
 
             const savePath = path.join(__dirname + '/../static/data.json');
 

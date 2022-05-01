@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1920, initial-scale=1.0">
-    <title>Test Visualizer</title>
-
-    <script src="./plotly.js"></script>
+    <title>Debut: Plugin Report v2.0</title>
+    <base href="/">
 
     <style>
         html,
@@ -24,25 +23,6 @@
         div.container {
             width: 100%;
             height: 100%;
-        }
-
-
-        .tooltip {
-            width: 165px;
-            height: 28px;
-            position: absolute;
-            display: none;
-            padding: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-            border-radius: 2px;
-            background-color: rgb(39, 166, 154);
-            text-align: center;
-            z-index: 1000;
-            top: 3px;
-            left: 10px;
-            pointer-events: none;
-            color: #fff;
         }
 
         #logo {
@@ -88,174 +68,23 @@
 
 <body>
     <div id="stat"></div>
-    <script>
-        fetch('./data.json', {
-                mode: 'no-cors'
-            })
-            .then(res => res.json())
-            .then((rawData) => {
+    <div id="chart">
+        <trading-vue
+            :data="data"
+            :width="this.width"
+            :height="this.height"
+            :toolbar="true"
+            :chart-config="{TB_ICON_BRI: 1.25}"
+            :color-back="colors.colorBack"
+            :color-grid="colors.colorGrid"
+            :color-text="colors.colorText"
+            :title-txt="this.title"
+            :overlays="overlays"
+        >
+        </trading-vue>
+    </div>
 
-                const {
-                    candlesData,
-                    deals,
-                    layout: rawLayout,
-                    subplots
-                } = rawData;
-                const RED = "#d23939";
-                const GREEN = "#29ab16";
-                const FORESTGREEN = GREEN;
-                const GRAY = "#c2c2c2";
-
-                const INCREASING_COLOR = "#25a599";
-                const DECREASING_COLOR = "#e45753";
-                const BACKGOUND_COLOR = '#2a2e39';
-
-                const getDealArrows = (deals) => {
-                    return deals.map(d => {
-                        const {
-                            type,
-                            openTime,
-                            openPrice,
-                            closeTime,
-                            closePrice,
-                            sandbox,
-                            open
-                        } = d;
-                        let profitable = null;
-                        let profitPercent = null;
-                        let bordercolor = null;
-                        let bgcolor = null;
-                        let dealTypeLabel = '';
-
-                        if (type === 'Long') {
-                            profitable = openPrice < closePrice;
-                            profitPercent = closePrice * 100 / openPrice - 100;
-                            dealTypeLabel = '';
-                        } else {
-                            profitable = openPrice > closePrice;
-                            profitPercent = openPrice * 100 / closePrice - 100;
-                            dealTypeLabel = '';
-                        }
-                        if (profitable || open && type === 'Long') {
-                            bordercolor = 'rgba(0,0,0,0)';
-                            bgcolor = 'rgba(41, 171, 22, 0.4)';
-                        } else {
-                            bordercolor = 'rgba(0,0,0,0)';
-                            bgcolor = 'rgba(210, 57, 57, 0.4)';
-                        }
-
-                        if (sandbox) {
-                            bgcolor = GRAY;
-                        }
-
-                        const result = {
-                            xref: "x",
-                            yref: "y",
-                            ayref: "y",
-                            axref: "x",
-                            ax: openTime,
-                            ay: openPrice,
-                            x: closeTime,
-                            y: closePrice,
-                            text: `<b>${profitable ? '+' : ''}${Math.round(profitPercent * 100) / 100}% ${dealTypeLabel}</b>`,
-                            align: "center",
-                            bordercolor: bordercolor,
-                            borderwidth: 2,
-                            borderpad: 4,
-                            bgcolor: bgcolor,
-                            font: {
-                                family: "Roboto-medium, sans-serif",
-                                size: 14,
-                                color: '#fff',
-                            },
-                            showarrow: true,
-                            arrowhead: 2,
-                            arrowsize: 1,
-                            arrowwidth: 2,
-                            arrowcolor: '#FFFFFF',
-                            opacity: 1,
-                        };
-
-                        if (open) {
-                            result.text = type;
-                            result.y = result.ay + (type === 'Long' ? 1 : -1) * result.ay * 0.025;
-                        }
-
-                        return result;
-                    });
-                };
-
-                const trace1 = {
-                    ...candlesData,
-
-                    line: {
-                        color: 'rgba(31,119,180,1)'
-                    },
-
-                    decreasing: {
-                        line: {
-                            color: DECREASING_COLOR
-                        },
-                        fillcolor: DECREASING_COLOR,
-                    },
-
-                    increasing: {
-                        line: {
-                            color: INCREASING_COLOR
-                        },
-                        fillcolor: INCREASING_COLOR,
-                    },
-
-                    type: 'candlestick',
-                    name: "candle",
-                    xaxis: 'x',
-                    yaxis: 'y'
-                };
-
-                const data = [trace1, ...subplots];
-
-                const layout = {
-                    paper_bgcolor: BACKGOUND_COLOR,
-                    plot_bgcolor: BACKGOUND_COLOR,
-                    font: {
-                        family: "Roboto-medium, sans-serif"
-                    },
-                    titlefont: {
-                        size: 24,
-                        color: "#DDDDDD"
-                    },
-                    colorway: [
-                        "#0082D1",
-                        "#3C7D9A",
-                        "#66B4E3",
-                        "#7B8BA3",
-                        "#9E7CC8",
-                        "#88A5BA",
-                        "#99CDED",
-                        "#D3D8E0",
-                        "#CEBDE3",
-                        "#D2DBE3"
-                    ],
-                    legend: {
-                        font: {
-                            color: '#fff'
-                        }
-                    },
-                    bargroupgap: 0.02,
-                    autosize: true,
-                    dragmode: 'zoom',
-                    height: document.body.clientHeight,
-                    ...rawLayout,
-                    annotations: getDealArrows(deals)
-                };
-
-                Plotly.newPlot('plotly', data, layout);
-            });
-
-    </script>
-
-    <div id="plotly"></div>
-    <div id="logo"></div>
+    <script src="./index.js" type="module"></script>
 </body>
 
 </html>

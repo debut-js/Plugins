@@ -1,0 +1,16 @@
+{
+    "offchart": [
+        {
+            "name": "CCI",
+            "type": "Indicators",
+            "data": [
+                [1223256320000,  14.234, 16.187]
+            ],
+            "settings": {
+                "schema": ["time", "line.value", "line2.value"],
+                "schemaTypes": [ "line", "hist", "dot", "level"],
+                "schemaSubtypes": ["line.color", "line.width", "line.value"]
+            }
+        }
+    ]
+}

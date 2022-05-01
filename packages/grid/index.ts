@@ -193,14 +193,18 @@ class GridClass implements Grid {
 
     constructor(price: number, options: GridPluginOptions, type?: OrderType) {
         let step = price * (options.step / 100);
+        let fPrevUp = price;
+        let fPrevLow = price;
 
         for (let i = 1; i <= options.levelsCount; i++) {
             let upLevel: GridLevel;
             let lowLevel: GridLevel;
 
             if (options.fibo) {
-                upLevel = { price: price + step, activated: false };
-                lowLevel = { price: price - step, activated: false };
+                fPrevUp = fPrevUp + step;
+                fPrevLow = fPrevLow - step;
+                upLevel = { price: fPrevUp, activated: false };
+                lowLevel = { price: fPrevLow, activated: false };
                 step *= options.fibo;
             } else {
                 upLevel = { price: price + step * i, activated: false };

@@ -5,7 +5,15 @@ export type VirtualTakesOptions = {
     takeProfit: number; // Take in percent 20 = 20%
     trailing?: number; // 1 or 2; 1 - Trailing from start | 2 - after take trailing | 3 - trailing after each take
     ignoreTicks?: boolean;
+    manual?: boolean; // manual control
 };
+
+export const enum TrailingType {
+    None,
+    Classic,
+    StartAfterTake,
+    MoveAfterEachTake,
+}
 
 type OrderTakes = {
     takePrice: number;
@@ -16,7 +24,21 @@ type OrderTakes = {
 type TakesLookup = Map<number, OrderTakes>;
 type TrailingLookup = Set<number>;
 
-export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
+interface Methods {
+    setForOrder(cid: number, type: OrderType, price: number): void;
+    getTakes(cid: number): OrderTakes | undefined;
+    isManual(): boolean;
+}
+export interface VirtualTakesPluginAPI {
+    dynamicTakes: Methods;
+}
+
+export interface VirtualTakesPlugin extends PluginInterface {
+    name: 'takes';
+    api: Methods;
+}
+
+export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugin {
     const lookup: TakesLookup = new Map();
     const trailing: TrailingLookup = new Set();
     async function handleTick(debut: DebutCore, tick: Candle) {
@@ -43,9 +65,9 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
 
             const closeState = checkClose(order, price, lookup);
 
-            if (opts.trailing === 3 && closeState === 'take') {
-                createTakes(order, opts, lookup, price);
-            } else if (opts.trailing === 2 && closeState === 'take') {
+            if (opts.trailing === TrailingType.MoveAfterEachTake && closeState === 'take') {
+                createTakes(order.cid, order.type, price, opts, lookup);
+            } else if (opts.trailing === TrailingType.StartAfterTake && closeState === 'take') {
                 const data = lookup.get(order.cid) || ({} as OrderTakes);
 
                 data.stopPrice = order.price;
@@ -60,10 +82,34 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): PluginInterface {
     return {
         name: 'takes',
 
-        async onOpen(order) {
-            createTakes(order, opts, lookup);
+        api: {
+            setForOrder(cid: number, type: OrderType, price: number): void {
+                if (!opts.manual) {
+                    throw 'Virtual Takes Plugin should be in a manual mode for call `setForOrder`';
+                }
 
-            if (opts.trailing === 1) {
+                createTakes(cid, type, price, opts, lookup);
+
+                if (opts.trailing === TrailingType.Classic) {
+                    trailing.add(cid);
+                }
+            },
+            getTakes(cid: number): OrderTakes | undefined {
+                return lookup.get(cid);
+            },
+            isManual() {
+                return opts.manual || false;
+            },
+        },
+
+        async onOpen(order) {
+            if (opts.manual) {
+                return;
+            }
+
+            createTakes(order.cid, order.type, order.price, opts, lookup);
+
+            if (opts.trailing === TrailingType.Classic) {
                 trailing.add(order.cid);
             }
         },
@@ -107,10 +153,7 @@ function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     return void 0;
 }
 
-function createTakes(order: ExecutedOrder, opts: VirtualTakesOptions, lookup: TakesLookup, customPrice?: number) {
-    const { type, cid } = order;
-
-    const price = customPrice || order.price;
+function createTakes(cid: number, type: OrderType, price: number, opts: VirtualTakesOptions, lookup: TakesLookup) {
     const rev = type === OrderType.SELL ? -1 : 1;
 
     // XXX Так как тейки и стопы виртуальные, можем их не делать реальными ценами с шагом

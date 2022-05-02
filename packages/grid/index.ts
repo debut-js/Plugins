@@ -1,6 +1,6 @@
 import { PluginInterface, ExecutedOrder, OrderType, Candle, PluginCtx } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
-import { DynamicTakesPlugin } from '@debut/plugin-dynamic-takes';
+import { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
 
 type GridLevel = { price: number; activated: boolean };
 interface Methods {
@@ -35,9 +35,8 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let amount: number;
     let ctx: PluginCtx;
     let fee: number;
-    let zeroPrice = 0;
     let prevProfit = 0;
-    let dynamicTakesPlugin: DynamicTakesPlugin;
+    let takesPlugin: VirtualTakesPlugin;
     let trailingSetted = false;
 
     if (!opts.stopLoss) {
@@ -75,10 +74,16 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             fee = (this.debut.opts.fee || 0.02) / 100;
 
             if (opts.trailing) {
-                dynamicTakesPlugin = this.findPlugin<DynamicTakesPlugin>('dynamicTakes');
+                takesPlugin = this.findPlugin<VirtualTakesPlugin>('takes');
 
-                if (!dynamicTakesPlugin) {
-                    throw new Error('@debut/plugin-dynamic-takes is required for trailing');
+                if (!takesPlugin) {
+                    throw new Error('@debut/plugin-virtual-takes is required for trailing');
+                }
+
+                if (!takesPlugin.api.isManual()) {
+                    throw new Error(
+                        '@debut/plugin-virtual-takes should be in manual mode for working with Grid, pass manual: true to plugin options',
+                    );
                 }
             }
         },
@@ -88,8 +93,6 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 grid = new GridClass(order.price, opts, order.type);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
-            } else {
-                zeroPrice = order.price;
             }
         },
 
@@ -114,10 +117,6 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 const closingComission = orders.getCurrencyBatchComissions(this.debut.orders, tick.c, fee);
                 const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c) - closingComission;
                 const percentProfit = (profit / amount) * 100;
-
-                if (prevProfit < 0 && profit >= 0 && ordersLen > 1) {
-                    zeroPrice = tick.c;
-                }
 
                 prevProfit = profit;
 
@@ -146,7 +145,9 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                             await this.debut.closeOrder(this.debut.orders[0]);
                         }
 
-                        dynamicTakesPlugin.api.setTrailingForOrder(this.debut.orders[0].cid, zeroPrice);
+                        const lastOrder = this.debut.orders[0];
+
+                        takesPlugin.api.setForOrder(lastOrder.cid, lastOrder.type, tick.c);
                         trailingSetted = true;
                     } else {
                         await this.debut.closeAll(opts.collapse);
@@ -188,7 +189,6 @@ class GridClass implements Grid {
     public nextLowIdx = 0;
     public upLevels: GridLevel[] = [];
     public lowLevels: GridLevel[] = [];
-    public zeroPointPrice = 0;
     public paused = false;
 
     constructor(price: number, options: GridPluginOptions, type?: OrderType) {

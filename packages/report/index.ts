@@ -75,6 +75,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
     const settings: {
         rangeFrom?: number;
         rangeTo?: number;
+        toolbar?: boolean;
     } = {};
 
     const deals = {
@@ -191,6 +192,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
             setXRange(from: number, to: number) {
                 settings.rangeFrom = formatTime(from);
                 settings.rangeTo = formatTime(to);
+                settings.toolbar = false;
             },
             addOpenTarget(time: string, price: number, operation: OrderType) {
                 const fTime = formatTime(time);

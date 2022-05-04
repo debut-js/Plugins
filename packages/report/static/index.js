@@ -7,7 +7,7 @@ import balance from './overlays/balance.js';
 (async function () {
     const res = await fetch('./data.json', { mode: 'no-cors' });
     const json = await res.json();
-    const { rangeFrom, rangeTo } = json.settings;
+    const { rangeFrom, rangeTo, toolbar } = json.settings;
     const app = new Vue({
         el: '#chart',
         data: {
@@ -15,8 +15,9 @@ import balance from './overlays/balance.js';
             overlays: [trades, indicators, balance],
             width: window.innerWidth,
             height: window.innerHeight,
-            night: false,
+            night: true,
             title: json.title,
+            toolbar,
         },
         mounted() {
             window.addEventListener('resize', this.onResize);

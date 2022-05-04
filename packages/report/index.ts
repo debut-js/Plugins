@@ -189,8 +189,8 @@ export function reportPlugin(showMargin = true): PluginInterface {
             },
 
             setXRange(from: number, to: number) {
-                settings.rangeFrom = from;
-                settings.rangeTo = to;
+                settings.rangeFrom = formatTime(from);
+                settings.rangeTo = formatTime(to);
             },
             addOpenTarget(time: string, price: number, operation: OrderType) {
                 const fTime = formatTime(time);

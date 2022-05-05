@@ -47,7 +47,7 @@ export interface Indicator {
         fill?: FillType;
         fillcolor?: string;
         color?: string;
-        getValue: () => number;
+        getValue: () => number | string;
     }>;
     levels?: number[];
     inChart?: boolean;
@@ -58,6 +58,7 @@ export const enum FigureType {
     'hist' = 'hist',
     'dot' = 'dot',
     'bar' = 'bar',
+    'text' = 'text',
 }
 const enum FigureModifier {
     'color' = 'color',
@@ -276,13 +277,15 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
             indicatorsSchema.forEach((schema) => {
                 const meta = indicatorsData[schema.name];
-                const step = [formattedTime];
+                let step: Array<number | string> = [formattedTime];
 
                 schema.figures.forEach((figure) => {
                     step.push(figure.getValue());
                 });
 
-                meta.data.push(step);
+                if (step.filter(Boolean).length > 1) {
+                    meta.data.push(step);
+                }
             });
 
             if (!startTime) {

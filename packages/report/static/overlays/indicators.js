@@ -55,8 +55,8 @@ export default {
         draw(ctx) {
             const layout = this.$props.layout;
 
-            for (let i = 1; i < this.$props.data.length; i++) {
-                const p1 = this.$props.data[i - 1];
+            for (let i = 0; i < this.$props.data.length; i++) {
+                const p1 = this.$props.data[i - 1] || [];
                 const p2 = this.$props.data[i];
                 const x1 = layout.t2screen(p1[0]);
                 const x2 = layout.t2screen(p2[0]);
@@ -78,9 +78,18 @@ export default {
                     if (type === 'value') {
                         if (modifier === 'line') {
                             const color = getLineColor(j - 1);
+
+                            if (!Number.isFinite(p1[j]) || !Number.isFinite(p2[j])) {
+                                continue;
+                            }
+
                             this.drawLine(ctx, [x1, y1], [x2, y2], color);
                         } else if (modifier === 'bar') {
                             this.drawHistogram(ctx, x2, y2);
+                        } else if (modifier === 'text') {
+                            const candle = layout.candles.find((item) => item.raw[0] === p2[0]);
+                            const y = candle ? candle.h : layout.$_hi;
+                            this.drawText(ctx, x2, y, p2[j]);
                         }
                     }
                 }
@@ -99,8 +108,10 @@ export default {
                 if (type === 'value') {
                     const name = schema.shift();
 
-                    legend.push({ value: name });
-                    legend.push({ value: parseFloat(values[j]).toFixed(3) });
+                    if (values[j]) {
+                        legend.push({ value: name });
+                        legend.push({ value: parseFloat(values[j]).toFixed(3) });
+                    }
                 }
             }
 
@@ -139,6 +150,38 @@ export default {
             ctx.moveTo(x, base);
             ctx.lineTo(x, y);
             ctx.stroke();
+        },
+        drawText(ctx, x, y, value, color = 'rgb(33 181 127)') {
+            ctx.font = `${12}px Arial`;
+
+            let layout = this.$props.layout;
+            let stroke = this.colors.back;
+            let fill = color;
+            let radius = 2;
+            let height = 20;
+            let width = ctx.measureText(value).width + 20;
+            x = x - width * 0.5;
+
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + (width * 1) / 2, y + height + height / 5);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.lineWidth = 1;
+            ctx.closePath();
+            ctx.fillStyle = fill;
+            ctx.strokeStyle = stroke;
+            ctx.fill();
+            ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(value, x + width / 2, y + height * 0.8);
         },
     },
     // Define internal setting & constants here

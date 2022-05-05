@@ -37,6 +37,7 @@ interface IndicatorHeader {
         schema: string[];
         levels: number[];
         colors: string[];
+        'z-index'?: number;
     };
 }
 export interface Indicator {
@@ -163,6 +164,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                             schema: ['time'],
                             colors: [],
                             levels: [],
+                            'z-index': 2,
                         },
                     };
 

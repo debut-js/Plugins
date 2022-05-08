@@ -66,7 +66,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             const closeState = checkClose(order, price, lookup);
 
             if (opts.trailing === TrailingType.MoveAfterEachTake && closeState === 'take') {
-                createTakes(order.cid, order.type, price, opts, lookup);
+                createTrailingTakes(order.cid, order.type, price, opts, lookup);
             } else if (opts.trailing === TrailingType.StartAfterTake && closeState === 'take') {
                 const data = lookup.get(order.cid) || ({} as OrderTakes);
 
@@ -159,6 +159,20 @@ function createTakes(cid: number, type: OrderType, price: number, opts: VirtualT
     // XXX Так как тейки и стопы виртуальные, можем их не делать реальными ценами с шагом
     const stopPrice = price - rev * price * (opts.stopLoss / 100);
     const takePrice = price + rev * price * (opts.takeProfit / 100);
+
+    lookup.set(cid, { stopPrice, takePrice, price });
+}
+
+function createTrailingTakes(
+    cid: number,
+    type: OrderType,
+    price: number,
+    opts: VirtualTakesOptions,
+    lookup: TakesLookup,
+) {
+    const rev = type === OrderType.SELL ? -1 : 1;
+    const stopPrice = price - rev * price * (opts.stopLoss / 100 / 2);
+    const takePrice = price + rev * price * (opts.takeProfit / 100 / 2);
 
     lookup.set(cid, { stopPrice, takePrice, price });
 }

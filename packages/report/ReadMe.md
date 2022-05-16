@@ -64,10 +64,11 @@ async create(transport: BaseTransport, cfg: MyStrategyNameOptions, env: WorkingE
 The server is started with the command ``npm run serve`` to do this, add the appropriate command to the `scripts` section in the package.json file.
 
 ```json
-...
+// ...
 "scripts": {
     "serve": 'report-serve',
-    ...
+    // ...
+}
 ```
 
 ### Description of indicator circuit `Indicator

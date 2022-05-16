@@ -1,5 +1,4 @@
 # Official Debut plugin directory
-## Switch to [Russian 🇷🇺](ReadMe_ru.md)
 
 📦 One department store for all plugins.
 

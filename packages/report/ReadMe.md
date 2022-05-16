@@ -65,8 +65,8 @@ The server is started with the command ``npm run serve`` to do this, add the app
 
 ```json
 ...
-"`` scripts'': {
-    "` "serve": ` report-serve',
+"scripts": {
+    "serve": 'report-serve',
     ...
 ```
 

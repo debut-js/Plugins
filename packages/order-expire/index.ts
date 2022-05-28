@@ -18,22 +18,20 @@ export function orderExpirePlugin(opts: OrderExpireOptions): PluginInterface {
 
         async onOpen(order) {
             amount = this.debut.opts.amount * (this.debut.opts.equityLevel || 1);
-            lookup[order.orderId] = 0;
+            lookup[order.cid] = 0;
         },
 
-        async onClose(order) {
-            if (order.openId) {
-                delete lookup[order.openId];
-            }
+        async onClose(order, closing) {
+            delete lookup[closing.cid];
         },
 
-        async onCandle({ c, time }) {
+        async onCandle({ c }) {
             for (const order of [...this.debut.orders]) {
                 if (!('orderId' in order)) {
                     return;
                 }
 
-                const counter = ++lookup[order.orderId];
+                const counter = ++lookup[order.cid];
 
                 if (counter >= opts.orderCandlesLimit) {
                     await this.debut.closeOrder(order);

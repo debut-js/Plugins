@@ -114,11 +114,9 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             }
         },
 
-        async onClose(order) {
-            if (order.openId) {
-                trailing.delete(order.cid);
-                lookup.delete(order.cid);
-            }
+        async onClose(order, closing) {
+            trailing.delete(closing.cid);
+            lookup.delete(closing.cid);
         },
 
         async onCandle(tick) {

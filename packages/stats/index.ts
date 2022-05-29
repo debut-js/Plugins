@@ -18,6 +18,7 @@ export interface StatsState {
     shortRight: number;
     absoluteDD: number;
     relativeDD: number;
+    potentialDD: number;
     maxWin: number;
     maxLoose: number;
     profitProb: number;
@@ -62,6 +63,7 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
             shortRight: 0,
             absoluteDD: 0,
             relativeDD: 0,
+            potentialDD: 0,
             maxWin: 0,
             maxLoose: 0,
             profitProb: 0,
@@ -187,6 +189,11 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
 
                 if (state.relativeDD < dd) {
                     state.relativeDD = dd;
+                }
+
+                const ddFromStartBalance = ((state.maxBalance - state.balance) / state.startBalance) * 100;
+                if (state.potentialDD < ddFromStartBalance) {
+                    state.potentialDD = ddFromStartBalance;
                 }
             }
 

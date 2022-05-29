@@ -186,12 +186,12 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
 
             if (isLastOrder && state.balance < state.maxBalance) {
                 const dd = ((state.maxBalance - state.balance) / state.maxBalance) * 100;
+                const ddFromStartBalance = ((state.maxBalance - state.balance) / state.startBalance) * 100;
 
                 if (state.relativeDD < dd) {
                     state.relativeDD = dd;
                 }
 
-                const ddFromStartBalance = ((state.maxBalance - state.balance) / state.startBalance) * 100;
                 if (state.potentialDD < ddFromStartBalance) {
                     state.potentialDD = ddFromStartBalance;
                 }

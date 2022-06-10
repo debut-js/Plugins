@@ -11,9 +11,9 @@ export const token = process.env['API_TOKEN'];
  * Cache free require.
  * For easy working in runtime imports after recompyle
  */
-export function requireUncached(module: string) {
-    delete require.cache[require.resolve(module)];
-    return require(module);
+export async function requireUncached<T = Record<string, unknown>>(modulePath: string): Promise<T> {
+    // const cacheBustingModulePath = `${modulePath}?update=${Date.now()}`;
+    return import(modulePath);
 }
 
 /**
@@ -42,7 +42,7 @@ export function getBotsSchema() {
 /**
  * Collect bot meta information
  */
-export function getBotData(name: string, schema = getBotsSchema()): BotData | null {
+export async function getBotData(name: string, schema = getBotsSchema()): Promise<BotData | null> {
     const botData: BotDataInfo = schema.find((bot: BotDataInfo) => bot.name === name);
 
     if (!schema) {
@@ -52,21 +52,27 @@ export function getBotData(name: string, schema = getBotsSchema()): BotData | nu
 
     const dir = path.resolve(botData.path);
     const src = path.resolve(botData.src);
-    const botModule = requireUncached(`${dir}/bot.js`);
-    const botCfgModule = requireUncached(`${dir}/cfgs.js`);
-    const meta = requireUncached(`${dir}/meta.js`).default;
 
-    if (!botCfgModule) {
-        process.stdout.write(`[ERROR] No configs for bot\n`);
+    try {
+        const botModule = await requireUncached(`${dir}/bot.js`);
+        const botCfgModule = await requireUncached<Record<string, DebutOptions>>(`${dir}/cfgs.js`);
+        const { default: meta } = await requireUncached<{ default: DebutMeta }>(`${dir}/meta.js`);
+
+        if (!botCfgModule) {
+            process.stdout.write(`[ERROR] No configs for bot\n`);
+            return null;
+        }
+
+        if (!(name in botModule)) {
+            process.stdout.write(`[ERROR] ${name} is incorrect bot constructor name\n`);
+            return null;
+        }
+
+        return { configs: botCfgModule, meta, dir, src };
+    } catch (e) {
+        console.log('Error strategy data loading', e);
         return null;
     }
-
-    if (!(name in botModule)) {
-        process.stdout.write(`[ERROR] ${name} is incorrect bot constructor name\n`);
-        return null;
-    }
-
-    return { configs: botCfgModule, meta, dir, src };
 }
 
 /**

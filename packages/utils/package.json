@@ -1,12 +1,12 @@
 {
     "name": "@debut/plugin-utils",
-    "version": "1.2.0",
+    "version": "1.2.1-esm.0",
     "publishConfig": {
         "access": "public"
     },
-    "module": "true",
     "description": "Debut utilites for core and plugins",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

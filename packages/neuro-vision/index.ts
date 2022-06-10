@@ -60,9 +60,9 @@ export function neuroVisionPlugin(params: NeuroVisionPluginOptions): NeuroVision
             },
         },
 
-        onInit() {
-            const botData = cli.getBotData(this.debut.getName())!;
-            const workingDir = `${botData.src}/neuro-vision/${this.debut.opts.ticker}/`;
+        async onInit() {
+            const botData = await cli.getBotData(this.debut.getName())!;
+            const workingDir = `${botData?.src}/neuro-vision/${this.debut.opts.ticker}/`;
 
             neural = new Network({ ...params, workingDir });
         },

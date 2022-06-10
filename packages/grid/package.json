@@ -4,9 +4,10 @@
     "publishConfig": {
         "access": "public"
     },
-    "module": "true",
     "description": "Martingale or linear grid based trades",
+    "type": "module",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

@@ -4,9 +4,10 @@
     "publishConfig": {
         "access": "public"
     },
-    "module": "true",
     "description": "Report generation for strategy backtesting in debut",
+    "type": "module",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "bin": {
         "report-serve": "dist/serve.js"
     },

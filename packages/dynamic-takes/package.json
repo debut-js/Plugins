@@ -4,9 +4,10 @@
     "publishConfig": {
         "access": "public"
     },
-    "module": "true",
     "description": "Dynamic takes plugin for Debut",
+    "type": "module",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "peerDependencies": {
         "@debut/plugin-utils": "^1.2.0",
         "@debut/types": "^3.0.0"

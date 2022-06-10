@@ -11,9 +11,9 @@ export const token = process.env['API_TOKEN'];
  * Cache free require.
  * For easy working in runtime imports after recompyle
  */
-export async function requireUncached<T = Record<string, unknown>>(modulePath: string): Promise<T> {
-    // const cacheBustingModulePath = `${modulePath}?update=${Date.now()}`;
-    return import(modulePath);
+export function requireUncached<T extends Record<string, unknown>>(module: string): T {
+    delete require.cache[require.resolve(module)];
+    return require(module);
 }
 
 /**

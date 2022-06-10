@@ -11,7 +11,7 @@
         "preversion": "npm run build"
     },
     "peerDependencies": {
-        "@debut/plugin-utils": "^1.3.0",
+        "@debut/plugin-utils": "^1.3.4",
         "@debut/types": "^3.0.4"
     },
     "dependencies": {

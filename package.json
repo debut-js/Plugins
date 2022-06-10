@@ -4,8 +4,8 @@
     "description": "Official Debut plugins store",
     "scripts": {
         "build": "npm run build --workspaces",
-        "upgrade:all": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --dep peer --upgrade \\;",
-        "upgrade:peer": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --upgrade \\;",
+        "upgrade:peer": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --dep peer --upgrade \\;",
+        "upgrade:deps": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir ncu --upgrade \\;",
         "install:all": "find . -type f -name 'package.json' -not -path './.git/*' -not -path '*/node_modules/*' -execdir npm install \\;",
         "prettier": "prettier --config .prettierrc --write packages/**/*.ts"
     },

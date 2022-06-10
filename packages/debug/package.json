@@ -1,13 +1,11 @@
 {
     "name": "@debut/plugin-debug",
-    "version": "1.2.1",
+    "version": "1.2.3",
     "publishConfig": {
         "access": "public"
     },
     "description": "Debug listeners plugin for Debut",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "exports": "./dist/index.js",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

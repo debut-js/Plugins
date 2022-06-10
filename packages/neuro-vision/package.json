@@ -1,13 +1,11 @@
 {
     "name": "@debut/plugin-neuro-vision",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "publishConfig": {
         "access": "public"
     },
     "description": "Neural network trend forecasting",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "exports": "./dist/index.js",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"
@@ -17,7 +15,7 @@
         "@debut/types": "^3.0.4"
     },
     "dependencies": {
-        "brain.js": "2.0.0-beta.15"
+        "brain.js": "2.0.0-beta.2"
     },
     "repository": {
         "type": "git",

@@ -1,13 +1,11 @@
 {
     "name": "@debut/plugin-utils",
-    "version": "1.3.2",
+    "version": "1.3.3",
     "publishConfig": {
         "access": "public"
     },
     "description": "Debut utilites for core and plugins",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "exports": "./dist/index.js",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

@@ -1,16 +1,18 @@
 {
     "compilerOptions": {
         "incremental": true,
-        "target": "ES2020",
-        "module": "ESNext",
+        "module": "CommonJS",
+		"moduleResolution": "Node",
+		"target": "ES2020",
         "declaration": true,
         "sourceMap": true,
         "composite": true,
         "strict": true,
-        "moduleResolution": "node",
         "baseUrl": "./packages",
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "useUnknownInCatchVariables": false,
+        "allowSyntheticDefaultImports": true,
     }
 }

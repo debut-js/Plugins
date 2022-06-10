@@ -1,13 +1,11 @@
 {
     "name": "@debut/plugin-genetic-shutdown",
-    "version": "1.2.1",
+    "version": "1.2.3",
     "publishConfig": {
         "access": "public"
     },
     "description": "Stop genetic optimization when stats is not fine",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "exports": "./dist/index.js",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

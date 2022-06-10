@@ -1,13 +1,11 @@
 {
     "name": "@debut/plugin-session",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "publishConfig": {
         "access": "public"
     },
     "description": "Trade session time, plugin debut",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "exports": "./dist/index.js",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

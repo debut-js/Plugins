@@ -1,13 +1,11 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "publishConfig": {
         "access": "public"
     },
     "description": "Report generation for strategy backtesting in debut",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "exports": "./dist/index.js",
     "bin": {
         "report-serve": "dist/serve.js"
     },

@@ -6,6 +6,7 @@
     },
     "description": "Expiration period for orders, debut plugin",
     "exports": "./dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

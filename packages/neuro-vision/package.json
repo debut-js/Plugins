@@ -6,6 +6,7 @@
     },
     "description": "Neural network trend forecasting",
     "exports": "./dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

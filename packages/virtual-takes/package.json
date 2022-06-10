@@ -6,6 +6,7 @@
     },
     "description": "Classic virtual takes and stops in percent",
     "exports": "./dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
         "preversion": "npm run build"

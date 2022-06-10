@@ -6,6 +6,7 @@
     },
     "description": "Debut stretegies stats",
     "exports": "./dist/index.js",
+    "types": "dist/index.d.ts",
     "peerDependencies": {
         "@debut/types": "^3.0.4"
     },

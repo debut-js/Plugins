@@ -6,6 +6,7 @@
     },
     "description": "Report generation for strategy backtesting in debut",
     "exports": "./dist/index.js",
+    "types": "dist/index.d.ts",
     "bin": {
         "report-serve": "dist/serve.js"
     },

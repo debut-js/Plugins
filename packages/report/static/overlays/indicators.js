@@ -60,6 +60,7 @@ export default {
                 const p2 = this.$props.data[i];
                 const x1 = layout.t2screen(p1[0]);
                 const x2 = layout.t2screen(p2[0]);
+                const colors = this.$props.settings.colors;
 
                 // Skip 0 its timeframe
                 for (let j = 1; j < this.$props.settings.schema.length; j++) {
@@ -77,7 +78,7 @@ export default {
 
                     if (type === 'value') {
                         if (modifier === 'line') {
-                            const color = getLineColor(j - 1);
+                            const color = colors[j - 1] || getLineColor(j - 1);
 
                             if (!Number.isFinite(p1[j]) || !Number.isFinite(p2[j])) {
                                 continue;

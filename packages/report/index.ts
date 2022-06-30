@@ -36,7 +36,7 @@ interface IndicatorHeader {
     settings: {
         schema: string[];
         levels: number[];
-        colors: string[];
+        colors: Array<string | null>;
         'z-index'?: number;
     };
 }
@@ -145,7 +145,13 @@ export function reportPlugin(showMargin = true): PluginInterface {
             settings.rangeTo = ohlcv[ohlcv.length - 1][0];
         }
 
-        return { ohlcv, title, onchart, offchart, settings };
+        const chart = {
+            type: 'Candles',
+            indexBased: true,
+            data: ohlcv,
+        };
+
+        return { chart, title, onchart, offchart, settings };
     }
 
     return {
@@ -177,10 +183,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     }
 
                     schema.figures.forEach((figure, idx) => {
-                        if (figure.color) {
-                            indicatorHeader.settings.colors.push(figure.color);
-                        }
-
+                        indicatorHeader.settings.colors.push(figure.color || null);
                         indicatorHeader.settings.schema.push(
                             `${figure.name}.${figure.type || `line`}.${FigureModifier.value}`,
                         );

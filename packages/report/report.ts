@@ -1,4 +1,4 @@
-import { PluginInterface, Candle, OrderType } from '@debut/types';
+import { PluginInterface, Candle, OrderType, ExecutedOrder } from '@debut/types';
 import { file, orders } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
@@ -255,12 +255,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
             lastTick = tick;
         },
 
-        async onCandle(tick) {
-            let profit = this.debut.ordersCount ? orders.getCurrencyBatchProfit(this.debut.orders, tick.c) : 0;
-
-            equity.push([formatTime(tick.time), stats.api.getState().profit + profit]);
-        },
-
         async onAfterCandle(candle) {
             const time = candle.time;
             const formattedTime = formatTime(time);
@@ -318,6 +312,8 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 order.price,
                 isProfitable ? 'Exit' : 'Stop',
             ]);
+
+            equity.push([formatTime(order.time), stats.api.getState().profit]);
         },
 
         async onDispose() {

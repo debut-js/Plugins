@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.4.0-beta.3",
+    "version": "1.4.0-beta.4",
     "publishConfig": {
         "access": "public"
     },
@@ -16,13 +16,14 @@
     },
     "dependencies": {
         "express": "^4.18.1",
+        "express-sse-ts": "^1.0.2",
         "trading-vue-js": "^1.0.2",
         "vue": "^3.2.37"
     },
     "peerDependencies": {
-        "@debut/plugin-stats": "^1.4.0-beta.0",
-        "@debut/plugin-utils": "^1.4.0-beta.0",
-        "@debut/types": "^3.2.1-beta.1"
+        "@debut/plugin-stats": "^1.4.0-beta.2",
+        "@debut/plugin-utils": "^1.4.0-beta.2",
+        "@debut/types": "^3.2.1-beta.4"
     },
     "devDependencies": {
         "@types/express": "^4.17.13"

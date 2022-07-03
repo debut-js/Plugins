@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>Debut: Plugin Report v2.0</title>
+    <base href="/">
+
+    <style>
+        html,
+        body {
+            font-family: 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+            background-color: #000;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        div.container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #logo {
+            position: absolute;
+            left: 28%;
+            top: 26px;
+            width: 32px;
+            height: 32px;
+            z-index: 999;
+        }
+
+        #logo:empty {
+            display: none;
+        }
+
+        #logo img {
+            width: 100%;
+            height: 100%;
+        }
+
+        #stat:empty {
+            display: none;
+        }
+
+        #stat {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 1;
+            color: #fff;
+            padding: 10px;
+            margin: 120px 0 0 90px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        #stat b {
+            display: inline-block;
+            width: 100px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="stat"></div>
+    <div id="chart">
+        <trading-vue
+            :data="data"
+            :width="this.width"
+            :height="this.height"
+            :chart-config="{TB_ICON_BRI: 1.25}"
+            :color-back="colors.colorBack"
+            :color-grid="colors.colorGrid"
+            :color-text="colors.colorText"
+            :title-txt="this.title"
+            :toolbar="this.toolbar"
+            :overlays="overlays"
+        >
+        </trading-vue>
+    </div>
+
+    <script src="./player.js" type="module"></script>
+</body>
+
+</html>

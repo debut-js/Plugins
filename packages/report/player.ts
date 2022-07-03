@@ -61,7 +61,10 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         inited = true;
     });
     app.use(express.static(staticPath));
-    app.listen(5000, () => console.log('player stream is available on http://localhost:5000/sse'));
+    app.listen(5000, () => {
+        console.log('Player chart is available on http://localhost:5000/player.html');
+        console.log('Player stream is available on http://localhost:5000/sse');
+    });
 
     function send(data: unknown, event: string) {
         sse.send(JSON.stringify(data), event);

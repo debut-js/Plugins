@@ -1,9 +1,10 @@
-import { Candle, ExecutedOrder, PluginInterface } from '@debut/types';
+import { Candle, ExecutedOrder, OrderType, PluginInterface } from '@debut/types';
 import express from 'express';
 import SSEExpress from 'express-sse-ts';
 import { formatTime } from './utils';
 import path from 'path';
 import { FigureModifier, IndicatorHeader, IndicatorsSchema } from './report';
+import { orders } from '@debut/plugin-utils';
 
 export interface PlayerPluginAPI {
     player: {
@@ -18,6 +19,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
     const staticPath = path.resolve(__dirname + '/../static');
     let inited = false;
     let filled = false;
+    let orderUpdates = [] as any[];
     const indicatorsData = new Map();
     const initialData = {
         chart: {
@@ -28,14 +30,14 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         },
         title: `Debut strategy player`,
         onchart: [],
-        offchart: []
+        offchart: [],
     };
 
-    const orders = {
-        type: "Orders",
-        name: "Orders",
-        data: [],
-        settings: { "z-index": 1 }
+    const ordersData = {
+        type: 'Orders',
+        name: 'Orders',
+        data: [] as any[],
+        settings: { 'z-index': 1 },
     };
 
     app.use((req, res, next) => {
@@ -99,7 +101,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                     });
                 });
 
-                initialData.onchart.push(orders as never);
+                initialData.onchart.push(ordersData as never);
                 indicatorsSchema = schema;
             },
         },
@@ -130,6 +132,10 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                     }
                 });
 
+                if (orderUpdates.length) {
+                    update['Orders'] = orderUpdates.shift();
+                }
+
                 send(update, 'tick');
             }
         },
@@ -158,19 +164,39 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                 send(update, 'candle');
             }
         },
-        async onOpen(order) {
-            // send(formatTime(order), 'open-order');
+        async onOpen(order: ExecutedOrder) {
+            const { price, type } = order;
+            const fTime = formatTime(order.time);
+            const data = [type === OrderType.BUY ? 1 : 0, price, type, undefined, 1, undefined, 'Exit'];
+
+            orderUpdates.push(data);
+            ordersData.data.push([fTime, ...data]);
+
+            // console.log(ordersData.data);
+
+            // send(update, 'open-order');
         },
-        async onClose(order: ExecutedOrder) {
-            // send(formatTime(order), 'close-order');
-            // // Если buy, значит оригинальный ордер был Sell, инвертируем профит
-            // const rev = order.type === OrderType.BUY ? -1 : 1;
-            // const lots = order.executedLots;
-            // if (order.openPrice) {
-            //     const profit = (order.price - order.openPrice) * lots * rev - order.commission.value;
-            //     balance += profit;
-            // }
-            // send(formatTime({ time: order.time, value: balance }), 'balance-change');
+        async onClose(order: ExecutedOrder, closing: ExecutedOrder) {
+            const closeTime = formatTime(order.time);
+            const openTime = formatTime(closing.time);
+            const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
+            const data = [
+                closing.type == OrderType.BUY ? 1 : 0,
+                closing.price,
+                closing.type,
+                closeTime,
+                isProfitable ? 1 : 0,
+                order.price,
+                isProfitable ? 'Exit' : 'Stop',
+            ];
+            // const update = {
+            //     Orders: [data],
+            // };
+
+            // orderUpdates.push(data);
+            ordersData.data.push([openTime, ...data]);
+
+            // send(update, 'close-order');
         },
     };
 }

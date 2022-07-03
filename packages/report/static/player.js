@@ -11,7 +11,6 @@ const balance = [];
 function init(data) {
     datacube = new TradingVueJs.DataCube(data);
     chart = createChart(datacube);
-    console.log(datacube);
 }
 
 es.addEventListener('init', function (message) {
@@ -47,25 +46,15 @@ es.addEventListener('candle', function (message) {
     // barSeries.setData(data);
 });
 
-// es.addEventListener('open-order', function (message) {
-//     markers.push(getMarker(JSON.parse(message.data)));
+es.addEventListener('open-order', function (message) {
+    const update = JSON.parse(message.data);
+    datacube.update(update);
+});
 
-//     if (markers.length > 300) {
-//         markers.shift();
-//     }
-
-//     barSeries.setMarkers(markers);
-// });
-
-// es.addEventListener('close-order', function (message) {
-//     markers.push(getMarker(JSON.parse(message.data)));
-
-//     if (markers.length > 300) {
-//         markers.shift();
-//     }
-
-//     barSeries.setMarkers(markers);
-// });
+es.addEventListener('close-order', function (message) {
+    const update = JSON.parse(message.data);
+    datacube.update(update);
+});
 
 // es.addEventListener('balance-change', function (message) {
 //     balance.push(JSON.parse(message.data));

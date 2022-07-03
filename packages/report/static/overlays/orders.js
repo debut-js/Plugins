@@ -16,27 +16,44 @@ export default {
         draw(ctx) {
             let layout = this.$props.layout;
             ctx.strokeStyle = 'black';
+            let idx = 0;
+            let length = this.$props.data.length - 1;
+            const candledCount = this.layout.candles.length - 1;
 
             for (var deal of this.$props.data) {
                 ctx.fillStyle = deal[1] ? this.buy_color : this.sell_color;
-                const x0 = layout.t2screen(deal[0]);
-                const y0 = layout.$2screen(deal[2]);
-                const x1 = layout.t2screen(deal[4]);
-                const y1 = layout.$2screen(deal[6]);
+                const isBuy = deal[1] === 1;
+                const x0 = deal[0] && layout.t2screen(deal[0]);
+                const y0 = deal[2] && layout.$2screen(deal[2]);
+                let x1 = deal[4] && layout.t2screen(deal[4]);
+                let y1 = deal[6] && layout.$2screen(deal[6]);
 
-                if (x0 === x1 && y0 === y1) {
+                if (x0 && y0 && !x1 && !y1 && idx === length) {
+                    // Live order
+                    const lastCandle = this.layout.candles[candledCount];
+                    // Order loss
+                    let isStop = (isBuy && y0 < lastCandle.c) || (!isBuy && y0 > lastCandle.c);
+
+                    x1 = lastCandle.x;
+                    y1 = lastCandle.c;
+                    this.draw_background(ctx, x0, y0, x1, y1, isStop);
+                    this.draw_arrow(ctx, x0, y0, x1, y1, 1);
+                    this.draw_entry(ctx, x0, y0, deal);
+                } else if ((x0 === x1 && y0 === y1) || (x0 && y0 && !x1 && !y1)) {
                     this.draw_entry(ctx, x0, y0, deal);
                 } else {
-                    this.draw_background(ctx, x0, y0, x1, y1, deal);
+                    this.draw_background(ctx, x0, y0, x1, y1, deal[7] === 'Stop');
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                 }
+
+                idx++;
             }
         },
-        draw_background(ctx, x1, y1, x2, y2, deal) {
+        draw_background(ctx, x1, y1, x2, y2, stop) {
             ctx.save();
             ctx.fillStyle = 'rgb(10, 153, 129, 0.5)';
 
-            if (deal[7] === 'Stop') {
+            if (stop) {
                 ctx.fillStyle = 'rgb(242, 53, 69, 0.5)';
             }
 
@@ -153,14 +170,14 @@ export default {
                     value: pos.toLocaleUpperCase(),
                 },
                 {
-                    value: values[2].toFixed(4),
+                    value: values[2]?.toFixed(4) || 'n/a',
                     color: this.$props.colors.colorText,
                 },
                 {
                     value: '→',
                 },
                 {
-                    value: values[6].toFixed(4),
+                    value: values[6]?.toFixed(4) || 'n/a',
                     color: this.$props.colors.colorText,
                 },
             ];

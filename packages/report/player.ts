@@ -1,4 +1,5 @@
 import { Candle, ExecutedOrder, OrderType, PluginInterface } from '@debut/types';
+import type { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
 import express from 'express';
 import SSEExpress from 'express-sse-ts';
 import { formatTime } from './utils';
@@ -13,6 +14,11 @@ export interface PlayerPluginAPI {
 }
 
 export function playerPlugin(tickDelay = 10): PluginInterface {
+    let virtualTakes: VirtualTakesPlugin;
+    let dynamicTakes;
+    let activeOrderCid: number;
+    let activeOrderCandle: number;
+    let candleIndx = 0;
     const app = express();
     const sse = new SSEExpress();
     let indicatorsSchema: IndicatorsSchema;
@@ -20,6 +26,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
     let inited = false;
     let filled = false;
     let orderUpdates = [] as any[];
+    let activeOrderData: any[] | null = null;
     const indicatorsData = new Map();
     const initialData = {
         chart: {
@@ -70,6 +77,20 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         sse.send(JSON.stringify(data), event);
     }
 
+    function updateTakes(data: unknown[]) {
+        let stopPrice: number = 0;
+
+        if (virtualTakes && activeOrderCid) {
+            stopPrice = virtualTakes.api.getTakes(activeOrderCid)?.stopPrice || 0;
+        }
+
+        if (stopPrice !== 0) {
+            return data.concat(stopPrice);
+        }
+
+        return data;
+    }
+
     return {
         name: 'player',
 
@@ -111,6 +132,8 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
 
         onInit() {
             initialData.title = `${this.debut.opts.ticker}`;
+            virtualTakes = this.findPlugin('takes');
+            dynamicTakes = this.findPlugin('dynamicTakes');
         },
 
         async onAfterTick(tick: Candle) {
@@ -135,8 +158,14 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                     }
                 });
 
+                if (activeOrderData) {
+                    update['Orders'] = updateTakes(activeOrderData);
+                }
+
                 if (orderUpdates.length) {
-                    update['Orders'] = orderUpdates.shift();
+                    const data = orderUpdates.shift();
+
+                    update['Orders'] = updateTakes(data);
                 }
 
                 send(update, 'tick');
@@ -147,6 +176,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             const formattedTime = formatTime(candle.time);
             const update: Record<string, unknown> = { candle: transformedCandle };
 
+            candleIndx++;
             initialData.chart.data.push(transformedCandle);
             filled = initialData.chart.data.length > 50;
             indicatorsSchema.forEach((schema) => {
@@ -170,20 +200,19 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         async onOpen(order: ExecutedOrder) {
             const { price, type } = order;
             const fTime = formatTime(order.time);
-            const data = [type === OrderType.BUY ? 1 : 0, price, type, undefined, 1, undefined, 'Exit'];
+            const data = [order.cid, type === OrderType.BUY ? 1 : 0, price, type, undefined, 1, undefined, 'Exit'];
 
             orderUpdates.push(data);
             ordersData.data.push([fTime, ...data]);
-
-            // console.log(ordersData.data);
-
-            // send(update, 'open-order');
+            activeOrderCid = order.cid;
+            activeOrderData = data;
         },
         async onClose(order: ExecutedOrder, closing: ExecutedOrder) {
             const closeTime = formatTime(order.time);
             const openTime = formatTime(closing.time);
             const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
             const data = [
+                closing.cid,
                 closing.type == OrderType.BUY ? 1 : 0,
                 closing.price,
                 closing.type,
@@ -192,14 +221,13 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                 order.price,
                 isProfitable ? 'Exit' : 'Stop',
             ];
-            // const update = {
-            //     Orders: [data],
-            // };
 
-            // orderUpdates.push(data);
             ordersData.data.push([openTime, ...data]);
+            orderUpdates.push(data);
 
-            // send(update, 'close-order');
+            if (!this.debut.ordersCount) {
+                activeOrderData = null;
+            }
         },
     };
 }

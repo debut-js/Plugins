@@ -87,6 +87,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
         data: [] as Array<
             [
                 opentime: number,
+                cid: number | string,
                 type: number,
                 price: number,
                 name: string,
@@ -191,6 +192,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 const fTime = formatTime(time);
                 deals.data.push([
                     fTime,
+                    Date.now(),
                     operation === OrderType.BUY ? 1 : 0,
                     price,
                     operation,
@@ -223,6 +225,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
                 deals.data.push([
                     formatTime(openTime),
+                    Date.now(),
                     operation === OrderType.BUY ? 1 : 0,
                     openPrice,
                     operation,
@@ -304,6 +307,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
             deals.data.push([
                 openTime,
+                order.cid,
                 closing.type == OrderType.BUY ? 1 : 0,
                 closing.price,
                 closing.type,

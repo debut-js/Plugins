@@ -23,6 +23,7 @@
     "peerDependencies": {
         "@debut/plugin-stats": "^1.4.0-beta.2",
         "@debut/plugin-utils": "^1.4.0-beta.2",
+        "@debut/plugin-virtual-takes": "^1.4.0-beta.2",
         "@debut/types": "^3.2.1-beta.4"
     },
     "devDependencies": {

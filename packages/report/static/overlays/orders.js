@@ -16,17 +16,42 @@ export default {
         draw(ctx) {
             let layout = this.$props.layout;
             ctx.strokeStyle = 'black';
-            let idx = 0;
+            let idx = -1;
             let length = this.$props.data.length - 1;
             const candledCount = this.layout.candles.length - 1;
+            let start = null;
 
-            for (var deal of this.$props.data) {
-                ctx.fillStyle = deal[1] ? this.buy_color : this.sell_color;
-                const isBuy = deal[1] === 1;
-                const x0 = deal[0] && layout.t2screen(deal[0]);
-                const y0 = deal[2] && layout.$2screen(deal[2]);
-                let x1 = deal[4] && layout.t2screen(deal[4]);
-                let y1 = deal[6] && layout.$2screen(deal[6]);
+            for (const deal of this.$props.data) {
+                idx++;
+
+                const [time, cid, type, price, name, closetime, closetype, closeprice, closename, stopprice] = deal;
+                const isBuy = type === 1;
+                const isTypeStop = closename === 'Stop';
+                // Stop loss price
+                const y2 = stopprice && layout.$2screen(stopprice);
+                const nextDeal = this.$props.data[idx + 1];
+
+                let x0 = time && layout.t2screen(time);
+                let y0 = price && layout.$2screen(price);
+                let x1 = closetime && layout.t2screen(closetime);
+                let y1 = closeprice && layout.$2screen(closeprice);
+
+                ctx.fillStyle = isBuy ? this.buy_color : this.sell_color;
+
+                if (start && (!nextDeal || nextDeal[1] !== cid)) {
+                    x0 = start[0] && layout.t2screen(start[0]);
+                    y0 = start[3] && layout.$2screen(start[3]);
+                    start = null;
+                }
+
+                if (nextDeal && nextDeal[1] === cid && !start) {
+                    start = deal;
+                    continue;
+                }
+
+                if (start && start[1] === cid) {
+                    continue;
+                }
 
                 if (x0 && y0 && !x1 && !y1 && idx === length) {
                     // Live order
@@ -37,16 +62,19 @@ export default {
                     x1 = lastCandle.x;
                     y1 = lastCandle.c;
                     this.draw_background(ctx, x0, y0, x1, y1, isStop);
+
+                    if (typeof y2 === 'number') {
+                        this.draw_background(ctx, x0, y0, x1, y2, true);
+                    }
+
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                     this.draw_entry(ctx, x0, y0, deal);
                 } else if ((x0 === x1 && y0 === y1) || (x0 && y0 && !x1 && !y1)) {
                     this.draw_entry(ctx, x0, y0, deal);
                 } else {
-                    this.draw_background(ctx, x0, y0, x1, y1, deal[7] === 'Stop');
+                    this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                 }
-
-                idx++;
             }
         },
         draw_background(ctx, x1, y1, x2, y2, stop) {
@@ -109,14 +137,14 @@ export default {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = '#000000';
-            const text = `Entry: ${deal[2]} / Exit: ${deal[6]}`;
+            const text = `Entry: ${deal[3]} / Exit: ${deal[7]}`;
             ctx.fillText(text, x + width / 2, y + height / 2);
             ctx.restore();
         },
         draw_arrow(ctx, fromx, fromy, tox, toy, arrowWidth) {
             //variables to be used when creating the arrow
-            var headlen = 10;
-            var angle = Math.atan2(toy - fromy, tox - fromx);
+            const headlen = 10;
+            const angle = Math.atan2(toy - fromy, tox - fromx);
 
             ctx.save();
             ctx.strokeStyle = 'rgb(255, 255, 255, 0.7)';
@@ -155,9 +183,11 @@ export default {
         },
         // Defines legend format (values & colors)
         legend(values) {
+            let pos;
+
             switch (values[1]) {
                 case 0:
-                    var pos = 'Sell';
+                    pos = 'Sell';
                     break;
                 case 1:
                     pos = 'Buy';

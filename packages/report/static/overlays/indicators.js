@@ -75,18 +75,19 @@ export default {
 
                     const y1 = layout.$2screen(p1[j]);
                     const y2 = layout.$2screen(p2[j]);
+                    const color = colors[j - 1] || getLineColor(j - 1);
 
                     if (type === 'value') {
                         if (modifier === 'line') {
-                            const color = colors[j - 1] || getLineColor(j - 1);
-
                             if (!Number.isFinite(p1[j]) || !Number.isFinite(p2[j])) {
                                 continue;
                             }
 
                             this.drawLine(ctx, [x1, y1], [x2, y2], color);
                         } else if (modifier === 'bar') {
-                            this.drawHistogram(ctx, x2, y2);
+                            this.drawHistogram(ctx, x2, y2, color);
+                        } else if (modifier === 'dot') {
+                            this.drawDot(ctx, x2, y2, color);
                         } else if (modifier === 'text') {
                             const candle = layout.candles.find((item) => item.raw[0] === p2[0]);
                             const y = candle ? candle.h : layout.$_hi;
@@ -151,6 +152,23 @@ export default {
             ctx.moveTo(x, base);
             ctx.lineTo(x, y);
             ctx.stroke();
+        },
+        drawDot(ctx, x, y, fill = '#2966bc', stroke) {
+            const radius = 4;
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+
+            if (fill) {
+                ctx.fillStyle = fill;
+                ctx.fill();
+            }
+
+            if (stroke) {
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = stroke;
+                ctx.stroke();
+            }
         },
         drawText(ctx, x, y, value, color = 'rgb(33 181 127)') {
             ctx.font = `${12}px Arial`;

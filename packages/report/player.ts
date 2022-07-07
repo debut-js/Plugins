@@ -1,4 +1,4 @@
-import { Candle, ExecutedOrder, OrderType, PluginInterface } from '@debut/types';
+import { Candle, ExecutedOrder, OrderType, PluginInterface, TimeFrame } from '@debut/types';
 import type { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
 import express from 'express';
 import SSEExpress from 'express-sse-ts';
@@ -132,8 +132,11 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
 
         onInit() {
             initialData.title = `${this.debut.opts.ticker}`;
+            initialData.chart.tf = debutToChartTimeframe(this.debut.opts.interval);
             virtualTakes = this.findPlugin('takes');
             dynamicTakes = this.findPlugin('dynamicTakes');
+
+            console.log(initialData);
         },
 
         async onAfterTick(tick: Candle) {
@@ -248,4 +251,24 @@ function mapTick(candle: Candle) {
 
 function sleep(ms: number) {
     return new Promise((resolve: Function) => setTimeout(resolve, ms));
+}
+function debutToChartTimeframe(tf: TimeFrame) {
+    switch (tf) {
+        case '1min':
+            return '1m';
+        case '5min':
+            return '5m';
+        case '15min':
+            return '15m';
+        case '30min':
+            return '30m';
+        case '1h':
+            return '1H';
+        case '4h':
+            return '4H';
+        case 'day':
+            return '1D';
+        }
+
+    throw 'Unsupported player interval';
 }

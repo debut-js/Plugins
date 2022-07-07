@@ -196,10 +196,10 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     operation === OrderType.BUY ? 1 : 0,
                     price,
                     operation,
-                    fTime,
+                    0,
                     1,
-                    price,
-                    'Exit',
+                    0,
+                    'Entry',
                 ]);
             },
             disableOrdersDisplay() {

@@ -27,6 +27,7 @@ export default {
                 const [time, cid, type, price, name, closetime, closetype, closeprice, closename, stopprice] = deal;
                 const isBuy = type === 1;
                 const isTypeStop = closename === 'Stop';
+                const isTypeEntry = closename === 'Entry';
                 // Stop loss price
                 const y2 = stopprice && layout.$2screen(stopprice);
                 const nextDeal = this.$props.data[idx + 1];
@@ -69,7 +70,7 @@ export default {
 
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                     this.draw_entry(ctx, x0, y0, deal);
-                } else if ((x0 === x1 && y0 === y1) || (x0 && y0 && !x1 && !y1)) {
+                } else if (isTypeEntry) {
                     this.draw_entry(ctx, x0, y0, deal);
                 } else {
                     this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);

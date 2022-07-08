@@ -1,4 +1,4 @@
-import { PluginInterface, Candle, OrderType, ExecutedOrder } from '@debut/types';
+import { PluginInterface, Candle, OrderType, ExecutedOrder, TimeFrame } from '@debut/types';
 import { file, orders } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
@@ -110,7 +110,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
     let disabledProfit = false;
     let isManualOrder = false;
 
-    function createVisualData() {
+    function createVisualData(interval: TimeFrame) {
         onchart.push(deals);
 
         if (!disabledProfit) {
@@ -137,6 +137,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
             type: 'Candles',
             indexBased: true,
             data: ohlcv,
+            tf: debutToChartTimeframe(interval),
         };
 
         return { chart, title, onchart, offchart, settings };
@@ -327,8 +328,30 @@ export function reportPlugin(showMargin = true): PluginInterface {
             const savePath = path.join(__dirname + '/../static/data.json');
 
             file.ensureFile(savePath);
-            file.saveFile(savePath, createVisualData());
+            file.saveFile(savePath, createVisualData(this.debut.opts.interval));
             console.log('Report data is ready...');
         },
     };
+}
+
+
+export function debutToChartTimeframe(tf: TimeFrame) {
+    switch (tf) {
+        case '1min':
+            return '1m';
+        case '5min':
+            return '5m';
+        case '15min':
+            return '15m';
+        case '30min':
+            return '30m';
+        case '1h':
+            return '1H';
+        case '4h':
+            return '4H';
+        case 'day':
+            return '1D';
+        }
+
+    throw 'Unsupported player interval';
 }

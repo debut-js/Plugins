@@ -28,9 +28,11 @@ export default {
                 const isBuy = type === 1;
                 const isTypeStop = closename === 'Stop';
                 const isTypeEntry = closename === 'Entry';
+                const isTypeOpened = closename === 'Opened';
                 // Stop loss price
                 const y2 = stopprice && layout.$2screen(stopprice);
                 const nextDeal = this.$props.data[idx + 1];
+                const closeDeal = nextDeal && this.$props.data.find((item, index) => index > idx && item[1] === cid);
 
                 let x0 = time && layout.t2screen(time);
                 let y0 = price && layout.$2screen(price);
@@ -54,7 +56,7 @@ export default {
                     continue;
                 }
 
-                if (x0 && y0 && !x1 && !y1 && idx === length) {
+                if (isTypeOpened) {
                     // Live order
                     const lastCandle = this.layout.candles[candledCount];
                     // Order loss
@@ -62,6 +64,12 @@ export default {
 
                     x1 = lastCandle.x;
                     y1 = lastCandle.c;
+
+                    if (closeDeal) {
+                        x1 = layout.t2screen(closeDeal[5]);
+                        y1 = layout.$2screen(closeDeal[7]);
+                    }
+
                     this.draw_background(ctx, x0, y0, x1, y1, isStop);
 
                     if (typeof y2 === 'number') {

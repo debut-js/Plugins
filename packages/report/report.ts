@@ -9,6 +9,18 @@ export const enum FillType {
     'tonexty' = 'tonexty',
     'toself' = 'toself',
 }
+
+export type OrderInfo = [
+    opentime: number,
+    id: number | string,
+    type: number,
+    price: number,
+    name: string,
+    closetime: number,
+    closetype: number,
+    closeprice: number,
+    closename: string,
+];
 export interface ReportPluginAPI {
     report: {
         addIndicators(schema: IndicatorsSchema): void;
@@ -84,19 +96,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
     const deals = {
         type: 'Orders',
         name: 'Orders',
-        data: [] as Array<
-            [
-                opentime: number,
-                cid: number | string,
-                type: number,
-                price: number,
-                name: string,
-                closetime: number,
-                closetype: number,
-                closeprice: number,
-                closename: string,
-            ]
-        >,
+        data: [] as Array<OrderInfo>,
         settings: {
             'z-index': 1,
         },
@@ -334,7 +334,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
     };
 }
 
-
 export function debutToChartTimeframe(tf: TimeFrame) {
     switch (tf) {
         case '1min':
@@ -351,7 +350,7 @@ export function debutToChartTimeframe(tf: TimeFrame) {
             return '4H';
         case 'day':
             return '1D';
-        }
+    }
 
     throw 'Unsupported player interval';
 }

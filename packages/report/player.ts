@@ -206,7 +206,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         async onOpen(order: ExecutedOrder) {
             const { price, type } = order;
             const fTime = formatTime(order.time);
-            const data = [order.cid, type === OrderType.BUY ? 1 : 0, price, type, undefined, 1, undefined, 'Exit'];
+            const data = [order.cid, type === OrderType.BUY ? 1 : 0, price, type, undefined, 1, undefined, 'Opened'];
 
             orderUpdates.push(data);
             ordersData.data.push([fTime, ...data]);

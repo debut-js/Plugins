@@ -164,14 +164,22 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                     }
                 });
 
-                if (activeOrderData) {
-                    update['Orders'] = updateTakes(activeOrderData);
-                }
+                const orderUpdateCount = orderUpdates.length;
 
-                if (orderUpdates.length) {
-                    const data = orderUpdates.shift();
+                if (orderUpdateCount || activeOrderData) {
+                    const isCloseMany =
+                        orderUpdateCount > 1 && orderUpdates.every((item) => item[7] === 'Exit' || item[7] === 'Stop');
+                    let data = activeOrderData ? activeOrderData : orderUpdates.shift();
 
-                    update['Orders'] = updateTakes(data);
+                    data = updateTakes(data);
+
+                    // Close all orders at once
+                    if (isCloseMany) {
+                        data[0] = [data[0], ...orderUpdates.map((item) => item[0])];
+                        orderUpdates.length = 0;
+                    }
+
+                    update['Orders'] = data;
                 }
 
                 send(update, 'tick');

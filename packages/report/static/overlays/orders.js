@@ -32,7 +32,17 @@ export default {
                 // Stop loss price
                 const y2 = stopprice && layout.$2screen(stopprice);
                 const nextDeal = this.$props.data[idx + 1];
-                const closeDeal = nextDeal && this.$props.data.find((item, index) => index > idx && item[1] === cid);
+                const closeDeal =
+                    nextDeal &&
+                    this.$props.data.find((item, index) => {
+                        if (item[8] === 'Opened' || index <= idx) {
+                            return false;
+                        }
+
+                        const closeCid = item[1];
+
+                        return Array.isArray(closeCid) ? closeCid.includes(cid) : closeCid === cid;
+                    });
 
                 let x0 = time && layout.t2screen(time);
                 let y0 = price && layout.$2screen(price);
@@ -80,7 +90,7 @@ export default {
                     this.draw_entry(ctx, x0, y0, deal);
                 } else if (isTypeEntry) {
                     this.draw_entry(ctx, x0, y0, deal);
-                } else {
+                } else if (typeof cid === 'number') {
                     this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                 }

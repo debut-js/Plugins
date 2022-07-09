@@ -70,7 +70,6 @@ export default {
                     // Live order
                     const lastCandle = this.layout.candles[candledCount];
                     // Order loss
-                    let isStop = (isBuy && y0 < lastCandle.c) || (!isBuy && y0 > lastCandle.c);
 
                     x1 = lastCandle.x;
                     y1 = lastCandle.c;
@@ -79,6 +78,8 @@ export default {
                         x1 = layout.t2screen(closeDeal[5]);
                         y1 = layout.$2screen(closeDeal[7]);
                     }
+
+                    const isStop = (isBuy && y0 < y1) || (!isBuy && y0 > x1);
 
                     this.draw_background(ctx, x0, y0, x1, y1, isStop);
 

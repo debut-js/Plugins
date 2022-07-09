@@ -86,7 +86,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         }
 
         if (dynamicTakes && activeOrderCid) {
-            stopPrice = virtualTakes.api.getTakes(activeOrderCid)?.stopPrice || 0;
+            stopPrice = dynamicTakes.api.getTakes(activeOrderCid)?.stopPrice || 0;
         }
 
         if (stopPrice !== 0) {

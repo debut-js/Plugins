@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.4.0-beta.13",
+    "version": "1.4.0-beta.14",
     "publishConfig": {
         "access": "public"
     },
@@ -24,6 +24,7 @@
         "@debut/plugin-stats": "^1.4.0-beta.2",
         "@debut/plugin-utils": "^1.4.0-beta.2",
         "@debut/plugin-virtual-takes": "^1.4.0-beta.2",
+        "@debut/plugin-dynamic-takes": "^1.6.0-beta.2",
         "@debut/types": "^3.2.1-beta.4"
     },
     "devDependencies": {

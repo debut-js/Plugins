@@ -80,7 +80,7 @@ export function dynamicTakesPlugin(opts: DynamicTakesPluginOptions): PluginInter
                 // Move takes
 
                 takes.stopPrice += takes.stopPrice - order.price;
-                takes.takePrice = takes.takePrice;
+                takes.takePrice -= takes.takePrice - order.price;
 
                 // Create same type as origin order
                 if (!newOrder) {

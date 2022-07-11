@@ -3,6 +3,8 @@ import { file, orders } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
 import { formatTime } from './utils';
+import type { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
+import type { DynamicTakesPlugin } from '@debut/plugin-dynamic-takes';
 
 export const enum FillType {
     'tozeroy' = 'tozeroy',
@@ -20,6 +22,7 @@ export type OrderInfo = [
     closetype: number,
     closeprice: number,
     closename: string,
+    stopPrice?: number,
 ];
 export interface ReportPluginAPI {
     report: {
@@ -35,7 +38,7 @@ export interface ReportPluginAPI {
             openPrice: number,
             closePrice: number,
         ) => void;
-        addOpenTarget: (time: string, price: number, operation: OrderType) => void;
+        addOpenTarget: (cid: number, time: string, price: number, operation: OrderType) => void;
     };
 }
 
@@ -109,6 +112,22 @@ export function reportPlugin(showMargin = true): PluginInterface {
     let stats: StatsInterface;
     let disabledProfit = false;
     let isManualOrder = false;
+    let virtualTakes: VirtualTakesPlugin;
+    let dynamicTakes: DynamicTakesPlugin;
+
+    function getTakes(cid: number) {
+        let stopPrice: number = 0;
+
+        if (virtualTakes) {
+            stopPrice = virtualTakes.api.getTakes(cid)?.stopPrice || 0;
+        }
+
+        if (dynamicTakes) {
+            stopPrice = dynamicTakes.api.getTakes(cid)?.stopPrice || 0;
+        }
+
+        return stopPrice;
+    }
 
     function createVisualData(interval: TimeFrame) {
         onchart.push(deals);
@@ -129,8 +148,8 @@ export function reportPlugin(showMargin = true): PluginInterface {
         }
 
         if (!settings.rangeFrom && !settings.rangeTo) {
-            settings.rangeFrom = ohlcv[0][0];
-            settings.rangeTo = ohlcv[ohlcv.length - 1][0];
+            settings.rangeFrom = 0;
+            settings.rangeTo = ohlcv.length;
         }
 
         const chart = {
@@ -185,11 +204,11 @@ export function reportPlugin(showMargin = true): PluginInterface {
             },
 
             setXRange(from: number, to: number) {
-                settings.rangeFrom = formatTime(from);
-                settings.rangeTo = formatTime(to);
+                settings.rangeFrom = from;
+                settings.rangeTo = to;
                 settings.toolbar = false;
             },
-            addOpenTarget(time: string, price: number, operation: OrderType) {
+            addOpenTarget(cid: number, time: string, price: number, operation: OrderType) {
                 const fTime = formatTime(time);
                 deals.data.push([
                     fTime,
@@ -201,6 +220,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     1,
                     0,
                     'Entry',
+                    getTakes(cid),
                 ]);
             },
             disableOrdersDisplay() {
@@ -253,6 +273,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
             }
 
             title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`;
+
+            virtualTakes = this.findPlugin('takes');
+            dynamicTakes = this.findPlugin('dynamicTakes');
         },
 
         async onTick(tick) {

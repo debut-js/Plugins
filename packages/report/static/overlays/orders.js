@@ -90,6 +90,10 @@ export default {
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                     this.draw_entry(ctx, x0, y0, deal);
                 } else if (isTypeEntry) {
+                    if (typeof y2 === 'number') {
+                        this.draw_background(ctx, x0, y0, x1, y2, true);
+                    }
+
                     this.draw_entry(ctx, x0, y0, deal);
                 } else if (typeof cid === 'number') {
                     this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);

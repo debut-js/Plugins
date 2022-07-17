@@ -9,7 +9,6 @@ Keep in mind that many unofficial plugins can negatively impact performance.
 
 | Name | Description |
 | ----------------------------------- | ---------------------------------------------------------- |
-| [dynamic-takes](packages/dynamic-takes) | Setting virtual stop/take for deals, insurance deals, trailing |
 | [virtual-takes](packages/virtual-takes) | Simplified system of virtual stop/take in the form of constant interest, trailing |
 | [genetic-shutdown](packages/genetic-shutdown) | An early "switch" of strategies for the geneticist. Allows you to greatly save resources |
 | [grid](packages/grid) | To create strategies based on grids and martingale |

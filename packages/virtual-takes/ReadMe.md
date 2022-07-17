@@ -15,11 +15,39 @@ npm install @debut/plugin-virtual-takes --save
 | stopLoss | number | Percentage level from order opening price (positive number as well) |
 | trailing | number | 1 - tradiling from opening, 2 - trailing ater take reached, 3 - trailing after each new take reached (trailing is disabled by default) |
 | ignoreTicks | boolean | Ignore ticks, check takes on each candle closed |
+| maxRetryOrders | number | Allows open new orders insted of closing by stop loss, no more than value |
 | manual | boolean | Manual control, for using API |
 
 ## Plugin API
 | Name | Description |
 |-----------|------------|
-| setForOrder | setup stop and take prices for signle order, setting up by passed options parameters |
+| setForOrder | setup stop and take prices for signle order, setting up by passed options parameters (manual) |
+| setPricesForOrder | setup stop and take prices for signle order, setting up by precalculated prices (manual) |
+| setTrailingForOrder | setup stop and take prices for signle order, setting up by passed options parameters (manual) |
 | getTakes | get take and stop price for order from plugin state |
 | isManual | return manual state for plugin, need to use when another plugin depends from takes plugin |
+
+
+
+## Takeaway setting
+```javascript
+// in context of Debut...
+async onCandle({ c }) {
+    // some entry conditions
+    const order = await this.createOrder(target);
+    let take = c + c * 0.15; // Assume 15%
+    let stop = c - c * 0.10; // And the stop is 10%
+
+    // If the trade is of the SELL type, swap the stop and take positions
+    if (target === OrderType.SELL) {
+        [take, stop] = [stop, take];
+    }
+
+    // Hand over the cid (client-id) to the price plugin.
+    // Then it will monitor when it reaches a take or stop
+    // after which it will automatically close the trade
+    this.plugins.takes.setForOrder(order.cid, take, stop);
+
+    return order;
+}
+```

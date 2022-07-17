@@ -204,6 +204,7 @@ function trailingTakes(order: ExecutedOrder | PendingOrder, price: number, looku
         const delta = price - takes.price;
 
         takes.stopPrice += delta;
+        takes.takePrice += delta;
         takes.price = price;
     }
 }

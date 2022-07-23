@@ -13281,9 +13281,8 @@ var AggTool = /*#__PURE__*/function () {
         this.data_changed = false;
       }
 
-      setTimeout(function () {
-        return _this2.update();
-      }, this["int"]);
+      // DEBUT TODO: Fix animation sync
+      requestAnimationFrame(() => _this2.update());
     }
   }, {
     key: "refine",

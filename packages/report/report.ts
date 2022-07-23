@@ -13,17 +13,19 @@ export const enum FillType {
 }
 
 export type OrderInfo = [
-    opentime: number,
+    closeTime: number,
     id: number | string,
-    type: number,
+    type: 'Open' | 'Close' | 'Both' | 'Entry',
     price: number,
-    name: string,
-    closetime: number,
-    closetype: number,
-    closeprice: number,
-    closename: string,
+    orderType: OrderType,
     stopPrice?: number,
+    closeType?: 'Stop' | 'Exit',
+    closePrice?: number,
+    closeTime?: number,
+    openTime?: number,
 ];
+
+
 export interface ReportPluginAPI {
     report: {
         addIndicators(schema: IndicatorsSchema): void;
@@ -213,13 +215,9 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 deals.data.push([
                     fTime,
                     Date.now(),
-                    operation === OrderType.BUY ? 1 : 0,
+                    'Entry',
                     price,
                     operation,
-                    0,
-                    1,
-                    0,
-                    'Entry',
                     getTakes(cid),
                 ]);
             },
@@ -245,15 +243,15 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 const isProfitable = operation === OrderType.BUY ? openPrice < closePrice : openPrice > closePrice;
 
                 deals.data.push([
-                    formatTime(openTime),
+                    formatTime(closeTime),
                     Date.now(),
-                    operation === OrderType.BUY ? 1 : 0,
+                    'Both',
                     openPrice,
                     operation,
-                    formatTime(closeTime),
-                    isProfitable ? 1 : 0,
-                    closePrice,
+                    0,
                     isProfitable ? 'Exit' : 'Stop',
+                    closePrice,
+                    formatTime(openTime),
                 ]);
             },
         },
@@ -330,15 +328,15 @@ export function reportPlugin(showMargin = true): PluginInterface {
             const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
 
             deals.data.push([
-                openTime,
-                order.cid,
-                closing.type == OrderType.BUY ? 1 : 0,
+                closeTime,
+                closing.cid,
+                'Both',
                 closing.price,
                 closing.type,
-                closeTime,
-                isProfitable ? 1 : 0,
-                order.price,
+                getTakes(order.cid),
                 isProfitable ? 'Exit' : 'Stop',
+                order.price,
+                openTime,
             ]);
 
             equity.push([formatTime(order.time), stats.api.getState().profit]);

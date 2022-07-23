@@ -8,6 +8,21 @@ import path from 'path';
 import { debutToChartTimeframe, FigureModifier, IndicatorHeader, IndicatorsSchema } from './report';
 import { orders } from '@debut/plugin-utils';
 
+// Остановился на том, что метод setPricesForOrder вызывает после открытия сделки, нужно опрашиваь сделку постоянно и обновлять ее стоп
+// кажется все открытые сделки должны быть в какой то мапе, которая будет считывать их и подставлять данные
+// но не ясно что делать в случае когда плагин используется как репорт
+export type PlayerOrderInfo = [
+    id: number | string,
+    type: 'Open' | 'Close' | 'Both' | 'Entry',
+    price: number,
+    orderType: OrderType,
+    stopPrice?: number,
+    closeType?: 'Stop' | 'Exit',
+    closePrice?: number,
+    closeTime?: number,
+    openTime?: number,
+];
+
 export interface PlayerPluginAPI {
     player: {
         addIndicators(schema: IndicatorsSchema): void;
@@ -17,17 +32,15 @@ export interface PlayerPluginAPI {
 export function playerPlugin(tickDelay = 10): PluginInterface {
     let virtualTakes: VirtualTakesPlugin;
     let dynamicTakes: DynamicTakesPlugin;
-    let activeOrderCid: number;
-    let activeOrderCandle: number;
-    let candleIndx = 0;
     const app = express();
     const sse = new SSEExpress();
     let indicatorsSchema: IndicatorsSchema;
     const staticPath = path.resolve(__dirname + '/../static');
     let inited = false;
     let filled = false;
-    let orderUpdates = [] as any[];
-    let activeOrderData: any[] | null = null;
+    let orderUpdates: PlayerOrderInfo[] = [];
+    let candleIdx = 0;
+    const openMap = new Map<number, number>();
     const indicatorsData = new Map();
     const initialData = {
         chart: {
@@ -44,7 +57,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
     const ordersData = {
         type: 'Orders',
         name: 'Orders',
-        data: [] as any[],
+        data: [] as any,
         settings: { 'z-index': 1 },
     };
 
@@ -78,22 +91,18 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         sse.send(JSON.stringify(data), event);
     }
 
-    function updateTakes(data: unknown[]) {
+    function getTakes(cid: number) {
         let stopPrice: number = 0;
 
-        if (virtualTakes && activeOrderCid) {
-            stopPrice = virtualTakes.api.getTakes(activeOrderCid)?.stopPrice || 0;
+        if (virtualTakes) {
+            stopPrice = virtualTakes.api.getTakes(cid)?.stopPrice || 0;
         }
 
-        if (dynamicTakes && activeOrderCid) {
-            stopPrice = dynamicTakes.api.getTakes(activeOrderCid)?.stopPrice || 0;
+        if (dynamicTakes) {
+            stopPrice = dynamicTakes.api.getTakes(cid)?.stopPrice || 0;
         }
 
-        if (stopPrice !== 0) {
-            return data.concat(stopPrice);
-        }
-
-        return data;
+        return stopPrice;
     }
 
     return {
@@ -145,10 +154,6 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         async onAfterTick(tick: Candle) {
             let update: Record<string, unknown> = {};
 
-            if (filled) {
-                await sleep(tickDelay);
-            }
-
             if (inited && filled) {
                 update = mapTick(tick);
 
@@ -164,25 +169,15 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                     }
                 });
 
-                const orderUpdateCount = orderUpdates.length;
-
-                if (orderUpdateCount || activeOrderData) {
-                    const isCloseMany =
-                        orderUpdateCount > 1 && orderUpdates.every((item) => item[7] === 'Exit' || item[7] === 'Stop');
-                    let data = activeOrderData ? activeOrderData : orderUpdates.shift();
-
-                    data = updateTakes(data);
-
-                    // Close all orders at once
-                    if (isCloseMany) {
-                        data[0] = [data[0], ...orderUpdates.map((item) => item[0])];
-                        orderUpdates.length = 0;
-                    }
-
-                    update['Orders'] = data;
+                if (orderUpdates.length) {
+                    update.Orders = [...orderUpdates];
                 }
 
                 send(update, 'tick');
+            }
+
+            if (filled) {
+                await sleep(tickDelay);
             }
         },
         async onAfterCandle(candle: Candle) {
@@ -190,9 +185,8 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             const formattedTime = formatTime(candle.time);
             const update: Record<string, unknown> = { candle: transformedCandle };
 
-            candleIndx++;
             initialData.chart.data.push(transformedCandle);
-            filled = initialData.chart.data.length > 50;
+            filled = filled || initialData.chart.data.length > 50 && ordersData.data.length > 0;
             indicatorsSchema.forEach((schema) => {
                 const meta = indicatorsData.get(schema.name);
                 let step: Array<number | string> = [formattedTime];
@@ -212,35 +206,53 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             }
         },
         async onOpen(order: ExecutedOrder) {
-            const { price, type } = order;
-            const fTime = formatTime(order.time);
-            const data = [order.cid, type === OrderType.BUY ? 1 : 0, price, type, undefined, 1, undefined, 'Opened'];
+            const { price, type, cid } = order;
+            const data: PlayerOrderInfo = [cid, 'Open', price, type, getTakes(cid)];
 
-            orderUpdates.push(data);
-            ordersData.data.push([fTime, ...data]);
-            activeOrderCid = order.cid;
-            activeOrderData = data;
+            openMap.set(cid, candleIdx);
+
+            if (inited) {
+                orderUpdates.push(data);
+            }
+        },
+
+        async onCandle() {
+            candleIdx++;
+            orderUpdates.length = 0;
         },
         async onClose(order: ExecutedOrder, closing: ExecutedOrder) {
-            const closeTime = formatTime(order.time);
-            const openTime = formatTime(closing.time);
+            const openTime = openMap.get(closing.cid);
+            const openTimeMs = formatTime(closing.time);
+            const closeTimeMs = formatTime(order.time);
             const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
-            const data = [
+            const data: PlayerOrderInfo = [
                 closing.cid,
-                closing.type == OrderType.BUY ? 1 : 0,
+                'Close',
                 closing.price,
                 closing.type,
-                closeTime,
-                isProfitable ? 1 : 0,
-                order.price,
+                getTakes(order.cid),
                 isProfitable ? 'Exit' : 'Stop',
+                order.price,
+                openTime,
             ];
 
-            ordersData.data.push([openTime, ...data]);
-            orderUpdates.push(data);
+            const bothData = [
+                closeTimeMs,
+                closing.cid,
+                'Both',
+                closing.price,
+                closing.type,
+                getTakes(order.cid),
+                isProfitable ? 'Exit' : 'Stop',
+                order.price,
+                openTimeMs,
+            ];
 
-            if (!this.debut.ordersCount) {
-                activeOrderData = null;
+            ordersData.data.push(bothData);
+            openMap.delete(closing.cid);
+
+            if (inited) {
+                orderUpdates.push(data);
             }
         },
     };

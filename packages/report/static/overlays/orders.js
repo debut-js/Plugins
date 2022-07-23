@@ -14,72 +14,59 @@ export default {
             };
         },
         draw(ctx) {
-            let layout = this.$props.layout;
             ctx.strokeStyle = 'black';
-            let idx = -1;
-            let length = this.$props.data.length - 1;
+
+            const layout = this.$props.layout;
             const candledCount = this.layout.candles.length - 1;
-            let start = null;
+            const deals = [];
+            const dealsMap = new Map();
 
             for (const deal of this.$props.data) {
-                idx++;
+                if (Array.isArray(deal[1])) {
+                    const time = deal.shift();
+                    deals.push(...deal.map((item) => [time, ...item]));
+                } else {
+                    deals.push(deal);
+                }
+            }
 
-                const [time, cid, type, price, name, closetime, closetype, closeprice, closename, stopprice] = deal;
-                const isBuy = type === 1;
-                const isTypeStop = closename === 'Stop';
-                const isTypeEntry = closename === 'Entry';
-                const isTypeOpened = closename === 'Opened';
-                // Stop loss price
-                const y2 = stopprice && layout.$2screen(stopprice);
-                const nextDeal = this.$props.data[idx + 1];
-                const closeDeal =
-                    nextDeal &&
-                    this.$props.data.find((item, index) => {
-                        if (item[8] === 'Opened' || index <= idx) {
-                            return false;
-                        }
+            for (const deal of deals) {
+                const [time, id, type] = deal;
+                const existing = dealsMap.get(id);
 
-                        const closeCid = item[1];
+                if (existing && existing[2] === 'Close') {
+                    continue;
+                }
 
-                        return Array.isArray(closeCid) ? closeCid.includes(cid) : closeCid === cid;
-                    });
+                dealsMap.set(id, deal);
+            }
 
-                let x0 = time && layout.t2screen(time);
-                let y0 = price && layout.$2screen(price);
-                let x1 = closetime && layout.t2screen(closetime);
-                let y1 = closeprice && layout.$2screen(closeprice);
+            dealsMap.forEach((deal) => {
+                const type = deal[2];
+                const orderType = deal[4];
+                const isBuy = orderType === 'BUY';
 
                 ctx.fillStyle = isBuy ? this.buy_color : this.sell_color;
 
-                if (start && (!nextDeal || nextDeal[1] !== cid)) {
-                    x0 = start[0] && layout.t2screen(start[0]);
-                    y0 = start[3] && layout.$2screen(start[3]);
-                    start = null;
-                }
+                if (type === 'Both' || type === 'Close') {
+                    const [closeTime, id, type, openPrice, openType, stopPrice, closeType, closePrice, openTime] = deal;
+                    const isTypeStop = closeType === 'Stop';
+                    const x0 = layout.t2screen(openTime);
+                    const y0 = layout.$2screen(openPrice);
+                    const x1 = layout.t2screen(closeTime);
+                    const y1 = layout.$2screen(closePrice);
 
-                if (nextDeal && nextDeal[1] === cid && !start) {
-                    start = deal;
-                    continue;
-                }
-
-                if (start && start[1] === cid) {
-                    continue;
-                }
-
-                if (isTypeOpened) {
-                    // Live order
+                    this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);
+                    this.draw_arrow(ctx, x0, y0, x1, y1, 1);
+                } else if (type === 'Open') {
+                    const [time, id, type, price, orderType, stopPrice] = deal;
                     const lastCandle = this.layout.candles[candledCount];
-                    // Order loss
-
-                    x1 = lastCandle.x;
-                    y1 = lastCandle.c;
-
-                    if (closeDeal) {
-                        x1 = layout.t2screen(closeDeal[5]);
-                        y1 = layout.$2screen(closeDeal[7]);
-                    }
-
-                    const isStop = (isBuy && y0 < y1) || (!isBuy && y0 > x1);
+                    const x0 = layout.t2screen(time);
+                    const y0 = layout.$2screen(price);
+                    const x1 = lastCandle.x;
+                    const y1 = lastCandle.c;
+                    const y2 = stopPrice && layout.$2screen(stopPrice);
+                    const isStop = (isBuy && y0 < y1) || (!isBuy && y0 > y1);
 
                     this.draw_background(ctx, x0, y0, x1, y1, isStop);
 
@@ -88,18 +75,87 @@ export default {
                     }
 
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
-                    this.draw_entry(ctx, x0, y0, deal);
-                } else if (isTypeEntry) {
-                    if (y2) {
-                        this.draw_background(ctx, x0, y0, x1, y2, true);
-                    }
-
-                    this.draw_entry(ctx, x0, y0, deal);
-                } else if (typeof cid === 'number') {
-                    this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);
-                    this.draw_arrow(ctx, x0, y0, x1, y1, 1);
+                    this.draw_entry(ctx, x0, y0, price);
                 }
-            }
+            });
+
+            // for (const deal of deals) {
+            //     const [time, cid, type, price, name, closetime, closetype, closeprice, closename, stopprice] = deal;
+            //     const isBuy = type === 1;
+            //     const isTypeStop = closename === 'Stop';
+            //     const isTypeEntry = closename === 'Entry';
+            //     const isTypeOpened = closename === 'Opened';
+            //     // Stop loss price
+            //     const y2 = stopprice && layout.$2screen(stopprice);
+            //     const nextDeal = this.$props.data[idx + 1];
+            //     const closeDeal =
+            //         nextDeal &&
+            //         this.$props.data.find((item, index) => {
+            //             if (item[8] === 'Opened' || index <= idx) {
+            //                 return false;
+            //             }
+
+            //             const closeCid = item[1];
+
+            //             return Array.isArray(closeCid) ? closeCid.includes(cid) : closeCid === cid;
+            //         });
+
+            //     let x0 = time && layout.t2screen(time);
+            //     let y0 = price && layout.$2screen(price);
+            //     let x1 = closetime && layout.t2screen(closetime);
+            //     let y1 = closeprice && layout.$2screen(closeprice);
+
+            //     ctx.fillStyle = isBuy ? this.buy_color : this.sell_color;
+
+            //     if (start && (!nextDeal || nextDeal[1] !== cid)) {
+            //         x0 = start[0] && layout.t2screen(start[0]);
+            //         y0 = start[3] && layout.$2screen(start[3]);
+            //         start = null;
+            //     }
+
+            //     if (nextDeal && nextDeal[1] === cid && !start) {
+            //         start = deal;
+            //         continue;
+            //     }
+
+            //     if (start && start[1] === cid) {
+            //         continue;
+            //     }
+
+            //     if (isTypeOpened) {
+            //         // Live order
+            //         const lastCandle = this.layout.candles[candledCount];
+            //         // Order loss
+
+            //         x1 = lastCandle.x;
+            //         y1 = lastCandle.c;
+
+            //         if (closeDeal) {
+            //             x1 = layout.t2screen(closeDeal[5]);
+            //             y1 = layout.$2screen(closeDeal[7]);
+            //         }
+
+            //         const isStop = (isBuy && y0 < y1) || (!isBuy && y0 > x1);
+
+            //         this.draw_background(ctx, x0, y0, x1, y1, isStop);
+
+            //         if (y2) {
+            //             this.draw_background(ctx, x0, y0, x1, y2, true);
+            //         }
+
+            //         this.draw_arrow(ctx, x0, y0, x1, y1, 1);
+            //         this.draw_entry(ctx, x0, y0, deal);
+            //     } else if (isTypeEntry) {
+            //         if (y2) {
+            //             this.draw_background(ctx, x0, y0, x1, y2, true);
+            //         }
+
+            //         this.draw_entry(ctx, x0, y0, deal);
+            //     } else if (typeof cid === 'number') {
+            //         this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);
+            //         this.draw_arrow(ctx, x0, y0, x1, y1, 1);
+            //     }
+            // }
         },
         draw_background(ctx, x1, y1, x2, y2, stop) {
             ctx.save();
@@ -112,7 +168,7 @@ export default {
             ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
             ctx.restore();
         },
-        draw_entry(ctx, x, y, p) {
+        draw_entry(ctx, x, y, price) {
             ctx.save();
             ctx.beginPath();
             const startX = x - 48;
@@ -125,7 +181,7 @@ export default {
             ctx.lineTo(startX + 0, startY + 12);
             ctx.fill();
             ctx.fillStyle = 'white';
-            ctx.fillText(p[3], startX + 6, startY + 21.5);
+            ctx.fillText(price, startX + 6, startY + 21.5);
             ctx.restore();
         },
         draw_cross(ctx, x, y) {
@@ -224,14 +280,16 @@ export default {
                     value: pos.toLocaleUpperCase(),
                 },
                 {
-                    value: values[2]?.toFixed(4) || 'n/a',
+                    value: 'n/a',
+                    // value: values[2]?.toFixed(4) || 'n/a',
                     color: this.$props.colors.colorText,
                 },
                 {
                     value: '→',
                 },
                 {
-                    value: values[6]?.toFixed(4) || 'n/a',
+                    value: 'n/a',
+                    // value: values[6]?.toFixed(4) || 'n/a',
                     color: this.$props.colors.colorText,
                 },
             ];

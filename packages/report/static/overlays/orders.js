@@ -38,7 +38,11 @@ export default {
                     continue;
                 }
 
-                dealsMap.set(id, deal);
+                if (type === 'StopLoss') {
+                    existing[5] = deal[3];
+                } else {
+                    dealsMap.set(id, deal);
+                }
             }
 
             dealsMap.forEach((deal) => {

@@ -171,6 +171,16 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
 
                 if (orderUpdates.length) {
                     update.Orders = [...orderUpdates];
+
+                    openMap.forEach((value, key) => {
+                        value = getTakes(key);
+
+                        if (value) {
+                            // @ts-ignore
+                            update.Orders.push([key, 'StopLoss', value]);
+                        }
+                    });
+
                 }
 
                 send(update, 'tick');
@@ -207,7 +217,8 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         },
         async onOpen(order: ExecutedOrder) {
             const { price, type, cid } = order;
-            const data: PlayerOrderInfo = [cid, 'Open', price, type, getTakes(cid)];
+            const stopPrice = getTakes(cid);
+            const data: PlayerOrderInfo = [cid, 'Open', price, type, stopPrice];
 
             openMap.set(cid, candleIdx);
 

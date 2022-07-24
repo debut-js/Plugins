@@ -41,6 +41,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
     let orderUpdates: PlayerOrderInfo[] = [];
     let candleIdx = 0;
     const openMap = new Map<number, number>();
+    const stopsMap = new Map<number, number>();
     const indicatorsData = new Map();
     const initialData = {
         chart: {
@@ -152,7 +153,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         },
 
         async onAfterTick(tick: Candle) {
-            let update: Record<string, unknown> = {};
+            let update: Record<string, any> = {};
 
             if (inited && filled) {
                 update = mapTick(tick);
@@ -171,17 +172,18 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
 
                 if (orderUpdates.length) {
                     update.Orders = [...orderUpdates];
-
-                    openMap.forEach((value, key) => {
-                        value = getTakes(key);
-
-                        if (value) {
-                            // @ts-ignore
-                            update.Orders.push([key, 'StopLoss', value]);
-                        }
-                    });
-
                 }
+
+                openMap.forEach((value, key) => {
+                    value = getTakes(key);
+
+                    if (value && stopsMap.get(key) !== value) {
+                        // @ts-ignore
+                        const stopData = [key, 'StopLoss', value];
+                        update.Orders = [...(update.Orders || []), stopData];
+                        stopsMap.set(key, value);
+                    }
+                });
 
                 send(update, 'tick');
             }
@@ -196,7 +198,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             const update: Record<string, unknown> = { candle: transformedCandle };
 
             initialData.chart.data.push(transformedCandle);
-            filled = filled || initialData.chart.data.length > 50 && ordersData.data.length > 0;
+            filled = filled || (initialData.chart.data.length > 50 && ordersData.data.length > 0);
             indicatorsSchema.forEach((schema) => {
                 const meta = indicatorsData.get(schema.name);
                 let step: Array<number | string> = [formattedTime];
@@ -261,6 +263,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
 
             ordersData.data.push(bothData);
             openMap.delete(closing.cid);
+            stopsMap.delete(closing.cid);
 
             if (inited) {
                 orderUpdates.push(data);

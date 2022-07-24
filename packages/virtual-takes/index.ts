@@ -28,6 +28,7 @@ type OrderTakes = {
     tryLeft?: number;
     tryPrice?: number;
     retryFor?: number;
+    trailed?: boolean;
 };
 
 type TakesLookup = Map<number, OrderTakes>;
@@ -90,7 +91,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 data.stopPrice = order.price;
                 data.price = price;
                 trailing.add(order.cid);
-            } else if (closeState === CloseType.STOP && data.tryLeft! > 0 && data.tryPrice) {
+            } else if (closeState === CloseType.STOP && data.tryLeft! > 0 && data.tryPrice && !data.trailed) {
                 const priceDiff = price - data.tryPrice;
 
                 data.stopPrice = data.stopPrice + priceDiff;
@@ -255,6 +256,7 @@ function createTrailingTakes(order: ExecutedOrder, price: number, lookup: TakesL
 
     takes.takePrice += delta;
     takes.stopPrice += delta;
+    takes.trailed = true;
 }
 
 function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
@@ -268,6 +270,7 @@ function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup)
     ) {
         const delta = price - takes.price;
 
+        takes.trailed = true;
         takes.stopPrice += delta;
         takes.price = price;
     }

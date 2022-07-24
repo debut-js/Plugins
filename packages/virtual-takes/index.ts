@@ -92,6 +92,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
 
                 if (opts.reduceOnTrailingTake && !data.reduced && ctx.debut.ordersCount === 1) {
                     await ctx.debut.reduceOrder(order, 0.5);
+                    data.reduced = true;
                 }
             } else if (opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE) {
                 data.stopPrice = order.price;
@@ -100,6 +101,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
 
                 if (opts.reduceOnTrailingTake && !data.reduced && ctx.debut.ordersCount === 1) {
                     await ctx.debut.reduceOrder(order, 0.5);
+                    data.reduced = true;
                 }
             } else if (closeState === CloseType.STOP && data.tryLeft! > 0 && data.tryPrice && !data.trailed) {
                 const priceDiff = price - data.tryPrice;

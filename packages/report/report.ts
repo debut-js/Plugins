@@ -25,7 +25,6 @@ export type OrderInfo = [
     openTime?: number,
 ];
 
-
 export interface ReportPluginAPI {
     report: {
         addIndicators(schema: IndicatorsSchema): void;
@@ -212,14 +211,8 @@ export function reportPlugin(showMargin = true): PluginInterface {
             },
             addOpenTarget(cid: number, time: string, price: number, operation: OrderType) {
                 const fTime = formatTime(time);
-                deals.data.push([
-                    fTime,
-                    Date.now(),
-                    'Entry',
-                    price,
-                    operation,
-                    getTakes(cid),
-                ]);
+
+                deals.data.push([fTime, cid, 'Entry', price, operation, getTakes(cid)]);
             },
             disableOrdersDisplay() {
                 isManualOrder = true;
@@ -234,6 +227,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 indicatorsData = {};
             },
             setManualOrder(
+                cid: number,
                 operation: OrderType,
                 openTime: string,
                 closeTime: string,
@@ -244,7 +238,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
                 deals.data.push([
                     formatTime(closeTime),
-                    Date.now(),
+                    cid,
                     'Both',
                     openPrice,
                     operation,

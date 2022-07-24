@@ -1,6 +1,6 @@
 {
     "name": "@debut/plugin-report",
-    "version": "1.4.0-beta.25",
+    "version": "1.4.0-beta.26",
     "publishConfig": {
         "access": "public"
     },

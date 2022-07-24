@@ -17,6 +17,7 @@ npm install @debut/plugin-virtual-takes --save
 | ignoreTicks | boolean | Ignore ticks, check takes on each candle closed |
 | maxRetryOrders | number | Allows open new orders insted of closing by stop loss, no more than value |
 | manual | boolean | Manual control, for using API |
+| reduceOnTrailingTake | boolean | reduce order size (by 50%) when trake reached, only for trailing 2 and 3 |
 
 ## Plugin API
 | Name | Description |

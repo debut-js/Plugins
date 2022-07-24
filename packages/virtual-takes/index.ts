@@ -7,6 +7,7 @@ export type VirtualTakesOptions = {
     ignoreTicks?: boolean;
     manual?: boolean; // manual control
     maxRetryOrders?: number; // how many order can be retried after stop reached
+    reduceOnTrailingTake?: boolean; // reduce order size when trake reached, only for trailing 2 and 3
 };
 
 export const enum TrailingType {
@@ -29,6 +30,7 @@ type OrderTakes = {
     tryPrice?: number;
     retryFor?: number;
     trailed?: boolean;
+    reduced?: boolean;
 };
 
 type TakesLookup = Map<number, OrderTakes>;
@@ -87,10 +89,18 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             if (opts.trailing === TrailingType.MoveAfterEachTake && closeState === CloseType.TAKE) {
                 createTrailingTakes(order, price, lookup);
                 trailing.add(order.cid);
+
+                if (opts.reduceOnTrailingTake && !data.reduced && ctx.debut.ordersCount === 1) {
+                    await ctx.debut.reduceOrder(order, 0.5);
+                }
             } else if (opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE) {
                 data.stopPrice = order.price;
                 data.price = price;
                 trailing.add(order.cid);
+
+                if (opts.reduceOnTrailingTake && !data.reduced && ctx.debut.ordersCount === 1) {
+                    await ctx.debut.reduceOrder(order, 0.5);
+                }
             } else if (closeState === CloseType.STOP && data.tryLeft! > 0 && data.tryPrice && !data.trailed) {
                 const priceDiff = price - data.tryPrice;
 
@@ -181,8 +191,10 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
         },
 
         async onClose(order, closing) {
-            trailing.delete(closing.cid);
-            lookup.delete(closing.cid);
+            if (!order.reduce) {
+                trailing.delete(closing.cid);
+                lookup.delete(closing.cid);
+            }
         },
 
         async onCandle() {

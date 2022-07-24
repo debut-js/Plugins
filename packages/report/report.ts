@@ -95,7 +95,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
         rangeFrom?: number;
         rangeTo?: number;
         toolbar?: boolean;
-    } = {};
+    } = { toolbar: true };
 
     const deals = {
         type: 'Orders',
@@ -323,7 +323,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
             deals.data.push([
                 closeTime,
-                closing.cid,
+                order.reduce ? `r-${closing.cid}` : closing.cid,
                 'Both',
                 closing.price,
                 closing.type,

@@ -6,7 +6,6 @@ import SSEExpress from 'express-sse-ts';
 import { formatTime } from './utils';
 import path from 'path';
 import { debutToChartTimeframe, FigureModifier, IndicatorHeader, IndicatorsSchema } from './report';
-import { orders } from '@debut/plugin-utils';
 
 // Остановился на том, что метод setPricesForOrder вызывает после открытия сделки, нужно опрашиваь сделку постоянно и обновлять ее стоп
 // кажется все открытые сделки должны быть в какой то мапе, которая будет считывать их и подставлять данные
@@ -17,7 +16,7 @@ export type PlayerOrderInfo = [
     price: number,
     orderType: OrderType,
     stopPrice?: number,
-    closeType?: 'Stop' | 'Exit',
+    closeType?: 'Exit',
     closePrice?: number,
     closeTime?: number,
     openTime?: number,
@@ -237,14 +236,13 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             const openTime = openMap.get(closing.cid);
             const openTimeMs = formatTime(closing.time);
             const closeTimeMs = formatTime(order.time);
-            const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
             const data: PlayerOrderInfo = [
                 closing.cid,
                 'Close',
                 closing.price,
                 closing.type,
                 getTakes(order.cid),
-                isProfitable ? 'Exit' : 'Stop',
+                'Exit',
                 order.price,
                 openTime,
             ];
@@ -256,7 +254,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                 closing.price,
                 closing.type,
                 getTakes(order.cid),
-                isProfitable ? 'Exit' : 'Stop',
+                'Exit',
                 order.price,
                 openTimeMs,
             ];

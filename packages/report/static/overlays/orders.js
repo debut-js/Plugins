@@ -54,13 +54,13 @@ export default {
 
                 if (type === 'Both' || type === 'Close') {
                     const [closeTime, id, type, openPrice, openType, stopPrice, closeType, closePrice, openTime] = deal;
-                    const isTypeStop = closeType === 'Stop';
                     const x0 = layout.t2screen(openTime);
                     const y0 = layout.$2screen(openPrice);
                     const x1 = layout.t2screen(closeTime);
                     const y1 = layout.$2screen(closePrice);
+                    const isStop = (isBuy && y0 < y1) || (!isBuy && y0 > y1);
 
-                    this.draw_background(ctx, x0, y0, x1, y1, isTypeStop);
+                    this.draw_background(ctx, x0, y0, x1, y1, isStop);
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
                 } else if (type === 'Open') {
                     const [time, id, type, price, orderType, stopPrice] = deal;

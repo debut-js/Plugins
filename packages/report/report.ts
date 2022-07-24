@@ -1,5 +1,5 @@
 import { PluginInterface, Candle, OrderType, ExecutedOrder, TimeFrame } from '@debut/types';
-import { file, orders } from '@debut/plugin-utils';
+import { file } from '@debut/plugin-utils';
 import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
 import { formatTime } from './utils';
@@ -19,7 +19,7 @@ export type OrderInfo = [
     price: number,
     orderType: OrderType,
     stopPrice?: number,
-    closeType?: 'Stop' | 'Exit',
+    closeType?: 'Exit',
     closePrice?: number,
     closeTime?: number,
     openTime?: number,
@@ -234,8 +234,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 openPrice: number,
                 closePrice: number,
             ) {
-                const isProfitable = operation === OrderType.BUY ? openPrice < closePrice : openPrice > closePrice;
-
                 deals.data.push([
                     formatTime(closeTime),
                     cid,
@@ -243,7 +241,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                     openPrice,
                     operation,
                     0,
-                    isProfitable ? 'Exit' : 'Stop',
+                    'Exit',
                     closePrice,
                     formatTime(openTime),
                 ]);
@@ -319,7 +317,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
 
             const closeTime = formatTime(order.time);
             const openTime = formatTime(closing.time);
-            const isProfitable = orders.getCurrencyProfit(closing, order.price) >= 0;
 
             deals.data.push([
                 closeTime,
@@ -328,7 +325,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 closing.price,
                 closing.type,
                 getTakes(order.cid),
-                isProfitable ? 'Exit' : 'Stop',
+                'Exit',
                 order.price,
                 openTime,
             ]);

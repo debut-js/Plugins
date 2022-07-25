@@ -76,18 +76,19 @@ export function geneticShutdownPlugin(
                 throw 'Genetic Shutdown: stats plugin is required!';
             }
         },
-        async onCandle() {
+        async onAfterCandle() {
             state.candlesCount++;
 
-            if (state.candlesCount > candlesPeriod) {
-                const report = stats.api.report();
+            if (state.candlesCount > 200) {
+                const report = stats.api.getState();
+
                 shutdowned = shutdownFn(report, state);
                 state.candlesCount = 0;
                 state.prevProfit = ((report.profit - state.prevProfit) / state.prevProfit) * 100;
                 state.prevOrders = report.long + report.short;
 
                 if (shutdowned) {
-                    this.debut.dispose();
+                    await this.debut.dispose();
                 }
             }
         },
@@ -96,7 +97,7 @@ export function geneticShutdownPlugin(
 
 const defaultShutdownFn = (stats: StatsState, state: ShutdownState) => {
     const totalOrders = stats.long + stats.short;
-    const lsRatio = stats.long / stats.short;
+
     if (!state.prevOrders && totalOrders < minOrdersInPeriod) {
         return true;
     }
@@ -105,12 +106,5 @@ const defaultShutdownFn = (stats: StatsState, state: ShutdownState) => {
         return true;
     }
 
-    return (
-        stats.relativeDD > 35 ||
-        stats.absoluteDD > 35 ||
-        lsRatio < 0.25 ||
-        lsRatio > 2 ||
-        (stats.long > 30 && stats.longRight / stats.long < 0.5) ||
-        (stats.short > 30 && stats.shortRight / stats.short < 0.5)
-    );
+    return stats.relativeDD > 35 || stats.absoluteDD > 35 || stats.potentialDD > 35 || totalOrders === 0;
 };

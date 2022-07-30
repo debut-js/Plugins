@@ -12,7 +12,7 @@ import { debutToChartTimeframe, FigureModifier, IndicatorHeader, IndicatorsSchem
 // но не ясно что делать в случае когда плагин используется как репорт
 export type PlayerOrderInfo = [
     id: number | string,
-    type: 'Open' | 'Close' | 'Both' | 'Entry',
+    type: 'Open' | 'Close' | 'Both' | 'Entry' | 'Reduce',
     price: number,
     orderType: OrderType,
     stopPrice?: number,
@@ -40,7 +40,6 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
     let orderUpdates: PlayerOrderInfo[] = [];
     let candleIdx = 0;
     const openMap = new Map<number, number>();
-    const stopsMap = new Map<number, number>();
     const indicatorsData = new Map();
     const initialData = {
         chart: {
@@ -176,11 +175,10 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
                 openMap.forEach((value, key) => {
                     value = getTakes(key);
 
-                    if (value && stopsMap.get(key) !== value) {
+                    if (value) {
                         // @ts-ignore
                         const stopData = [key, 'StopLoss', value];
                         update.Orders = [...(update.Orders || []), stopData];
-                        stopsMap.set(key, value);
                     }
                 });
 
@@ -236,12 +234,13 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             const openTime = openMap.get(closing.cid);
             const openTimeMs = formatTime(closing.time);
             const closeTimeMs = formatTime(order.time);
+            const cid = order.reduce ? `r-${closing.cid}` : closing.cid;
             const data: PlayerOrderInfo = [
-                closing.cid,
-                'Close',
+                cid,
+                order.reduce ? 'Reduce' : 'Close',
                 closing.price,
                 closing.type,
-                getTakes(order.cid),
+                getTakes(closing.cid),
                 'Exit',
                 order.price,
                 openTime,
@@ -249,19 +248,21 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
 
             const bothData = [
                 closeTimeMs,
-                closing.cid,
+                cid,
                 'Both',
                 closing.price,
                 closing.type,
-                getTakes(order.cid),
+                getTakes(closing.cid),
                 'Exit',
                 order.price,
                 openTimeMs,
             ];
 
             ordersData.data.push(bothData);
-            openMap.delete(closing.cid);
-            stopsMap.delete(closing.cid);
+
+            if (!order.reduce) {
+                openMap.delete(closing.cid);
+            }
 
             if (inited) {
                 orderUpdates.push(data);

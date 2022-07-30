@@ -34,11 +34,7 @@ export default {
                 const [time, id, type] = deal;
                 const existing = dealsMap.get(id);
 
-                if (existing && existing[2] === 'Close') {
-                    continue;
-                }
-
-                if (type === 'StopLoss') {
+                if (type === 'StopLoss' && existing) {
                     existing[5] = deal[3];
                 } else {
                     dealsMap.set(id, deal);
@@ -52,7 +48,7 @@ export default {
 
                 ctx.fillStyle = isBuy ? this.buy_color : this.sell_color;
 
-                if (type === 'Both' || type === 'Close') {
+                if (type === 'Both' || type === 'Close' || type === 'Reduce') {
                     const [closeTime, id, type, openPrice, openType, stopPrice, closeType, closePrice, openTime] = deal;
                     const x0 = layout.t2screen(openTime);
                     const y0 = layout.$2screen(openPrice);

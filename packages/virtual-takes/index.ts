@@ -76,6 +76,17 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             const hasTrailing = trailing.has(order.cid);
             const { data, isLink } = getOrderData(order.cid, lookup);
             const closeState = checkClose(order, price, lookup);
+            const moveTakeAfter = opts.trailing === TrailingType.MoveAfterEachTake && closeState === CloseType.TAKE;
+            const startTakeAfter = opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE;
+
+            if (opts.reduceOnTrailingTake && (moveTakeAfter || startTakeAfter)) {
+                const originalData = lookup.get(order.cid)!;
+
+                if (!originalData.reduced) {
+                    await ctx.debut.reduceOrder(order, 0.5);
+                    originalData.reduced = true;
+                }
+            }
 
             if (isLink) {
                 return;
@@ -86,29 +97,20 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 trailingTakes(order, price, lookup);
             }
 
-            if (opts.trailing === TrailingType.MoveAfterEachTake && closeState === CloseType.TAKE) {
+            if (moveTakeAfter) {
                 createTrailingTakes(order, price, lookup);
                 trailing.add(order.cid);
-
-                if (opts.reduceOnTrailingTake && !data.reduced && ctx.debut.ordersCount === 1) {
-                    await ctx.debut.reduceOrder(order, 0.5);
-                    data.reduced = true;
-                }
-            } else if (opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE) {
+            } else if (startTakeAfter) {
                 data.stopPrice = order.price;
                 data.price = price;
                 trailing.add(order.cid);
-
-                if (opts.reduceOnTrailingTake && !data.reduced && ctx.debut.ordersCount === 1) {
-                    await ctx.debut.reduceOrder(order, 0.5);
-                    data.reduced = true;
-                }
             } else if (closeState === CloseType.STOP && data.tryLeft! > 0 && data.tryPrice && !data.trailed) {
                 const priceDiff = price - data.tryPrice;
 
                 data.stopPrice = data.stopPrice + priceDiff;
-                data.takePrice = data.takePrice + priceDiff;
+                data.takePrice = data.takePrice;
                 data.tryPrice = price;
+                data.price = price;
 
                 // Create same type as origin order
                 const newOrder = await ctx.debut.createOrder(order.type);
@@ -275,16 +277,20 @@ function createTrailingTakes(order: ExecutedOrder, price: number, lookup: TakesL
 
 function trailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
     const takes = getOrderData(order.cid, lookup).data;
+    const prevPrice = takes.price;
+
+    if (!takes.trailed) {
+        takes.price = price;
+        takes.trailed = true;
+
+        return;
+    }
 
     takes.takePrice = order.type === OrderType.BUY ? Infinity : -Infinity;
 
-    if (
-        (order.type === OrderType.BUY && price > takes.price) ||
-        (order.type === OrderType.SELL && price < takes.price)
-    ) {
-        const delta = price - takes.price;
+    if ((order.type === OrderType.BUY && price > prevPrice) || (order.type === OrderType.SELL && price < prevPrice)) {
+        const delta = price - prevPrice;
 
-        takes.trailed = true;
         takes.stopPrice += delta;
         takes.price = price;
     }

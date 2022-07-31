@@ -58,7 +58,7 @@ export default {
 
                     this.draw_background(ctx, x0, y0, x1, y1, isStop);
                     this.draw_arrow(ctx, x0, y0, x1, y1, 1);
-                } else if (type === 'Open') {
+                } else if (type === 'Open' || type === 'Entry') {
                     const [time, id, type, price, orderType, stopPrice] = deal;
                     const lastCandle = this.layout.candles[candledCount];
                     const x0 = layout.t2screen(time);

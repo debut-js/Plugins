@@ -7,7 +7,8 @@ export type VirtualTakesOptions = {
     ignoreTicks?: boolean;
     manual?: boolean; // manual control
     maxRetryOrders?: number; // how many order can be retried after stop reached
-    reduceOnTrailingTake?: boolean; // reduce order size when trake reached, only for trailing 2 and 3
+    reduceWhen?: number; // reduce order size when reached price level change in percent 12 = 12% or 2 = 2%
+    reduceSize?: number; // How many order size should be reduced 0 - 0%, 1 - 100%, default is 0.5 = 50%
 };
 
 export const enum TrailingType {
@@ -30,7 +31,6 @@ type OrderTakes = {
     tryPrice?: number;
     retryFor?: number;
     trailed?: boolean;
-    reduced?: boolean;
 };
 
 type TakesLookup = Map<number, OrderTakes>;
@@ -55,6 +55,7 @@ export interface VirtualTakesPlugin extends PluginInterface {
 export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugin {
     const lookup: TakesLookup = new Map();
     const trailing: TrailingLookup = new Set();
+    const reducePrices = new Map<number, number>();
     let price = 0;
     let ctx: PluginCtx;
 
@@ -78,18 +79,29 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             const closeState = checkClose(order, price, lookup);
             const moveTakeAfter = opts.trailing === TrailingType.MoveAfterEachTake && closeState === CloseType.TAKE;
             const startTakeAfter = opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE;
+            const reducePrice = reducePrices.get(order.cid);
 
-            if (opts.reduceOnTrailingTake && (moveTakeAfter || startTakeAfter)) {
-                const originalData = lookup.get(order.cid)!;
+            if (opts.reduceWhen && reducePrice) {
+                const shouldClose = checkReduce(order.type, price, reducePrice);
 
-                if (!originalData.reduced) {
-                    await ctx.debut.reduceOrder(order, 0.5);
-                    originalData.reduced = true;
+                if (shouldClose) {
+                    await ctx.debut.reduceOrder(order, opts.reduceSize || 0.5);
+
+                    reducePrices.delete(order.cid);
                 }
             }
 
+            // if (opts.reduceOnTrailingTake && (moveTakeAfter || startTakeAfter)) {
+            //     const originalData = lookup.get(order.cid)!;
+
+            //     if (!originalData.reduced) {
+            //         await ctx.debut.reduceOrder(order, 0.5);
+            //         originalData.reduced = true;
+            //     }
+            // }
+
             if (isLink) {
-                return;
+                continue;
             }
 
             // Update trailings and next check close state
@@ -116,6 +128,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 const newOrder = await ctx.debut.createOrder(order.type);
 
                 lookup.set(newOrder.cid, { ...data, tryLeft: undefined, retryFor: order.cid });
+
                 data.tryLeft!--;
             } else if (closeState === CloseType.STOP || closeState === CloseType.TAKE) {
                 if (opts.maxRetryOrders && data.tryLeft! < opts.maxRetryOrders) {
@@ -183,6 +196,13 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
         },
 
         async onOpen(order) {
+            if (opts.reduceWhen) {
+                const rev = order.type === OrderType.SELL ? -1 : 1;
+                const reducePrice = price + rev * price * (opts.reduceWhen / 100);
+
+                reducePrices.set(order.cid, reducePrice);
+            }
+
             if (opts.manual) {
                 return;
             }
@@ -245,6 +265,17 @@ function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup): C
     }
 
     return;
+}
+
+/**
+ * Order reduce price achieved
+ */
+function checkReduce(type: OrderType, price: number, reducePrice: number): boolean {
+    if ((type === OrderType.BUY && price >= reducePrice) || (type === OrderType.SELL && price <= reducePrice)) {
+        return true;
+    }
+
+    return false;
 }
 
 function createTakes(cid: number, type: OrderType, price: number, opts: VirtualTakesOptions, lookup: TakesLookup) {

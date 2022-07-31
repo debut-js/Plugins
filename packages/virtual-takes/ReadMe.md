@@ -13,11 +13,12 @@ npm install @debut/plugin-virtual-takes --save
 |-----------|----------|------------|
 | takeProfit | number | Percentage level from order opening price |
 | stopLoss | number | Percentage level from order opening price (positive number as well) |
+| reduceWhen | number | Pecentage level from order price - reduce order size when reached |
+| reduceSize | number | How many size of order need to reduce, default = 0.5 mean 50%, 1 - 100%, 0 - 0% |
 | trailing | number | 1 - tradiling from opening, 2 - trailing ater take reached, 3 - trailing after each new take reached (trailing is disabled by default) |
 | ignoreTicks | boolean | Ignore ticks, check takes on each candle closed |
 | maxRetryOrders | number | Allows open new orders insted of closing by stop loss, no more than value |
 | manual | boolean | Manual control, for using API |
-| reduceOnTrailingTake | boolean | reduce order size (by 50%) when trake reached, only for trailing 2 and 3 |
 
 ## Plugin API
 | Name | Description |

@@ -236,7 +236,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
             ) {
                 deals.data.push([
                     formatTime(closeTime),
-                    cid,
+                    Date.now(),
                     'Both',
                     openPrice,
                     operation,

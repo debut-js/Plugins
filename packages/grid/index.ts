@@ -35,7 +35,6 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let amount: number;
     let ctx: PluginCtx;
     let fee: number;
-    let prevProfit = 0;
     let takesPlugin: VirtualTakesPlugin;
     let trailingSetted = false;
 
@@ -118,8 +117,6 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c) - closingComission;
                 const percentProfit = (profit / amount) * 100;
 
-                prevProfit = profit;
-
                 if (percentProfit <= -opts.stopLoss!) {
                     await this.debut.closeAll(opts.collapse && this.debut.ordersCount > 1);
                     return;
@@ -147,7 +144,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                         const lastOrder = this.debut.orders[0];
 
-                        takesPlugin.api.setForOrder(lastOrder.cid, lastOrder.type, tick.c);
+                        takesPlugin.api.setForOrder(lastOrder.cid, lastOrder.type);
                         trailingSetted = true;
                     } else {
                         await this.debut.closeAll(opts.collapse);

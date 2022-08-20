@@ -236,7 +236,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
             ) {
                 deals.data.push([
                     formatTime(closeTime),
-                    Date.now(),
+                    Math.floor(Math.random() * 1000),
                     'Both',
                     openPrice,
                     operation,

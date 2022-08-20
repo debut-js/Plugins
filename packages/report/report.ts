@@ -4,7 +4,6 @@ import { StatsInterface } from '@debut/plugin-stats';
 import path from 'path';
 import { formatTime } from './utils';
 import type { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
-import type { DynamicTakesPlugin } from '@debut/plugin-dynamic-takes';
 
 export const enum FillType {
     'tozeroy' = 'tozeroy',
@@ -114,17 +113,12 @@ export function reportPlugin(showMargin = true): PluginInterface {
     let disabledProfit = false;
     let isManualOrder = false;
     let virtualTakes: VirtualTakesPlugin;
-    let dynamicTakes: DynamicTakesPlugin;
 
     function getTakes(cid: number) {
         let stopPrice: number = 0;
 
         if (virtualTakes) {
             stopPrice = virtualTakes.api.getTakes(cid)?.stopPrice || 0;
-        }
-
-        if (dynamicTakes) {
-            stopPrice = dynamicTakes.api.getTakes(cid)?.stopPrice || 0;
         }
 
         return stopPrice;
@@ -265,7 +259,6 @@ export function reportPlugin(showMargin = true): PluginInterface {
             title += ` / ${this.debut.opts.currency} - ${this.debut.opts.broker.toLocaleUpperCase()}`;
 
             virtualTakes = this.findPlugin('takes');
-            dynamicTakes = this.findPlugin('dynamicTakes');
         },
 
         async onTick(tick) {

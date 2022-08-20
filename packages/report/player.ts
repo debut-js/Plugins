@@ -1,6 +1,5 @@
 import { Candle, ExecutedOrder, OrderType, PluginInterface } from '@debut/types';
 import type { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
-import type { DynamicTakesPlugin } from '@debut/plugin-dynamic-takes';
 import express from 'express';
 import SSEExpress from 'express-sse-ts';
 import { formatTime } from './utils';
@@ -30,7 +29,6 @@ export interface PlayerPluginAPI {
 
 export function playerPlugin(tickDelay = 10): PluginInterface {
     let virtualTakes: VirtualTakesPlugin;
-    let dynamicTakes: DynamicTakesPlugin;
     const app = express();
     const sse = new SSEExpress();
     let indicatorsSchema: IndicatorsSchema;
@@ -97,10 +95,6 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             stopPrice = virtualTakes.api.getTakes(cid)?.stopPrice || 0;
         }
 
-        if (dynamicTakes) {
-            stopPrice = dynamicTakes.api.getTakes(cid)?.stopPrice || 0;
-        }
-
         return stopPrice;
     }
 
@@ -147,7 +141,6 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
             initialData.title = `${this.debut.opts.ticker}`;
             initialData.chart.tf = debutToChartTimeframe(this.debut.opts.interval);
             virtualTakes = this.findPlugin('takes');
-            dynamicTakes = this.findPlugin('dynamicTakes');
         },
 
         async onAfterTick(tick: Candle) {

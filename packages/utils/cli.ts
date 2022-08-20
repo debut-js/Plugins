@@ -50,6 +50,11 @@ export async function getBotData(name: string, schema = getBotsSchema()): Promis
         return null;
     }
 
+    if (!botData) {
+        process.stdout.write(`[ERROR] Bot data in schema.json not found\n`);
+        return null;
+    }
+
     const dir = path.resolve(botData.path);
     const src = path.resolve(botData.src);
 

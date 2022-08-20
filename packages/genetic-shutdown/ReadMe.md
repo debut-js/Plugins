@@ -5,12 +5,10 @@ Debut plugin, to speed up the genetic algorithm process. Allows you to discard c
 The plugin makes a control slice of the statistics every 30 days. If one of the default conditions describing the configuration as bad is met during that time, the strategy variant is disabled and stops performing further calculations, which saves resources.
 
 ## Default disconnection conditions
-Relative drawdown greater than 30%. 2.
+Relative drawdown greater than 35%.
 Absolute drawdown is over 35%
-3. Long/Shorts ratio is less than 0.25 (this strategy is short only)
-4. Long/Shorts ratio is greater than 2 (this strategy trades only longs)
-5. Less than 30 Long or Short trades in 30 days
-6. Less than half of any positions were profitable
+Potential drawdown is over 35%
+No orders after 200 candles in current timeframe
 
 ## Install
 

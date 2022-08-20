@@ -12,8 +12,8 @@
         "preversion": "npm run build"
     },
     "peerDependencies": {
-        "@debut/plugin-stats": "^1.4.0-beta.0",
-        "@debut/types": "^3.2.1-beta.1"
+        "@debut/plugin-stats": "^1.4.0-beta.2",
+        "@debut/types": "^4.0.0"
     },
     "repository": {
         "type": "git",
@@ -34,6 +34,6 @@
     ],
     "homepage": "https://github.com/debut-js/Plugins#readme",
     "devDependencies": {
-        "@types/node": "^18.0.0"
+        "@types/node": "^18.7.8"
     }
 }

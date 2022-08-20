@@ -12,9 +12,9 @@
         "preversion": "npm run build"
     },
     "peerDependencies": {
-        "@debut/plugin-virtual-takes": "^1.4.0-beta.0",
-        "@debut/plugin-utils": "^1.4.0-beta.0",
-        "@debut/types": "^3.2.1-beta.1"
+        "@debut/plugin-virtual-takes": "^1.4.0-beta.8",
+        "@debut/plugin-utils": "^2.0.0",
+        "@debut/types": "^4.0.0"
     },
     "repository": {
         "type": "git",

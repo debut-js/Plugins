@@ -25,7 +25,7 @@ export type GridPluginOptions = {
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
     stopLoss?: number; // общий стоп в процентах для всего грида
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
-    trailing?: boolean; // трейлинг последней сделки, требует плагин dynamic-takes
+    trailing?: boolean; // трейлинг последней сделки, требует плагин virtual-takes
     collapse?: boolean; // collapse orders when close
 };
 

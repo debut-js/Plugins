@@ -16,8 +16,12 @@ The plugin has a number of parameters available for customization during initial
 | from | string | string in format `HH:MM`, for example `10:00` (GMT+3) time of opening of the main session of exchange MOEX |
 | to | string | string in the format `HH:MM`, for example `19:00` (GMT+3) time of the end of the main session of the MOEX |
 | onDayChanged | Function | Optionally, you can pass a function to be called on day change |
+| noTimeSwitching | boolean | Default is false, use this parameter for non [DST](https://en.wikipedia.org/wiki/Daylight_saving_time) zones |
 
 The time is set locally. The plugin automatically adjusts for the current time zone.
+
+## Attention!
+Be aware with
 ## Initialization
 ```javascript
 import { SessionPluginOptions, sessionPlugin } from '@debut/plugin-session';

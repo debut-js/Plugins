@@ -93,6 +93,16 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
         winStreak: 0,
     };
 
+    function addOrderCounter(order: ExecutedOrder) {
+        const isShort = order.type === OrderType.SELL;
+
+        if (isShort) {
+            state.short++;
+        } else {
+            state.long++;
+        }
+    }
+
     return {
         name: 'stats',
 
@@ -137,16 +147,21 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
         },
 
         async onOpen(order) {
-            const isShort = order.type === OrderType.SELL;
+            addOrderCounter(order);
+            // Decrase balance and profit by opening comission
+            const fees = order.commission.value;
 
-            if (isShort) {
-                state.short++;
-            } else {
-                state.long++;
-            }
+            state.balance -= fees;
+            state.profit -= fees;
         },
 
         async onClose(order: ExecutedOrder, closing: ExecutedOrder) {
+            // For reduce incrase orders total counter for original order, because
+            // reduce its should be logged as separate order
+            if (order.reduce) {
+                addOrderCounter(closing);
+            }
+
             const amount = this.debut.opts.amount * (this.debut.opts.equityLevel || 1);
 
             state.maxMarginUsage = Math.max(
@@ -154,8 +169,10 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
                 this.debut.orders.reduce((sum, order) => sum + order.lots * order.price, 0),
             );
 
-            // Прибыль минус налог на закрытии
-            const profit = orders.getCurrencyProfit(closing, order.price) - order.commission.value;
+            const rev = closing.type === OrderType.SELL ? -1 : 1;
+            // For reduce order we have close order with how much lots are executed
+            // Decrase commission from profit
+            const profit = (order.price - order.openPrice!) * order.executedLots * rev - order.commission.value;
             const percentProfit = (profit / amount) * 100;
             const isLastOrder = !this.debut.ordersCount;
 

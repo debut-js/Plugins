@@ -115,7 +115,7 @@ export class Network {
 
             if (this.input.length === this.params.windowSize) {
                 const forecast = this.network.run<number[], number[]>(this.input).slice(0, count);
-                console.log('fcst:', forecast);
+
                 this.input.shift();
 
                 while (forecast.length) {

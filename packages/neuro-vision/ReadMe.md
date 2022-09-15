@@ -68,7 +68,7 @@ export class MyStrategy extends Debut {
     }
 
     // usage
-    this.neuroVision = this.plugins.neuroVision.nextValue(candle);
+    this.neuroVision = this.plugins.neuroVision.nextValue(candle, 1);
  }
 ```
 ## Neural network training

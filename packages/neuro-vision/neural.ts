@@ -94,8 +94,9 @@ export class Network {
     /**
      * Run forecast
      */
-    activate(candle: Candle): NeuroVision | undefined {
+    activate(candle: Candle, count = 1): NeuroVision[] | undefined {
         const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
+        const result: NeuroVision[] = [];
 
         this.prevCandle = candle;
 
@@ -113,18 +114,28 @@ export class Network {
             this.input.push(groupId);
 
             if (this.input.length === this.params.windowSize) {
-                const forecast = this.network.run<number[], number[]>(this.input);
+                const forecast = this.network.run<number[], number[]>(this.input).slice(0, count);
                 this.input.shift();
 
-                const denormalized = this.denormalize(forecast[0]);
-                const group = this.distribution[denormalized];
+                while (forecast.length) {
+                    const cast = forecast.shift();
 
-                if (!group) {
-                    console.log(denormalized);
+                    if (!cast) {
+                        break;
+                    }
+
+                    const denormalized = this.denormalize(cast);
+                    const group = this.distribution[denormalized];
+
+                    if (!group) {
+                        console.log(denormalized);
+                    }
+
+                    result.push(group.classify);
                 }
-
-                return group.classify;
             }
+
+            return result;
         }
     }
 

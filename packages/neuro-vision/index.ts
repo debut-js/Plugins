@@ -24,7 +24,7 @@ export interface NeuroVisionPluginOptions {
 }
 
 interface Methods {
-    nextValue(candle: Candle, count: number): NeuroVision[] | undefined;
+    nextValue(candle: Candle): NeuroVision[] | undefined;
     addTrainValue(candle: Candle): void;
     restore(): void;
     isTraining(): boolean;
@@ -46,8 +46,8 @@ export function neuroVisionPlugin(params: NeuroVisionPluginOptions): NeuroVision
     return {
         name: 'neuroVision',
         api: {
-            nextValue(candle: Candle, count: number = 1) {
-                return neural.activate(candle, count);
+            nextValue(candle: Candle) {
+                return neural.activate(candle);
             },
             addTrainValue(candle: Candle) {
                 neural.addTrainingData(candle);

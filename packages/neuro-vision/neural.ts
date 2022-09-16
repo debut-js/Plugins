@@ -94,7 +94,7 @@ export class Network {
     /**
      * Run forecast
      */
-    activate(candle: Candle, count = 1): NeuroVision[] | undefined {
+    activate(candle: Candle): NeuroVision[] | undefined {
         const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
         const result: NeuroVision[] = [];
 
@@ -114,7 +114,7 @@ export class Network {
             this.input.push(groupId);
 
             if (this.input.length === this.params.windowSize) {
-                const forecast = this.network.run<number[], number[]>(this.input).slice(0, count);
+                const forecast = Array.from(this.network.run<number[], number[]>(this.input).slice(0, count));
 
                 this.input.shift();
 

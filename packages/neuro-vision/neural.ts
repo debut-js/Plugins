@@ -114,7 +114,7 @@ export class Network {
             this.input.push(groupId);
 
             if (this.input.length === this.params.windowSize) {
-                const forecast = Array.from(this.network.run<number[], number[]>(this.input).slice(0, count));
+                const forecast = Array.from(this.network.run<number[], number[]>(this.input));
 
                 this.input.shift();
 

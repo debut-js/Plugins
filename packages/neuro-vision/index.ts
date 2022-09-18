@@ -24,7 +24,7 @@ export interface NeuroVisionPluginOptions {
 }
 
 interface Methods {
-    nextValue(candle: Candle): NeuroVision[] | undefined;
+    nextValue(candle: Candle): NeuroVision | undefined;
     addTrainValue(candle: Candle): void;
     restore(): void;
     isTraining(): boolean;

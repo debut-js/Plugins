@@ -24,7 +24,9 @@ export interface NeuroVisionPluginOptions {
 }
 
 interface Methods {
-    nextValue(candle: Candle): NeuroVision | undefined;
+    addInput(candle: Candle): void;
+    momentForecast(candle: Candle): NeuroVision | undefined;
+    forecast(): NeuroVision | undefined;
     addTrainValue(candle: Candle): void;
     restore(): void;
     isTraining(): boolean;
@@ -46,8 +48,14 @@ export function neuroVisionPlugin(params: NeuroVisionPluginOptions): NeuroVision
     return {
         name: 'neuroVision',
         api: {
-            nextValue(candle: Candle) {
-                return neural.activate(candle);
+            addInput(candle: Candle) {
+                return neural.addInput(candle);
+            },
+            momentForecast(candle: Candle) {
+                return neural.momentActivate(candle);
+            },
+            forecast() {
+                return neural.activate();
             },
             addTrainValue(candle: Candle) {
                 neural.addTrainingData(candle);

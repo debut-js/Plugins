@@ -92,9 +92,9 @@ export class Network {
     };
 
     /**
-     * Run forecast
+     * Add candle
      */
-    activate(candle: Candle): NeuroVision | undefined {
+    addInput(candle: Candle) {
         const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
 
         this.prevCandle = candle;
@@ -112,17 +112,56 @@ export class Network {
 
             this.input.push(groupId);
 
-            if (this.input.length === this.params.windowSize) {
-                const forecast = Array.from(this.network.run<number[], number[]>(this.input));
-
+            if (this.input.length > this.params.windowSize) {
                 this.input.shift();
+            }
+        }
+    }
 
+    /**
+     * Get forecast at the moment
+     */
+    momentActivate(candle: Candle): NeuroVision | undefined {
+        const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
+
+        this.prevCandle = candle;
+
+        if (ratioCandle) {
+            let idx = this.distribution.findIndex(
+                (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,
+            );
+
+            if (idx === -1) {
+                idx = ratioCandle.ratio < this.distribution[0].ratioFrom ? 0 : this.distribution.length - 1;
+            }
+
+            const groupId = this.normalize(idx);
+            const input = [...this.input, groupId];
+
+            input.shift();
+
+            if (input.length === this.params.windowSize) {
+                const forecast = Array.from(this.network.run<number[], number[]>(input));
                 const cast = forecast[0];
                 const denormalized = this.denormalize(cast);
                 const group = this.distribution[denormalized];
 
                 return group.classify;
             }
+        }
+    }
+
+    /**
+     * Run forecast
+     */
+    activate(): NeuroVision | undefined {
+        if (this.input.length === this.params.windowSize) {
+            const forecast = Array.from(this.network.run<number[], number[]>(this.input));
+            const cast = forecast[0];
+            const denormalized = this.denormalize(cast);
+            const group = this.distribution[denormalized];
+
+            return group.classify;
         }
     }
 
@@ -163,10 +202,10 @@ export class Network {
         source.train(this.trainingSet, {
             // Defaults values --> expected validation
             iterations: 40000, // the maximum times to iterate the training data --> number greater than 0
-            errorThresh: 0.001, // the acceptable error percentage from training data --> number between 0 and 1
+            errorThresh: 0.00005, // the acceptable error percentage from training data --> number between 0 and 1
             log: true, // true to use console.log, when a function is supplied it is used --> Either true or a function
             logPeriod: 100, // iterations between logging out --> number greater than 0
-            learningRate: 0.3, // scales with delta to effect training rate --> number between 0 and 1
+            learningRate: 0.6, // scales with delta to effect training rate --> number between 0 and 1
             momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
             timeout: 1500000,
         });

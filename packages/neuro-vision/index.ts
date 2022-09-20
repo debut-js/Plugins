@@ -2,12 +2,10 @@ import { Candle, PluginInterface } from '@debut/types';
 import { cli } from '@debut/plugin-utils';
 import { Network } from './neural';
 
-export enum NeuroVision {
-    'HIGH_UPTREND',
-    'LOW_UPTREND',
-    'NEUTRAL',
-    'LOW_DOWNTREND',
-    'HIGH_DOWNTREND',
+export interface NeuroVision {
+    low: number;
+    high: number;
+    avg: number;
 }
 
 export interface NeuroVisionPluginArgs {
@@ -15,7 +13,8 @@ export interface NeuroVisionPluginArgs {
 }
 
 export interface NeuroVisionPluginOptions {
-    windowSize: number; // 25;
+    inputSize: number; // 25;
+    outputSize: number;
     segmentsCount: number; // 6
     precision: number; // 3
     hiddenLayers?: number[];
@@ -25,8 +24,8 @@ export interface NeuroVisionPluginOptions {
 
 interface Methods {
     addInput(candle: Candle): void;
-    momentForecast(candle: Candle): NeuroVision | undefined;
-    forecast(): NeuroVision | undefined;
+    momentForecast(candle: Candle): NeuroVision[] | undefined;
+    forecast(candle: Candle): NeuroVision[] | undefined;
     addTrainValue(candle: Candle): void;
     restore(): void;
     isTraining(): boolean;
@@ -54,8 +53,8 @@ export function neuroVisionPlugin(params: NeuroVisionPluginOptions): NeuroVision
             momentForecast(candle: Candle) {
                 return neural.momentActivate(candle);
             },
-            forecast() {
-                return neural.activate();
+            forecast(candle: Candle) {
+                return neural.activate(candle);
             },
             addTrainValue(candle: Candle) {
                 neural.addTrainingData(candle);

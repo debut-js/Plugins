@@ -14,7 +14,8 @@ npm install @debut/plugin-neuro-vision --save
 
 | Name | Type | Description |
 |-----------|----------|------------|
-| windowSize | number | window size for training and using the neural network (input size) |
+| inputSize | number | window size (input) for training and using the neural network (input size) |
+| outputSize | number | forecast candles count |
 | segmentsCount | boolean | number of segments into which the Gaussian distribution will be divided |
 | precision | number | number of decimal places when rounding (Affects the distribution) |
 | hiddenLayers? | number | optionally, number of hidden layers, default [32, 16] |
@@ -24,7 +25,9 @@ npm install @debut/plugin-neuro-vision --save
 ## Plugin API
 | Method | Description |
 |-----------|------------|
-| nextValue | For a trained neural network it gives a candlestick as input, there will be a predicted value |
+| addInput | Add input for activation. Use after model has been trained, before forcast() call |
+| momentForecast | Forecast for current non closed candle |
+| forecast | Forecast for fully closed candle |
 | addTrainValue | Add a candle to the training sample (use only with `--neuroTrain`) |
 | restore | Number of decimal places, when rounding (Affects the distribution) |
 | isTraining | Returns the training flag, when `--neuroTrain` is true, otherwise false |
@@ -68,7 +71,11 @@ export class MyStrategy extends Debut {
     }
 
     // usage
-    this.neuroVision = this.plugins.neuroVision.nextValue(candle, 1);
+    this.plugins.neuroVision.addInput(candle);
+    this.neuroVision = this.plugins.neuroVision.forecast(candle);
+    console.log(this.neuroVision);
+    /// output: [{ low: predicted low price, high: predicted high price, avg: average predicted price }]
+    /// example: [{ low: 22564.3, high: 22693.7, avg:  22620.15 }]
  }
 ```
 ## Neural network training

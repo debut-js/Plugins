@@ -18,7 +18,6 @@ export interface DistributionSegment {
     ratioFrom: number;
     ratioTo: number;
     count: number;
-    classify: NeuroVision;
 }
 
 /**
@@ -76,13 +75,10 @@ export function getDistribution(ratioCandles: RatioCandle[], segmentsCount = 6, 
         const nextSum = localCountSum + item.count;
 
         if ((nextSum > segmentSize && !isFilled) || isLast) {
-            const index = segments.length;
-
             segments.push({
                 ratioFrom,
                 ratioTo: item.ratio,
                 count: localCountSum,
-                classify: getGroup(index, segmentsCount),
             });
             localCountSum = item.count;
             ratioFrom = item.ratio;
@@ -94,25 +90,6 @@ export function getDistribution(ratioCandles: RatioCandle[], segmentsCount = 6, 
     return segments;
 }
 
-function getGroup(idx: number, total: number): NeuroVision {
-    // 5 statements in enum NeuroVision
-    const visionStep = total / 5;
-
-    if (idx < visionStep) {
-        return NeuroVision.HIGH_DOWNTREND;
-    }
-
-    if (idx < visionStep * 2) {
-        return NeuroVision.LOW_DOWNTREND;
-    }
-
-    if (idx < visionStep * 3) {
-        return NeuroVision.NEUTRAL;
-    }
-
-    if (idx < visionStep * 4) {
-        return NeuroVision.LOW_UPTREND;
-    }
-
-    return NeuroVision.HIGH_UPTREND;
+export function getPredictPrices(price: number, ratioFrom: number, ratioTo: number): NeuroVision {
+    return { low: price * ratioFrom, high: price * ratioTo, avg: price * ((ratioFrom + ratioTo) / 2) };
 }

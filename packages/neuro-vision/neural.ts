@@ -2,13 +2,14 @@ import { CrossValidate, INeuralNetworkOptions, NeuralNetwork } from 'brain.js';
 import { file, math } from '@debut/plugin-utils';
 import { Candle } from '@debut/types';
 import path from 'path';
-import { getDistribution, getQuoteRatioData, RatioCandle, DistributionSegment } from './utils';
+import { getDistribution, getQuoteRatioData, RatioCandle, DistributionSegment, getPredictPrices } from './utils';
 import { NeuroVision } from './index';
 
 export interface Params {
     segmentsCount: number;
     precision: number;
-    windowSize: number;
+    inputSize: number;
+    outputSize: number;
     workingDir: string;
     hiddenLayers?: number[];
     debug?: boolean;
@@ -61,6 +62,7 @@ export class Network {
             console.log(this.distribution);
         }
 
+        let output: number[] = [];
         for (let i = 0; i < this.dataset.length; i++) {
             const ratioCandle = this.dataset[i];
             const groupId = this.normalize(
@@ -69,25 +71,22 @@ export class Network {
                 ),
             );
 
-            this.input.push(groupId);
-
-            if (this.input.length === this.params.windowSize) {
-                const forecastingRatio = this.dataset[i + 1]?.ratio;
-
-                if (!forecastingRatio) {
-                    break;
-                }
-
-                const outputGroupId = this.distribution.findIndex(
-                    (group) => forecastingRatio >= group.ratioFrom && forecastingRatio < group.ratioTo,
-                );
-                const normalizedOutput = this.normalize(outputGroupId);
-
-                this.trainingSet.push({ input: [...this.input], output: [normalizedOutput] });
-                this.input.shift();
+            if (this.input.length < this.params.inputSize) {
+                this.input.push(groupId);
+                // Skip to next dataset item
+                continue;
             }
 
-            // this.input.push(this.normalize(groupId));
+            if (this.input.length === this.params.inputSize && output.length < this.params.outputSize) {
+                output.push(groupId);
+            }
+
+            if (output.length === this.params.outputSize) {
+                this.trainingSet.push({ input: [...this.input], output: [...output] });
+                this.input.shift();
+                this.input.push(groupId);
+                output.length = 0;
+            }
         }
     };
 
@@ -112,7 +111,7 @@ export class Network {
 
             this.input.push(groupId);
 
-            if (this.input.length > this.params.windowSize) {
+            if (this.input.length > this.params.inputSize) {
                 this.input.shift();
             }
         }
@@ -121,7 +120,7 @@ export class Network {
     /**
      * Get forecast at the moment
      */
-    momentActivate(candle: Candle): NeuroVision | undefined {
+    momentActivate(candle: Candle): NeuroVision[] | undefined {
         const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
 
         this.prevCandle = candle;
@@ -137,16 +136,22 @@ export class Network {
 
             const groupId = this.normalize(idx);
             const input = [...this.input, groupId];
+            const output: NeuroVision[] = [];
 
             input.shift();
 
-            if (input.length === this.params.windowSize) {
+            if (input.length === this.params.inputSize) {
                 const forecast = Array.from(this.network.run<number[], number[]>(input));
-                const cast = forecast[0];
-                const denormalized = this.denormalize(cast);
-                const group = this.distribution[denormalized];
 
-                return group.classify;
+                for (let i = 0; i < forecast.length; i++) {
+                    const cast = forecast[i];
+                    const denormalized = this.denormalize(cast);
+                    const group = this.distribution[denormalized];
+
+                    output.push(getPredictPrices(candle.c, group.ratioFrom, group.ratioTo));
+                }
+
+                return output;
             }
         }
     }
@@ -154,14 +159,20 @@ export class Network {
     /**
      * Run forecast
      */
-    activate(): NeuroVision | undefined {
-        if (this.input.length === this.params.windowSize) {
+    activate(candle: Candle): NeuroVision[] | undefined {
+        if (this.input.length === this.params.inputSize) {
             const forecast = Array.from(this.network.run<number[], number[]>(this.input));
-            const cast = forecast[0];
-            const denormalized = this.denormalize(cast);
-            const group = this.distribution[denormalized];
+            const output: NeuroVision[] = [];
 
-            return group.classify;
+            for (let i = 0; i < forecast.length; i++) {
+                const cast = forecast[i];
+                const denormalized = this.denormalize(cast);
+                const group = this.distribution[denormalized];
+
+                output.push(getPredictPrices(candle.c, group.ratioFrom, group.ratioTo));
+            }
+
+            return output;
         }
     }
 
@@ -202,9 +213,9 @@ export class Network {
         source.train(this.trainingSet, {
             // Defaults values --> expected validation
             iterations: 40000, // the maximum times to iterate the training data --> number greater than 0
-            errorThresh: 0.00005, // the acceptable error percentage from training data --> number between 0 and 1
+            errorThresh: 0.005, // the acceptable error percentage from training data --> number between 0 and 1
             log: true, // true to use console.log, when a function is supplied it is used --> Either true or a function
-            logPeriod: 100, // iterations between logging out --> number greater than 0
+            logPeriod: 25, // iterations between logging out --> number greater than 0
             learningRate: 0.6, // scales with delta to effect training rate --> number between 0 and 1
             momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
             timeout: 1500000,

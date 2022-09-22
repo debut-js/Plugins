@@ -32,9 +32,12 @@ interface DistributionData {
  * Replace close prices to ratio (percent increment) prices with prev price and current
  */
 export function getQuoteRatioData(current: Candle, prev: Candle): RatioCandle {
+    const prevValue = (prev.o + prev.h + prev.l + prev.c) / 4;
+    const currentValue = (current.o + current.h + current.l + current.c) / 4;
+
     return {
         time: current.time,
-        ratio: current.c / prev.c,
+        ratio: currentValue / prevValue,
         volume: current.v,
     };
 }
@@ -91,5 +94,9 @@ export function getDistribution(ratioCandles: RatioCandle[], segmentsCount = 6, 
 }
 
 export function getPredictPrices(price: number, ratioFrom: number, ratioTo: number): NeuroVision {
-    return { low: price * ratioFrom, high: price * ratioTo, avg: price * ((ratioFrom + ratioTo) / 2) };
+    const low = price * ratioFrom;
+    const high = price * ratioTo;
+    const avg = (low + high) / 2;
+
+    return { low, high, avg };
 }

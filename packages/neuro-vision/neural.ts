@@ -123,8 +123,6 @@ export class Network {
     momentActivate(candle: Candle): NeuroVision[] | undefined {
         const ratioCandle = this.prevCandle && getQuoteRatioData(candle, this.prevCandle);
 
-        this.prevCandle = candle;
-
         if (ratioCandle) {
             let idx = this.distribution.findIndex(
                 (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,

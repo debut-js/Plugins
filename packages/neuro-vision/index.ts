@@ -20,6 +20,7 @@ export interface NeuroVisionPluginOptions {
     hiddenLayers?: number[];
     debug?: boolean;
     crossValidate?: boolean;
+    errTresh?: number;
 }
 
 interface Methods {
@@ -77,7 +78,7 @@ export function neuroVisionPlugin(params: NeuroVisionPluginOptions): NeuroVision
         async onDispose() {
             if (neuroTrain) {
                 neural.serveTrainingData();
-                neural.training();
+                neural.training(params.errTresh);
                 neural.save();
             }
         },

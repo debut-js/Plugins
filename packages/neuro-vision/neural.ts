@@ -63,13 +63,24 @@ export class Network {
         }
 
         let output: number[] = [];
-        for (let i = 0; i < this.dataset.length; i++) {
-            const ratioCandle = this.dataset[i];
-            const groupId = this.normalize(
-                this.distribution.findIndex(
-                    (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,
-                ),
+
+        // test
+
+        const groupData = this.dataset.map((ratioCandle) => {
+            return this.distribution.findIndex(
+                (group) => ratioCandle.ratio >= group.ratioFrom && ratioCandle.ratio < group.ratioTo,
             );
+        });
+
+        const normalizedData = groupData.map((item) => this.normalize(item));
+        const denormalizedData = normalizedData.map((item) => this.denormalize(item));
+
+        for (let i = 0; i < normalizedData.length; i++) {
+            const groupId = normalizedData[i];
+
+            if (groupData[i] !== denormalizedData[i]) {
+                throw new Error('Invalid denormalization');
+            }
 
             if (this.input.length < this.params.inputSize) {
                 this.input.push(groupId);
@@ -226,11 +237,11 @@ export class Network {
 
     private normalize(groupId: number) {
         // return groupId;
-        return math.toFixed(groupId / (this.params.segmentsCount - 1), this.params.precision);
+        return groupId / this.params.segmentsCount;
     }
 
     private denormalize(value: number) {
         // return Math.round(value);
-        return Math.min(Math.floor(value * this.params.segmentsCount), this.params.segmentsCount - 1);
+        return Math.min(Math.round(value * this.params.segmentsCount), this.params.segmentsCount - 1);
     }
 }

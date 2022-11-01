@@ -42,6 +42,7 @@ interface Methods {
     setForOrder(cid: number, type: OrderType): void;
     getTakes(cid: number): OrderTakes | undefined;
     isManual(): boolean;
+    updateUpts(opts: VirtualTakesOptions): void;
 }
 export interface VirtualTakesPluginAPI {
     takes: Methods;
@@ -145,6 +146,9 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
         name: 'takes',
 
         api: {
+            updateUpts(update: Partial<VirtualTakesOptions>) {
+                opts = { ...opts, ...update };
+            },
             setTrailingForOrder(cid: number, takePrice: number, stopPrice: number) {
                 if (!opts.manual) {
                     throw 'Virtual Takes Plugin should be in a manual mode for call `setForOrder`';

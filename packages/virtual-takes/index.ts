@@ -9,6 +9,7 @@ export type VirtualTakesOptions = {
     maxRetryOrders?: number; // how many order can be retried after stop reached
     reduceWhen?: number; // reduce order size when reached price level change in percent 12 = 12% or 2 = 2%
     reduceSize?: number; // How many order size should be reduced 0 - 0%, 1 - 100%, default is 0.5 = 50%
+    separateStops?: boolean; // use separate stop loss for each retry order
 };
 
 export const enum TrailingType {
@@ -76,8 +77,8 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             }
 
             const hasTrailing = trailing.has(order.cid);
-            const { data, isLink } = getOrderData(order.cid, lookup);
-            const closeState = checkClose(order, price, lookup);
+            const { data, isLink } = getOrderData(order.cid, lookup, opts.separateStops);
+            const closeState = checkClose(order, price, lookup, opts.separateStops);
             const moveTakeAfter = opts.trailing === TrailingType.MoveAfterEachTake && closeState === CloseType.TAKE;
             const startTakeAfter = opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE;
             const reducePrice = reducePrices.get(order.cid);
@@ -121,7 +122,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 const priceDiff = price - data.tryPrice;
 
                 data.stopPrice = data.stopPrice + priceDiff;
-                data.takePrice = data.takePrice;
+                data.takePrice = opts.separateStops ? data.takePrice + priceDiff : data.takePrice;
                 data.tryPrice = price;
                 data.price = price;
 
@@ -241,11 +242,15 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
     };
 }
 
-function getOrderData(cid: number, lookup: TakesLookup): { data: OrderTakes; isLink: boolean } {
+function getOrderData(
+    cid: number,
+    lookup: TakesLookup,
+    separateStops?: boolean,
+): { data: OrderTakes; isLink: boolean } {
     let data = lookup.get(cid);
     let isLink = false;
 
-    if (data?.retryFor) {
+    if (data?.retryFor && !separateStops) {
         data = lookup.get(data.retryFor);
         isLink = true;
     }
@@ -256,9 +261,14 @@ function getOrderData(cid: number, lookup: TakesLookup): { data: OrderTakes; isL
 /**
  * Проверяем достижение тейка на оснвании текущей цены
  */
-function checkClose(order: ExecutedOrder, price: number, lookup: TakesLookup): CloseType | void {
+function checkClose(
+    order: ExecutedOrder,
+    price: number,
+    lookup: TakesLookup,
+    separateStops?: boolean,
+): CloseType | void {
     const { type, cid } = order;
-    const { takePrice, stopPrice } = getOrderData(cid, lookup).data;
+    const { takePrice, stopPrice } = getOrderData(cid, lookup, separateStops).data;
 
     if ((type === OrderType.BUY && price >= takePrice) || (type === OrderType.SELL && price <= takePrice)) {
         return CloseType.TAKE;

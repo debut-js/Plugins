@@ -112,7 +112,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             }
 
             if (moveTakeAfter) {
-                createTrailingTakes(order, price, lookup);
+                createTrailingTakes(order, price, lookup, opts.separateStops);
                 trailing.add(order.cid);
             } else if (startTakeAfter) {
                 data.stopPrice = order.price;
@@ -122,7 +122,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 const priceDiff = price - data.tryPrice;
 
                 data.stopPrice = data.stopPrice + priceDiff;
-                data.takePrice = opts.separateStops ? data.takePrice + priceDiff : data.takePrice;
+                data.takePrice = data.takePrice + priceDiff;
                 data.tryPrice = price;
                 data.price = price;
 
@@ -250,7 +250,7 @@ function getOrderData(
     let data = lookup.get(cid);
     let isLink = false;
 
-    if (data?.retryFor && !separateStops) {
+    if (!separateStops && data?.retryFor) {
         data = lookup.get(data.retryFor);
         isLink = true;
     }
@@ -306,8 +306,8 @@ function createTakes(cid: number, type: OrderType, price: number, opts: VirtualT
     lookup.set(cid, { stopPrice, takePrice, price });
 }
 
-function createTrailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup) {
-    const takes = getOrderData(order.cid, lookup).data;
+function createTrailingTakes(order: ExecutedOrder, price: number, lookup: TakesLookup, separateStops?: boolean) {
+    const takes = getOrderData(order.cid, lookup, separateStops).data;
 
     if (!takes) {
         return;

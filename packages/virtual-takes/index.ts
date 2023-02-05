@@ -80,7 +80,8 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             const { data, isLink } = getOrderData(order.cid, lookup, opts.separateStops);
             const closeState = checkClose(order, price, lookup, opts.separateStops);
             const moveTakeAfter = opts.trailing === TrailingType.MoveAfterEachTake && closeState === CloseType.TAKE;
-            const startTakeAfter = opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE;
+            const startTakeAfter =
+                !hasTrailing && opts.trailing === TrailingType.StartAfterTake && closeState === CloseType.TAKE;
             const reducePrice = reducePrices.get(order.cid);
 
             if (opts.reduceWhen && reducePrice) {
@@ -115,7 +116,10 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 createTrailingTakes(order, price, lookup, opts.separateStops);
                 trailing.add(order.cid);
             } else if (startTakeAfter) {
-                data.stopPrice = order.price;
+                const priceDiff = order.price - data.stopPrice;
+
+                data.stopPrice = price - priceDiff;
+                data.takePrice = price + priceDiff;
                 data.price = price;
                 trailing.add(order.cid);
             } else if (closeState === CloseType.STOP && data.tryLeft! > 0 && data.tryPrice && !data.trailed) {

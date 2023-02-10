@@ -1,6 +1,6 @@
-import { PluginInterface, ExecutedOrder, OrderType, Candle, PluginCtx } from '@debut/types';
+import { PluginInterface, ExecutedOrder, OrderType, Candle, PluginCtx, PendingOrder } from '@debut/types';
 import { orders } from '@debut/plugin-utils';
-import { VirtualTakesPlugin } from '@debut/plugin-virtual-takes';
+import { VirtualTakesPlugin, TrailingType } from '@debut/plugin-virtual-takes';
 
 type GridLevel = { price: number; activated: boolean };
 interface Methods {
@@ -25,8 +25,11 @@ export type GridPluginOptions = {
     takeProfit: number; // тейк в процентах 3 5 7 9 и тд
     stopLoss?: number; // общий стоп в процентах для всего грида
     reduceEquity?: boolean; // уменьшать доступный баланс с каждой сделкой
-    trailing?: boolean; // трейлинг последней сделки, требует плагин virtual-takes
+    trailing?: TrailingType; // трейлинг последней сделки, требует плагин virtual-takes 1 - 3
+    trailingDistance?: number; // треубет установку трейлинга
+    trailingAndReduce?: boolean;
     collapse?: boolean; // collapse orders when close
+    timePause?: number; // pause between grid openings ONLY FOR PORUCTION! Not for Backtesting.
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -37,6 +40,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let fee: number;
     let takesPlugin: VirtualTakesPlugin;
     let trailingSetted = false;
+    let lastOpeningTime = 0;
 
     if (!opts.stopLoss) {
         opts.stopLoss = Infinity;
@@ -79,11 +83,11 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                     throw new Error('@debut/plugin-virtual-takes is required for trailing');
                 }
 
-                if (!takesPlugin.api.isManual()) {
-                    throw new Error(
-                        '@debut/plugin-virtual-takes should be in manual mode for working with Grid, pass manual: true to plugin options',
-                    );
+                if (!opts.trailingDistance) {
+                    throw new Error('@debut/plugin-grid trailing option requires trailingDistance parameter');
                 }
+
+                takesPlugin.api.updateUpts({ trailing: opts.trailing, manual: true });
             }
         },
 
@@ -92,6 +96,8 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 grid = new GridClass(order.price, opts, order.type);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
+            } else {
+                lastOpeningTime = Date.now();
             }
         },
 
@@ -138,13 +144,22 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                     if (opts.trailing) {
                         // Close all orders exclude last order
-                        while (this.debut.ordersCount !== 1) {
-                            await this.debut.closeOrder(this.debut.orders[0]);
+                        const lastOrder = this.debut.orders[this.debut.orders.length - 1];
+
+                        await this.debut.closeAll(true, (order: PendingOrder | ExecutedOrder) => {
+                            return order !== lastOrder;
+                        });
+
+                        const rev = lastOrder.type === OrderType.BUY ? 1 : -1;
+                        const take = tick.c * (1 + (opts.trailingDistance! / 100) * rev);
+                        const stop = tick.c * (1 - (opts.trailingDistance! / 100) * rev);
+
+                        takesPlugin.api.setTrailingForOrder(lastOrder.cid, take, stop);
+
+                        if (opts.trailingAndReduce) {
+                            await this.debut.reduceOrder(lastOrder, 0.5);
                         }
 
-                        const lastOrder = this.debut.orders[0];
-
-                        takesPlugin.api.setForOrder(lastOrder.cid, lastOrder.type);
                         trailingSetted = true;
                     } else {
                         await this.debut.closeAll(opts.collapse);
@@ -154,7 +169,9 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 }
             }
 
-            if (grid) {
+            const canTrade = opts.timePause ? Date.now() - lastOpeningTime > opts.timePause : true;
+
+            if (grid && canTrade) {
                 // Dont active when grid getted direaction to short side
                 if (!grid.nextUpIdx && tick.c <= grid.getNextLow()?.price) {
                     grid.activateLow();

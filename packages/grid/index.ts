@@ -142,7 +142,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                         }
                     }
 
-                    if (opts.trailing) {
+                    if (opts.trailing && this.debut.ordersCount > 1) {
                         // Close all orders exclude last order
                         const lastOrder = this.debut.orders[this.debut.orders.length - 1];
 

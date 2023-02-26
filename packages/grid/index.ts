@@ -94,7 +94,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
         async onOpen(order: ExecutedOrder) {
             if (!grid) {
-                grid = new GridClass(order.price, opts, order.type);
+                grid = new GridClass(order.price, opts, opts.trend ? undefined : order.type);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
             } else {

@@ -30,6 +30,7 @@ export type GridPluginOptions = {
     trailingAndReduce?: boolean;
     collapse?: boolean; // collapse orders when close
     timePause?: number; // pause between grid openings ONLY FOR PORUCTION! Not for Backtesting.
+    trend?: boolean; // working on trend or not
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -124,7 +125,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 const percentProfit = (profit / amount) * 100;
 
                 if (percentProfit <= -opts.stopLoss!) {
-                    await this.debut.closeAll(opts.collapse && this.debut.ordersCount > 1);
+                    await this.debut.closeAll(!opts.trend && opts.collapse && this.debut.ordersCount > 1);
                     return;
                 }
 
@@ -146,7 +147,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                         // Close all orders exclude last order
                         const lastOrder = this.debut.orders[this.debut.orders.length - 1];
 
-                        await this.debut.closeAll(true, (order: PendingOrder | ExecutedOrder) => {
+                        await this.debut.closeAll(!opts.trend, (order: PendingOrder | ExecutedOrder) => {
                             return order !== lastOrder;
                         });
 
@@ -162,7 +163,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
                         trailingSetted = true;
                     } else {
-                        await this.debut.closeAll(opts.collapse);
+                        await this.debut.closeAll(!opts.trend && opts.collapse);
                     }
 
                     return;
@@ -177,7 +178,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                     grid.activateLow();
                     const lotsMulti = opts.martingale ** grid.nextLowIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(OrderType.BUY);
+                    await this.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
                 }
 
                 // Dont active when grid getted direaction to long side
@@ -185,7 +186,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                     grid.activateUp();
                     const lotsMulti = opts.martingale ** grid.nextUpIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(OrderType.SELL);
+                    await this.debut.createOrder(opts.trend ? OrderType.BUY : OrderType.SELL);
                 }
             }
         },

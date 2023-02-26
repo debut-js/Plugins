@@ -14,7 +14,7 @@
     "peerDependencies": {
         "@debut/plugin-virtual-takes": "^2.0.4",
         "@debut/plugin-utils": "^2.0.0",
-        "@debut/types": "^4.0.4"
+        "@debut/types": "^4.0.6"
     },
     "repository": {
         "type": "git",

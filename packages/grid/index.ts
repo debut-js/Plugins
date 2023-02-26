@@ -169,7 +169,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 }
             }
 
-            const canTrade = opts.timePause ? Date.now() - lastOpeningTime > opts.timePause : true;
+            const canTrade = ctx.debut.learning || !opts.timePause || Date.now() - lastOpeningTime > opts.timePause;
 
             if (grid && canTrade) {
                 // Dont active when grid getted direaction to short side

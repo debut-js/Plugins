@@ -174,7 +174,9 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
             if (grid && canTrade) {
                 // Dont active when grid getted direaction to short side
-                if (!grid.nextUpIdx && tick.c <= grid.getNextLow()?.price) {
+                const useLow = !grid.nextUpIdx || opts.trend;
+
+                if (useLow && tick.c <= grid.getNextLow()?.price) {
                     grid.activateLow();
                     const lotsMulti = opts.martingale ** grid.nextLowIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;
@@ -182,7 +184,9 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 }
 
                 // Dont active when grid getted direaction to long side
-                if (!grid.nextLowIdx && tick.c >= grid.getNextUp()?.price) {
+                const useUp = !grid.nextLowIdx || opts.trend;
+
+                if (useUp && tick.c >= grid.getNextUp()?.price) {
                     grid.activateUp();
                     const lotsMulti = opts.martingale ** grid.nextUpIdx;
                     this.debut.opts.lotsMultiplier = lotsMulti;

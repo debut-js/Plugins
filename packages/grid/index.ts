@@ -184,7 +184,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 }
 
                 // Dont active when grid getted direaction to long side
-                const useUp = !grid.nextLowIdx || opts.trend;
+                const useUp = !grid?.nextLowIdx || opts.trend;
 
                 if (useUp && tick.c >= grid.getNextUp()?.price) {
                     grid.activateUp();

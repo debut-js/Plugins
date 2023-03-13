@@ -5,6 +5,7 @@ import { VirtualTakesPlugin, TrailingType } from '@debut/plugin-virtual-takes';
 type GridLevel = { price: number; activated: boolean };
 interface Methods {
     createGrid(price: number, type?: OrderType): Grid;
+    disposeGrid(): void;
     getGrid(): Grid | null;
 }
 
@@ -70,6 +71,13 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
              */
             getGrid() {
                 return grid;
+            },
+
+            /**
+             * Remove existing grid
+             */
+            disposeGrid() {
+                grid = null;
             },
         },
         onInit() {

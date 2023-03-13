@@ -125,7 +125,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
         },
 
         async onCandle() {
-            if (opts.reduceTakeOnTime) {
+            if (grid && opts.reduceTakeOnTime) {
                 takeProfit -= opts.reduceTakeOnTime;
             }
         },

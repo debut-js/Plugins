@@ -32,6 +32,7 @@ export type GridPluginOptions = {
     collapse?: boolean; // collapse orders when close
     timePause?: number; // pause between grid openings ONLY FOR PORUCTION! Not for Backtesting.
     trend?: boolean; // working on trend or not
+    reduceTakeOnTime?: number; // reduce teak on each candle
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -43,6 +44,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
     let takesPlugin: VirtualTakesPlugin;
     let trailingSetted = false;
     let lastOpeningTime = 0;
+    let takeProfit = opts.takeProfit;
 
     if (!opts.stopLoss) {
         opts.stopLoss = Infinity;
@@ -61,6 +63,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
              */
             createGrid(price: number, type?: OrderType) {
                 grid = new GridClass(price, opts, type);
+                takeProfit = opts.takeProfit;
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
                 return grid;
@@ -105,6 +108,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 grid = new GridClass(order.price, opts, opts.trend ? undefined : order.type);
                 // Fixation amount for all time grid lifecycle
                 amount = ctx.debut.opts.amount * (ctx.debut.opts.equityLevel || 1);
+                takeProfit = opts.takeProfit;
             } else {
                 lastOpeningTime = Date.now();
             }
@@ -116,6 +120,13 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                 this.debut.opts.lotsMultiplier = startMultiplier;
                 grid = null;
                 trailingSetted = false;
+                takeProfit = opts.takeProfit;
+            }
+        },
+
+        async onCandle() {
+            if (opts.reduceTakeOnTime) {
+                takeProfit -= opts.reduceTakeOnTime;
             }
         },
 
@@ -137,7 +148,7 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
                     return;
                 }
 
-                if (percentProfit >= opts.takeProfit) {
+                if (percentProfit >= takeProfit) {
                     if (opts.reduceEquity) {
                         if (!this.debut.opts.equityLevel) {
                             this.debut.opts.equityLevel = 1;

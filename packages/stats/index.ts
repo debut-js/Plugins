@@ -1,4 +1,4 @@
-import { PluginInterface, ExecutedOrder, OrderType, TimeFrame } from '@debut/types/dist';
+import { PluginInterface, ExecutedOrder, OrderType, TimeFrame } from '@debut/types';
 import { math, orders, date } from '@debut/plugin-utils';
 
 export type StatsOptions = {

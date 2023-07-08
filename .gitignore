@@ -1,7 +1,6 @@
 /**/tokens.ts
 node_modules
 out
-dist
 .idea
 configs.json
 /**/progress.json

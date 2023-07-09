@@ -1,6 +1,5 @@
 /**/tokens.ts
 node_modules
-dist
 out
 .idea
 configs.json

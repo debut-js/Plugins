@@ -24,7 +24,7 @@ export function reportToTelegramPlugin(opts: ReportToTelegramOptions): PluginInt
             }
 
             const data = order.orderId.split('-')
-            const message = `${data[1]}\nlots:${order.lots}\nprice:${data[2]}`
+            const message = `${data[1]}\nlots:${order.lots}\nprice:${data[2]}\nticker:${this.debut.opts.ticker}`
 
             try {
                 await axios.get(url, {

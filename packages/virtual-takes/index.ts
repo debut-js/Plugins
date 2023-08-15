@@ -133,6 +133,12 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                 // Create same type as origin order
                 const newOrder = await ctx.debut.createOrder(order.type);
 
+                // Error cannot be opened fallback
+                if (!newOrder) {
+                    await ctx.debut.closeAll(true);
+                    return;
+                }
+
                 lookup.set(newOrder.cid, { ...data, tryLeft: undefined, retryFor: order.cid });
 
                 data.tryLeft!--;

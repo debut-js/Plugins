@@ -32,7 +32,7 @@ npm run build --workspaces
 
 to link to local packages use
 ```bash
-npm run link --workspaces
+npm link --workspaces
 ```
 
 ### License

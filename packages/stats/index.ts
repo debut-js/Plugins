@@ -1,8 +1,9 @@
-import { PluginInterface, ExecutedOrder, OrderType } from '@debut/types';
-import { math, orders } from '@debut/plugin-utils';
+import { PluginInterface, ExecutedOrder, OrderType, TimeFrame } from '@debut/types';
+import { math, orders, date } from '@debut/plugin-utils';
 
 export type StatsOptions = {
     amount: number;
+    interval: TimeFrame;
 };
 
 export interface StatsState {
@@ -32,6 +33,8 @@ export interface StatsState {
     avgRightLine: number;
     ticksHandled: number;
     candlesHandled: number;
+    avgProfitLifespan: number; // candles
+    avgLooseLifespan: number;
 }
 export interface StatsPluginAPI {
     stats: Methods;
@@ -77,6 +80,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
             avgRightLine: 0,
             ticksHandled: 0,
             candlesHandled: 0,
+            avgProfitLifespan: 0,
+            avgLooseLifespan: 0,
         };
     }
 
@@ -91,6 +96,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
         winSum: 0,
         looseStreak: 0,
         winStreak: 0,
+        winLifespan: 0,
+        looseLifespan: 0,
     };
 
     function addOrderCounter(order: ExecutedOrder) {
@@ -124,6 +131,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
                 res.profitProb = profitCount / ordersCount || 0;
                 res.looseProb = looseCount / ordersCount || 0;
                 res.expectation = res.profitProb * res.avgProfit - res.looseProb * res.avgLoose;
+                res.avgProfitLifespan = temp.winLifespan / date.intervalToMs(opts.interval) / profitCount || 0;
+                res.avgLooseLifespan = temp.looseLifespan / date.intervalToMs(opts.interval) / looseCount || 0;
 
                 // FIXME: Types should be right
                 Object.keys(res).forEach((key) => {
@@ -236,6 +245,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
                 } else {
                     state.longRight++;
                 }
+
+                temp.winLifespan += order.time - closing.time;
             } else {
                 temp.looseSum += profit;
                 temp.sumWinStreak += temp.winStreak;
@@ -250,6 +261,8 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
                 }
 
                 temp.looseStreak++;
+
+                temp.looseLifespan += order.time - closing.time;
             }
 
             if (state.failLine < temp.looseStreak) {

@@ -38,7 +38,7 @@ export interface ReportPluginAPI {
             openPrice: number,
             closePrice: number,
         ) => void;
-        addOpenTarget: (cid: number, time: string, price: number, operation: OrderType) => void;
+        addOpenTarget: (cid: string, time: string, price: number, operation: OrderType) => void;
     };
 }
 
@@ -114,7 +114,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
     let isManualOrder = false;
     let virtualTakes: VirtualTakesPlugin;
 
-    function getTakes(cid: number) {
+    function getTakes(cid: string) {
         let stopPrice: number = 0;
 
         if (virtualTakes) {
@@ -203,7 +203,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 settings.rangeTo = to;
                 settings.toolbar = false;
             },
-            addOpenTarget(cid: number, time: string, price: number, operation: OrderType) {
+            addOpenTarget(cid: string, time: string, price: number, operation: OrderType) {
                 const fTime = formatTime(time);
 
                 deals.data.push([fTime, cid, 'Entry', price, operation, getTakes(cid)]);
@@ -221,7 +221,7 @@ export function reportPlugin(showMargin = true): PluginInterface {
                 indicatorsData = {};
             },
             setManualOrder(
-                cid: number,
+                cid: string,
                 operation: OrderType,
                 openTime: string,
                 closeTime: string,

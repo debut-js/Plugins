@@ -30,18 +30,18 @@ type OrderTakes = {
     price: number;
     tryLeft?: number;
     tryPrice?: number;
-    retryFor?: number;
+    retryFor?: string;
     trailed?: boolean;
 };
 
-type TakesLookup = Map<number, OrderTakes>;
-type TrailingLookup = Set<number>;
+type TakesLookup = Map<string, OrderTakes>;
+type TrailingLookup = Set<string>;
 
 interface Methods {
-    setTrailingForOrder(cid: number, takePrice: number, stopPrice: number): void;
-    setPricesForOrder(cid: number, takePrice: number, stopPrice: number): void;
-    setForOrder(cid: number, type: OrderType): void;
-    getTakes(cid: number): OrderTakes | undefined;
+    setTrailingForOrder(cid: string, takePrice: number, stopPrice: number): void;
+    setPricesForOrder(cid: string, takePrice: number, stopPrice: number): void;
+    setForOrder(cid: string, type: OrderType): void;
+    getTakes(cid: string): OrderTakes | undefined;
     isManual(): boolean;
     updateUpts(opts: VirtualTakesOptions): void;
 }
@@ -57,7 +57,7 @@ export interface VirtualTakesPlugin extends PluginInterface {
 export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugin {
     const lookup: TakesLookup = new Map();
     const trailing: TrailingLookup = new Set();
-    const reducePrices = new Map<number, number>();
+    const reducePrices = new Map<string, number>();
     let price = 0;
     let ctx: PluginCtx;
 
@@ -160,7 +160,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
             updateUpts(update: Partial<VirtualTakesOptions>) {
                 opts = { ...opts, ...update };
             },
-            setTrailingForOrder(cid: number, takePrice: number, stopPrice: number) {
+            setTrailingForOrder(cid: string, takePrice: number, stopPrice: number) {
                 if (!opts.manual) {
                     throw 'Virtual Takes Plugin should be in a manual mode for call `setForOrder`';
                 }
@@ -171,7 +171,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
 
                 lookup.set(cid, { price, stopPrice, takePrice });
             },
-            setPricesForOrder(cid: number, takePrice: number, stopPrice: number) {
+            setPricesForOrder(cid: string, takePrice: number, stopPrice: number) {
                 if (!opts.manual) {
                     throw 'Virtual Takes Plugin should be in a manual mode for call `setForOrder`';
                 }
@@ -187,7 +187,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                     trailing.add(cid);
                 }
             },
-            setForOrder(cid: number, type: OrderType): void {
+            setForOrder(cid: string, type: OrderType): void {
                 if (!opts.manual) {
                     throw 'Virtual Takes Plugin should be in a manual mode for call `setForOrder`';
                 }
@@ -198,7 +198,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
                     trailing.add(cid);
                 }
             },
-            getTakes(cid: number): OrderTakes | undefined {
+            getTakes(cid: string): OrderTakes | undefined {
                 return getOrderData(cid, lookup).data;
             },
             isManual() {
@@ -253,7 +253,7 @@ export function virtualTakesPlugin(opts: VirtualTakesOptions): VirtualTakesPlugi
 }
 
 function getOrderData(
-    cid: number,
+    cid: string,
     lookup: TakesLookup,
     separateStops?: boolean,
 ): { data: OrderTakes; isLink: boolean } {
@@ -302,7 +302,7 @@ function checkReduce(type: OrderType, price: number, reducePrice: number): boole
     return false;
 }
 
-function createTakes(cid: number, type: OrderType, price: number, opts: VirtualTakesOptions, lookup: TakesLookup) {
+function createTakes(cid: string, type: OrderType, price: number, opts: VirtualTakesOptions, lookup: TakesLookup) {
     const rev = type === OrderType.SELL ? -1 : 1;
 
     if (!opts.stopLoss || !opts.takeProfit) {

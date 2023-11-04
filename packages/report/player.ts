@@ -37,7 +37,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
     let filled = false;
     let orderUpdates: PlayerOrderInfo[] = [];
     let candleIdx = 0;
-    const openMap = new Map<number, number>();
+    const openMap = new Map<string, number>();
     const indicatorsData = new Map();
     const initialData = {
         chart: {
@@ -88,7 +88,7 @@ export function playerPlugin(tickDelay = 10): PluginInterface {
         sse.send(JSON.stringify(data), event);
     }
 
-    function getTakes(cid: number) {
+    function getTakes(cid: string) {
         let stopPrice: number = 0;
 
         if (virtualTakes) {

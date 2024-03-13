@@ -1,10 +1,12 @@
-import { PluginInterface } from '@debut/types';
+import { PluginInterface, TimeFrame } from '@debut/types';
+import { date } from '@debut/plugin-utils';
 
 export const enum TimeMode {
     'Summer' = 'Summer',
     'Winter' = 'Winter',
 }
 export interface SessionPluginOptions {
+    interval: TimeFrame;
     from?: string;
     to?: string;
     noTimeSwitching?: boolean;
@@ -27,13 +29,13 @@ export interface SessionInterface extends PluginInterface {
 }
 
 export function sessionPlugin(options: SessionPluginOptions, onDayEnd?: (...args: unknown[]) => void): PluginInterface {
-    const { from = '00:00', to = '23:59', noTimeSwitching } = options;
-    const sessionValidator = createSessionValidator(from, to, noTimeSwitching);
+    const { from, to, noTimeSwitching, interval } = options;
+    const sessionValidator = createSessionValidator(interval, from, to, noTimeSwitching);
 
     return {
         name: 'session',
         api: {
-            createSessionValidator,
+            createSessionValidator: createSessionFilter,
         },
         onBeforeTick(tick) {
             const stamp = tick.time;
@@ -48,24 +50,47 @@ export function sessionPlugin(options: SessionPluginOptions, onDayEnd?: (...args
     };
 }
 
-export type SessionValidator = ReturnType<typeof createSessionValidator>;
+export type SessionValidator = ReturnType<typeof createSessionFilter>;
 export type SessionValidatorResult = {
     inSession: boolean;
     dayChanged: boolean;
 };
 
 /**
+ * Метод создания валидатора из человеко читаемых дат
+ */
+export function createSessionValidator(
+    interval: TimeFrame,
+    from?: string,
+    to?: string,
+    noDST?: boolean,
+): (stamp: number) => SessionValidatorResult {
+    let start = 0;
+    let end = 86_400_000;
+    const intervalMs = date.intervalToMs(interval);
+    const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
+
+    if (from) {
+        const [fromHour, fromMinute] = from.split(':').map(Number);
+        start = fromHour * 60 * 60 * 1000 + fromMinute * 60 * 1000 + timezoneOffset;
+    }
+
+    if (to) {
+        const [toHour, toMinute] = to.split(':').map(Number);
+        end = toHour * 60 * 60 * 1000 + toMinute * 60 * 1000 + timezoneOffset;
+    }
+
+    return createSessionFilter(intervalMs, start, end, noDST);
+}
+
+/**
  * Метод создания валидатора сессионного окна по дате, с переходом на зимнее и летнее время
  */
-export function createSessionValidator(start: string, end: string, noDST?: boolean) {
-    const [fromHour, fromMinute] = start.split(':').map(Number);
-    const [toHour, toMinute] = end.split(':').map(Number);
-
-    let dailyFromStamp: number;
-    let dailyToStamp: number;
+function createSessionFilter(intervalMs: number, start: number, end: number, noDST?: boolean) {
     let currentDayMarker = 0;
+    let marketStart = 0;
+    let marketEnd = 0;
     let timeMode: TimeMode;
-    const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
 
     if (noDST) {
         timeMode = TimeMode.Summer;
@@ -74,24 +99,27 @@ export function createSessionValidator(start: string, end: string, noDST?: boole
     return (stamp: number): SessionValidatorResult => {
         const dayChanged = stamp > currentDayMarker;
 
-        if (dayChanged && !noDST) {
-            timeMode = getDST(stamp);
-        }
+        // if (dayChanged && !noDST) {
+        //     timeMode = getDST(stamp);
+        // }
 
-        if (dayChanged) {
+        if (dayChanged || currentDayMarker === 0) {
             // Если еще нет текущей даты или сменился день, перегенерируем дату
             // Коррекция дат, для разных часовых поясов, время старта указывается в летнем времени
-            const startHrs = timeMode === TimeMode.Summer ? fromHour : fromHour + 1;
-            const endHrs = timeMode === TimeMode.Summer ? toHour : toHour + 1;
-            const from = ~~(stamp / 86400000) * 86400000 + timezoneOffset;
-            currentDayMarker = from + 86400000 - 1;
+            // const dstOffset = timeMode === TimeMode.Summer ? 0 : 60 * 60 * 1000;
+            const currentDay = ~~(stamp / 86_400_000) * 86_400_000;
+            currentDayMarker = currentDay + 86_400_000 - 1;
 
             // Переводич часы и минуты в stamp и прибавляем к дате
-            dailyFromStamp = from + startHrs * 60 * 60 * 1000 + fromMinute * 60 * 1000;
-            dailyToStamp = from + endHrs * 60 * 60 * 1000 + toMinute * 60 * 1000;
+            marketStart = currentDay + start; // + dstOffset;
+            marketEnd = currentDay + end; // + dstOffset; // не включая
         }
 
-        return { inSession: dailyFromStamp <= stamp && stamp < dailyToStamp, dayChanged };
+        const stampEnd = stamp + intervalMs;
+
+        // console.log(new Date(marketStart), '<=', new Date(stamp), new Date(stampEnd), '<', new Date(marketEnd));
+
+        return { inSession: marketStart <= stamp && stampEnd <= marketEnd, dayChanged };
     };
 }
 // DST - Daylight saving time

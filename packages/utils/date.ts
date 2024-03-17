@@ -21,6 +21,21 @@ export function isWeekend(d: string | number | Date) {
 }
 
 /**
+ * Timezone offset in ms.
+ */
+function getTimezoneOffset(d: Date, tz: string) {
+    const a = d.toLocaleString('ja', { timeZone: tz }).split(/[/\s:]/);
+
+    // @ts-expect-error
+    a[1]--;
+
+    // @ts-expect-error
+    const t1 = Date.UTC.apply(null, a);
+    const t2 = new Date(d).setMilliseconds(0);
+    return (t2 - t1) / 60 / 1000;
+}
+
+/**
  * Create date with custom ISO format (preffered for Tinkoff history API)
  * @param date date
  */
@@ -101,4 +116,81 @@ export function intervalToMs(interval: TimeFrame) {
     }
 
     return time * 60 * 1000;
+}
+
+export const MINUTE = 60 * 1000;
+export const HOUR = 60 * MINUTE;
+export const DAY = 24 * HOUR;
+export const enum TimeMode {
+    'Summer' = 'Summer',
+    'Winter' = 'Winter',
+}
+export const enum MARKET_TIMEZONES {
+    US = 'America/New_York',
+    RU = 'Europe/Moscow',
+}
+
+/**
+ * Create function dst detection for selected timezone code, see `MARKET_TIMEZONES`
+ */
+export function getDSTDetector(tz: string) {
+    const summerTimePeriods: Array<number[]> = [];
+
+    switch (tz) {
+        case MARKET_TIMEZONES.US:
+            savingTimePeriodsForUS(summerTimePeriods);
+            break;
+        case MARKET_TIMEZONES.RU: // <- no dst country
+            return () => TimeMode.Summer;
+        default:
+            throw new Error(`${tz} is not supported`);
+    }
+
+    return (stamp: number) => {
+        let isSummerDST = false;
+
+        for (let i = 0; i < summerTimePeriods.length; i++) {
+            if (stamp >= summerTimePeriods[i][0] && stamp < summerTimePeriods[i][1]) {
+                isSummerDST = true;
+                break;
+            }
+        }
+
+        if (isSummerDST) {
+            return TimeMode.Summer;
+        } else {
+            return TimeMode.Winter;
+        }
+    };
+}
+
+/**
+ * Get timezone offset in ms by timezone code e.g. "Amerca/NEW_YORK"
+ */
+export function getOffsetMs(tz: string) {
+    const currentYear = new Date().getFullYear();
+    const summerOffset = getTimezoneOffset(new Date(currentYear, 6, 1), tz);
+    const winterOffset = getTimezoneOffset(new Date(currentYear, 0, 1), tz);
+
+    return [summerOffset * 60 * 1000, winterOffset * 60 * 1000];
+}
+
+/**
+ * DST change periods for US
+ */
+function savingTimePeriodsForUS(summerTimePeriods: number[][]) {
+    const currentYear = new Date().getFullYear();
+
+    // Для упрощения вычислений возьмем несколько лет
+    [0, 1, 2, 3, 4, -1, -2, -3, -4, -5].forEach((move) => {
+        const year = currentYear + move;
+        const march = new Date(year, 2, 7);
+        const secondSunday = 7 + (7 - march.getDay());
+        const november = new Date(year, 10, 7);
+        const sunday = 7 - november.getDay();
+        const summer = new Date(year, 2, secondSunday).getTime();
+        const winter = new Date(year, 10, sunday).getTime();
+
+        summerTimePeriods.push([summer, winter]);
+    });
 }

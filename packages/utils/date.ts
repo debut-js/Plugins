@@ -74,7 +74,7 @@ export function toIsoString(date: Date | number | string) {
  */
 export function getWeekDay(stamp: number) {
     // Convert to number of days since 1 Jan 1970
-    const days = stamp / 86400000;
+    const days = stamp / DAY;
     // 1 Jan 1970 was a Thursday, so add 4 so Sunday is day 0, and mod 7
     const day_of_week = (days + 4) % 7;
 
@@ -115,7 +115,7 @@ export function intervalToMs(interval: TimeFrame) {
         throw new Error('Unsupported interval');
     }
 
-    return time * 60 * 1000;
+    return time * MINUTE;
 }
 
 export const MINUTE = 60 * 1000;
@@ -172,7 +172,7 @@ export function getOffsetMs(tz: string) {
     const summerOffset = getTimezoneOffset(new Date(currentYear, 6, 1), tz);
     const winterOffset = getTimezoneOffset(new Date(currentYear, 0, 1), tz);
 
-    return [summerOffset * 60 * 1000, winterOffset * 60 * 1000];
+    return [summerOffset * MINUTE, winterOffset * MINUTE];
 }
 
 /**

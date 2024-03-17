@@ -12,7 +12,7 @@
         "preversion": "npm run build"
     },
     "dependencies": {
-        "@debut/plugin-utils": "^2.0.2"
+        "@debut/plugin-utils": "^2.0.3"
     },
     "peerDependencies": {
         "@debut/types": "^4.1.1"

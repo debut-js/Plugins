@@ -33,6 +33,7 @@ export type GridPluginOptions = {
     timePause?: number; // pause between grid openings ONLY FOR PORUCTION! Not for Backtesting.
     trend?: boolean; // working on trend or not
     reduceTakeOnTime?: number; // reduce teak on each candle
+    gridByCandle?: boolean; // working on candle or on tick
 };
 
 export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
@@ -52,6 +53,90 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
 
     if (!opts.levelsCount) {
         opts.levelsCount = 6;
+    }
+
+    async function processLogic(tick: Candle) {
+        if (trailingSetted) {
+            return;
+        }
+
+        const ordersLen = ctx.debut.ordersCount;
+
+        if (ordersLen) {
+            // TODO: Create streaming profit watcher with nextValue
+            const closingComission = orders.getCurrencyBatchComissions(ctx.debut.orders, tick.c, fee);
+            const profit = orders.getCurrencyBatchProfit(ctx.debut.orders, tick.c) - closingComission;
+            const percentProfit = (profit / amount) * 100;
+
+            if (percentProfit <= -opts.stopLoss!) {
+                await ctx.debut.closeAll(!opts.trend && opts.collapse && ctx.debut.ordersCount > 1);
+                return;
+            }
+
+            if (percentProfit >= takeProfit) {
+                if (opts.reduceEquity) {
+                    if (!ctx.debut.opts.equityLevel) {
+                        ctx.debut.opts.equityLevel = 1;
+                    }
+
+                    ctx.debut.opts.equityLevel *= 0.97;
+
+                    if (ctx.debut.opts.equityLevel < 0.002) {
+                        console.log(ctx.debut.getName(), 'Grid Disposed', new Date().toLocaleDateString());
+                        ctx.debut.dispose();
+                    }
+                }
+
+                if (opts.trailing && ctx.debut.ordersCount > 1) {
+                    // Close all orders exclude last order
+                    const lastOrder = ctx.debut.orders[ctx.debut.orders.length - 1];
+
+                    await ctx.debut.closeAll(!opts.trend, (order: PendingOrder | ExecutedOrder) => {
+                        return order !== lastOrder;
+                    });
+
+                    const rev = lastOrder.type === OrderType.BUY ? 1 : -1;
+                    const take = tick.c * (1 + (opts.trailingDistance! / 100) * rev);
+                    const stop = tick.c * (1 - (opts.trailingDistance! / 100) * rev);
+
+                    takesPlugin.api.setTrailingForOrder(lastOrder.cid, take, stop);
+
+                    if (opts.trailingAndReduce) {
+                        await ctx.debut.reduceOrder(lastOrder, 0.5);
+                    }
+
+                    trailingSetted = true;
+                } else {
+                    await ctx.debut.closeAll(!opts.trend && opts.collapse);
+                }
+
+                return;
+            }
+        }
+
+        const canTrade = ctx.debut.learning || !opts.timePause || Date.now() - lastOpeningTime > opts.timePause;
+
+        if (grid && canTrade) {
+            // Dont active when grid getted direaction to short side
+            const useLow = !grid.nextUpIdx || opts.trend;
+
+            if (useLow && tick.c <= grid.getNextLow()?.price) {
+                grid.activateLow();
+                const lotsMulti = opts.martingale ** grid.nextLowIdx;
+                ctx.debut.opts.lotsMultiplier = lotsMulti;
+                await ctx.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
+            }
+
+            // Dont active when grid getted direaction to long side
+            const useUp = !grid?.nextLowIdx || opts.trend;
+
+            if (useUp && tick.c >= grid.getNextUp()?.price) {
+                grid.activateUp();
+                const lotsMulti = opts.martingale ** grid.nextUpIdx;
+                ctx.debut.opts.lotsMultiplier = lotsMulti;
+                await ctx.debut.createOrder(opts.trend ? OrderType.BUY : OrderType.SELL);
+            }
+        }
     }
 
     return {
@@ -124,93 +209,19 @@ export function gridPlugin(opts: GridPluginOptions): GridPluginInterface {
             }
         },
 
-        async onCandle() {
+        async onCandle(candle: Candle) {
+            if (opts.gridByCandle) {
+                await processLogic(candle);
+            }
+
             if (grid && opts.reduceTakeOnTime) {
                 takeProfit -= opts.reduceTakeOnTime;
             }
         },
 
         async onTick(tick: Candle) {
-            if (trailingSetted) {
-                return;
-            }
-
-            const ordersLen = this.debut.ordersCount;
-
-            if (ordersLen) {
-                // TODO: Create streaming profit watcher with nextValue
-                const closingComission = orders.getCurrencyBatchComissions(this.debut.orders, tick.c, fee);
-                const profit = orders.getCurrencyBatchProfit(this.debut.orders, tick.c) - closingComission;
-                const percentProfit = (profit / amount) * 100;
-
-                if (percentProfit <= -opts.stopLoss!) {
-                    await this.debut.closeAll(!opts.trend && opts.collapse && this.debut.ordersCount > 1);
-                    return;
-                }
-
-                if (percentProfit >= takeProfit) {
-                    if (opts.reduceEquity) {
-                        if (!this.debut.opts.equityLevel) {
-                            this.debut.opts.equityLevel = 1;
-                        }
-
-                        this.debut.opts.equityLevel *= 0.97;
-
-                        if (this.debut.opts.equityLevel < 0.002) {
-                            console.log(this.debut.getName(), 'Grid Disposed', new Date().toLocaleDateString());
-                            this.debut.dispose();
-                        }
-                    }
-
-                    if (opts.trailing && this.debut.ordersCount > 1) {
-                        // Close all orders exclude last order
-                        const lastOrder = this.debut.orders[this.debut.orders.length - 1];
-
-                        await this.debut.closeAll(!opts.trend, (order: PendingOrder | ExecutedOrder) => {
-                            return order !== lastOrder;
-                        });
-
-                        const rev = lastOrder.type === OrderType.BUY ? 1 : -1;
-                        const take = tick.c * (1 + (opts.trailingDistance! / 100) * rev);
-                        const stop = tick.c * (1 - (opts.trailingDistance! / 100) * rev);
-
-                        takesPlugin.api.setTrailingForOrder(lastOrder.cid, take, stop);
-
-                        if (opts.trailingAndReduce) {
-                            await this.debut.reduceOrder(lastOrder, 0.5);
-                        }
-
-                        trailingSetted = true;
-                    } else {
-                        await this.debut.closeAll(!opts.trend && opts.collapse);
-                    }
-
-                    return;
-                }
-            }
-
-            const canTrade = ctx.debut.learning || !opts.timePause || Date.now() - lastOpeningTime > opts.timePause;
-
-            if (grid && canTrade) {
-                // Dont active when grid getted direaction to short side
-                const useLow = !grid.nextUpIdx || opts.trend;
-
-                if (useLow && tick.c <= grid.getNextLow()?.price) {
-                    grid.activateLow();
-                    const lotsMulti = opts.martingale ** grid.nextLowIdx;
-                    this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(opts.trend ? OrderType.SELL : OrderType.BUY);
-                }
-
-                // Dont active when grid getted direaction to long side
-                const useUp = !grid?.nextLowIdx || opts.trend;
-
-                if (useUp && tick.c >= grid.getNextUp()?.price) {
-                    grid.activateUp();
-                    const lotsMulti = opts.martingale ** grid.nextUpIdx;
-                    this.debut.opts.lotsMultiplier = lotsMulti;
-                    await this.debut.createOrder(opts.trend ? OrderType.BUY : OrderType.SELL);
-                }
+            if (!opts.gridByCandle) {
+                await processLogic(tick);
             }
         },
     };

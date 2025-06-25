@@ -8,7 +8,7 @@
     "exports": "./dist/index.js",
     "types": "dist/index.d.ts",
     "peerDependencies": {
-        "@debut/types": "^4.1.0",
+        "@debut/types": "^4.1.2",
         "@debut/plugin-utils": "^2.0.1"
     },
     "scripts": {

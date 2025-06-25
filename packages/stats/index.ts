@@ -327,6 +327,9 @@ export function statsPlugin(opts: StatsOptions): StatsInterface {
             closedOrders.push(closedDeal);
             equityOnClose.push([closing.time, state.balance]);
             margins.push([closing.time, temp.currentMargin]);
+
+            // После расчёта прибыли и обновления баланса
+            temp.currentMargin -= closing.price * closing.lots;
         },
     };
 }
@@ -454,10 +457,9 @@ function calculatePerformanceMetrics(
         maxEquityRunup = maxRunup;
     }
     maxEquityRunupOnInitialCapital = initialCapital ? maxEquityRunup / initialCapital : 0;
-    accountSizeRequired = maxMargin + Math.abs(maxEquityDrawdown);
-    accountSizeEfficiency = netProfit
-        ? (margins.reduce((sum, m) => sum + m[1], 0) / margins.length / netProfit) * 100
-        : 0;
+    accountSizeRequired = maxMargin;
+    const averageMargin = margins.length ? margins.reduce((sum, m) => sum + m[1], 0) / margins.length : 0;
+    accountSizeEfficiency = averageMargin > 0 ? (netProfit / averageMargin) * 100 : 0;
     returnOnAccount = accountSizeRequired ? (netProfit / accountSizeRequired) * 100 : 0;
     returnOnInitialCapital = initialCapital ? (netProfit / initialCapital) * 100 : 0;
     returnOnMaxDrawdown = maxEquityDrawdown ? (netProfit / maxEquityDrawdown) * 100 : 0;
